@@ -66,19 +66,24 @@ function Header({ cartCount }: { cartCount: number }) {
   ];
   return (
     <>
-      <div className="announcement">ORIGINAL DESIGN · PERSONALIZED FOR YOU · MADE WITH PURPOSE</div>
+      <div className="utility-bar">
+        <span>UNITED STATES / USD</span>
+        <nav aria-label="Utility navigation"><a href="/support">Help</a><a href="/track">Order Status</a><a href="/account">Join Us</a><a href="/account">Sign In</a></nav>
+      </div>
       <header className="site-header">
         <button className="icon-button mobile-only" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Icon name="menu" /></button>
-        <Logo />
+        <Logo light={false} />
         <nav className="desktop-nav" aria-label="Primary navigation">
-          {nav.map(([label, href]) => <a key={href} href={href}>{label}</a>)}
+          {nav.map(([label, href]) => <a className={href === "/create-yours" ? "nav-accent" : ""} key={href} href={href}>{label}</a>)}
         </nav>
         <div className="header-tools">
-          <a className="icon-button" href="/search" aria-label="Search"><Icon name="search" /></a>
+          <a className="search-pill" href="/search" aria-label="Search"><Icon name="search" /><span>Search</span></a>
           <a className="icon-button desktop-only" href="/account" aria-label="Account"><Icon name="user" /></a>
           <a className="icon-button bag-button" href="/cart" aria-label={`Cart with ${cartCount} items`}><Icon name="bag" />{cartCount > 0 && <span>{cartCount}</span>}</a>
         </div>
       </header>
+      <div className="announcement"><strong>COMPLIMENTARY TRACKED DELIVERY ON ORDERS OVER $150</strong><a href="/policies/shipping">View details</a></div>
+      <nav className="category-nav" aria-label="Shop categories"><a href="/shop">NEW & FEATURED</a><a href="/shop">JERSEYS</a><a href="/shop">OUTERWEAR</a><a href="/shop">ACCESSORIES</a><a href="/create-yours">CUSTOMIZE</a><a href="/team-orders">TEAM ORDERS</a></nav>
       {menuOpen && (
         <div className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="drawer-top"><Logo /><button className="icon-button" onClick={() => setMenuOpen(false)} aria-label="Close menu"><Icon name="close" /></button></div>
@@ -131,8 +136,8 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: (product: Pr
     <article className="product-card">
       <a href={`/product/${product.id}`} aria-label={`View ${product.name}`}><ProductImage product={product} /><span className="product-tag">{product.tag}</span></a>
       <div className="product-info">
-        <div><p>{product.world} / {product.category}</p><h3><a href={`/product/${product.id}`}>{product.name}</a></h3><strong>{formatPrice(product.price)}</strong></div>
-        <button className="round-action" onClick={() => onAdd(product)} aria-label={`Add ${product.name} to cart`}><Icon name="plus" /></button>
+        <div><p>{product.world}</p><h3><a href={`/product/${product.id}`}>{product.name}</a></h3><span className="product-meta">{product.category} · {product.colors.length} colors</span><strong>{formatPrice(product.price)}</strong></div>
+        <button className="quick-add" onClick={() => onAdd(product)} aria-label={`Add ${product.name} to cart`}><Icon name="plus" size={16} /><span>QUICK ADD</span></button>
       </div>
     </article>
   );
@@ -166,30 +171,29 @@ function HomePage({ onAdd }: { onAdd: (product: Product) => void }) {
       <section className="hero">
         <div className="hero-media"><img src="/reference/image3.jpeg" alt="Athlete wearing an original WE UNION jersey" /></div>
         <div className="hero-grain" />
-        <div className="hero-copy"><p className="eyebrow"><span />ORIGINAL DESIGN · PERSONALIZED FOR YOU</p><h1>WE<br />UNION</h1><p className="hero-line">GEAR MADE PERSONAL.</p><p className="hero-body">Original sportswear built around identity, achievement, and belonging.</p><div className="button-row"><a className="button button--light" href="/shop">EXPLORE COLLECTIONS <Icon name="arrow" /></a><a className="button button--ghost" href="/create-yours">CREATE YOURS</a></div></div>
+        <div className="hero-copy"><p className="eyebrow"><span />WE UNION / ORIGINAL SPORTSWEAR</p><h1>GEAR MADE<br />PERSONAL.</h1><p className="hero-body">Original pieces designed for the names, numbers, places, and stories you carry.</p><div className="button-row"><a className="button button--light" href="/shop">SHOP NEW ARRIVALS</a><a className="button button--ghost" href="/create-yours">CREATE YOURS</a></div></div>
         <div className="hero-index"><span>WU / 001</span><span>EST. 2026</span></div>
       </section>
 
       <section className="section worlds-section">
-        <SectionTitle eyebrow="THREE WORLDS. ONE UNION." title="BEGIN WITH WHAT MOVES YOU." />
+        <SectionTitle eyebrow="SHOP BY STORY" title="FIND YOUR WORLD." copy="Three distinct starting points. One shared standard of original design and personal meaning." />
         <div className="world-grid">
           {Object.entries(worlds).map(([slug, world], index) => <a className="world-card" href={`/world/${slug}`} key={world.name}><img src={world.image} alt="" style={{ objectPosition: world.position }} /><div className="world-shade" /><span className="world-index">0{index + 1}</span><div><h3>{world.name}</h3><p>{world.kicker}</p><span className="text-link">ENTER WORLD <Icon name="arrow" /></span></div></a>)}
         </div>
       </section>
 
       <section className="section products-section">
-        <div className="split-heading"><SectionTitle eyebrow="THE LATEST" title="NEW & FEATURED" copy="Latest originals, limited releases, and pieces ready to make yours." /><a className="text-link" href="/shop">SHOP ALL <Icon name="arrow" /></a></div>
-        <div className="tag-rail"><span>NEW</span><span>FEATURED</span><span>READY TO SHIP</span><span>CUSTOMIZABLE</span><span>LIMITED</span></div>
+        <div className="split-heading"><SectionTitle eyebrow="TRENDING NOW" title="NEW & FEATURED" copy="Fresh originals, limited releases, and pieces ready to personalize." /><a className="text-link" href="/shop">SHOP ALL <Icon name="arrow" /></a></div>
         <div className="product-grid">{products.slice(0, 4).map((product) => <ProductCard key={product.id} product={product} onAdd={onAdd} />)}</div>
       </section>
 
       <section className="create-banner">
-        <div className="create-image"><img src="/reference/image7.jpeg" alt="Interactive jersey personalization preview" /></div>
+        <div className="create-image create-preview"><div className="create-preview-note"><span>LIVE DESIGN PREVIEW</span><strong>UNION / 24</strong></div><GarmentPreview name="UNION" number="24" color="Obsidian" view="BACK" /></div>
         <div className="create-panel"><SectionTitle eyebrow="CREATE YOURS" title="ORIGINAL FIRST. PERSONAL AFTER." light copy="Choose a WE UNION original, then add the details that make it unmistakably yours." /><ol>{["CHOOSE", "PERSONALIZE", "REVIEW", "WE MAKE IT"].map((step, i) => <li key={step}><span>0{i + 1}</span>{step}</li>)}</ol><a className="button button--gold" href="/create-yours">START CREATING <Icon name="arrow" /></a></div>
       </section>
 
       <section className="section craft-section">
-        <div className="craft-media"><img src="/reference/image14.jpeg" alt="Close view of embroidery and garment construction" /></div>
+        <div className="craft-media"><img src="/editorial/craft-detail.jpg" alt="Close view of embroidery and garment construction" /></div>
         <div className="craft-copy"><SectionTitle eyebrow="CRAFTSMANSHIP" title="DESIGNED WITH INTENT. MADE WITH CARE." copy="Personalization works only when the foundation is right. Every material, seam, and finish is chosen to carry your details well." /><div className="evidence-grid">{["EMBROIDERY", "MATERIALS", "CONSTRUCTION", "INSPECTION"].map((item, i) => <div key={item}><span>0{i + 1}</span><h3>{item}</h3></div>)}</div><a className="text-link" href="/craftsmanship">SEE HOW IT’S MADE <Icon name="arrow" /></a></div>
       </section>
 
@@ -213,6 +217,7 @@ function ShopPage({ onAdd }: { onAdd: (product: Product) => void }) {
   const [world, setWorld] = useState("ALL");
   const [category, setCategory] = useState("ALL");
   const [sort, setSort] = useState("FEATURED");
+  const [filtersOpen, setFiltersOpen] = useState(true);
   const filtered = useMemo(() => {
     const result = products.filter((p) => (world === "ALL" || p.world === world) && (category === "ALL" || p.category.toUpperCase() === category));
     if (sort === "PRICE LOW") return [...result].sort((a, b) => a.price - b.price);
@@ -221,13 +226,12 @@ function ShopPage({ onAdd }: { onAdd: (product: Product) => void }) {
   }, [world, category, sort]);
   return (
     <main className="page-shell">
-      <section className="page-intro"><p className="eyebrow"><span />WE UNION / SHOP</p><h1>ORIGINALS,<br />READY FOR YOUR STORY.</h1><p>Explore all three worlds, from ready-to-ship pieces to originals designed for personalization.</p></section>
+      <section className="page-intro page-intro--shop"><p className="eyebrow"><span />WE UNION / SHOP</p><h1>SHOP ALL</h1><p>Original collections and customizable pieces, built around the story you choose to carry.</p></section>
       <div className="shop-toolbar">
-        <div className="filter-group"><span>WORLD</span>{["ALL", "CREATE", "HONOR", "BELONG"].map((item) => <button className={world === item ? "active" : ""} onClick={() => setWorld(item)} key={item}>{item}</button>)}</div>
-        <div className="filter-group"><span>TYPE</span>{["ALL", "JERSEYS", "OUTERWEAR", "TOPS", "ACCESSORIES"].map((item) => <button className={category === item ? "active" : ""} onClick={() => setCategory(item)} key={item}>{item}</button>)}</div>
+        <div className="shop-toolbar-title"><strong>{filtered.length} Products</strong><button className="filter-toggle" type="button" onClick={() => setFiltersOpen(!filtersOpen)}>{filtersOpen ? "Hide Filters" : "Show Filters"}<Icon name={filtersOpen ? "minus" : "plus"} size={17} /></button></div>
         <label className="sort-select">SORT<select value={sort} onChange={(e) => setSort(e.target.value)}><option>FEATURED</option><option>PRICE LOW</option><option>PRICE HIGH</option></select></label>
       </div>
-      <div className="shop-count">{filtered.length} PIECES</div>
+      {filtersOpen && <div className="shop-filters"><div className="filter-group"><span>WORLD</span>{["ALL", "CREATE", "HONOR", "BELONG"].map((item) => <button className={world === item ? "active" : ""} onClick={() => setWorld(item)} key={item}>{item}</button>)}</div><div className="filter-group"><span>TYPE</span>{["ALL", "JERSEYS", "OUTERWEAR", "TOPS", "ACCESSORIES"].map((item) => <button className={category === item ? "active" : ""} onClick={() => setCategory(item)} key={item}>{item}</button>)}</div></div>}
       <div className="product-grid product-grid--shop">{filtered.map((product) => <ProductCard key={product.id} product={product} onAdd={onAdd} />)}</div>
     </main>
   );
@@ -255,7 +259,7 @@ function ProductPage({ id, onAdd }: { id: string; onAdd: (product: Product, opti
     <main className="pdp">
       <div className="breadcrumbs"><a href="/shop">SHOP</a><span>/</span><span>{product.world}</span><span>/</span><span>{product.name}</span></div>
       <section className="pdp-grid">
-        <div className="pdp-gallery"><ProductImage product={product} /><div className="pdp-detail-image"><img src="/reference/image14.jpeg" alt="Material and stitch detail" /></div></div>
+        <div className="pdp-gallery"><ProductImage product={product} /><div className="pdp-detail-image"><img src="/editorial/craft-detail.jpg" alt="Material and stitch detail" /></div></div>
         <div className="pdp-panel"><p className="eyebrow"><span />{product.world} / {product.tag}</p><h1>{product.name}</h1><p className="pdp-price">{formatPrice(product.price)}</p><p className="pdp-description">{product.description}</p>
           <fieldset><legend>COLOR <strong>{color}</strong></legend><div className="swatches">{product.colors.map((item, index) => <button type="button" key={item} className={`swatch swatch--${index} ${color === item ? "active" : ""}`} onClick={() => setColor(item)} aria-label={item} title={item} />)}</div></fieldset>
           <fieldset><legend>SIZE <a href="/policies/size-guide">SIZE GUIDE</a></legend><div className="size-grid">{["XS", "S", "M", "L", "XL", "2XL"].map((item) => <button type="button" className={size === item ? "active" : ""} onClick={() => setSize(item)} key={item}>{item}</button>)}</div></fieldset>
@@ -391,7 +395,7 @@ function StoriesPage({ detail }: { detail?: string }) {
 
 function CraftsmanshipPage() {
   const stages = [["01", "MATERIALS", "Fabrics are selected for hand feel, movement, decoration stability, and repeated wear."], ["02", "CONSTRUCTION", "Proportion, reinforced seams, and controlled tolerances build a reliable foundation."], ["03", "PERSONALIZATION", "Approved names, numbers, and marks are placed within defined safe fields."], ["04", "INSPECTION", "The finished piece is checked against the approved proof before release."]];
-  return <main><section className="craft-hero-page"><img src="/reference/image14.jpeg" alt="WE UNION craftsmanship process" /><div><p className="eyebrow"><span />CRAFTSMANSHIP</p><h1>DESIGNED WITH INTENT.<br />MADE WITH CARE.</h1><p>The quality of a personalized piece starts long before the first stitch.</p></div></section><section className="section process-list">{stages.map(([index, title, copy]) => <article key={title}><span>{index}</span><h2>{title}</h2><p>{copy}</p></article>)}</section><section className="inspection-callout"><div><p>QUALITY RECORD / WU-QC-04</p><h2>ONE PIECE.<br />MULTIPLE CHECKS.</h2></div><ul><li><Icon name="check" /> Match approved proof</li><li><Icon name="check" /> Verify placement and color</li><li><Icon name="check" /> Inspect seams and decoration</li><li><Icon name="check" /> Confirm packing and label</li></ul></section></main>;
+  return <main><section className="craft-hero-page"><img src="/editorial/craft-detail.jpg" alt="WE UNION craftsmanship process" /><div><p className="eyebrow"><span />CRAFTSMANSHIP</p><h1>DESIGNED WITH INTENT.<br />MADE WITH CARE.</h1><p>The quality of a personalized piece starts long before the first stitch.</p></div></section><section className="section process-list">{stages.map(([index, title, copy]) => <article key={title}><span>{index}</span><h2>{title}</h2><p>{copy}</p></article>)}</section><section className="inspection-callout"><div><p>QUALITY RECORD / WU-QC-04</p><h2>ONE PIECE.<br />MULTIPLE CHECKS.</h2></div><ul><li><Icon name="check" /> Match approved proof</li><li><Icon name="check" /> Verify placement and color</li><li><Icon name="check" /> Inspect seams and decoration</li><li><Icon name="check" /> Confirm packing and label</li></ul></section></main>;
 }
 
 function CommunityPage() {
