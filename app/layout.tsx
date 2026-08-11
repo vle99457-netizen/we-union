@@ -1,18 +1,22 @@
 import type { Metadata, Viewport } from "next";
+import "@fontsource/bebas-neue/400.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://we-union-store.site"),
+  metadataBase: new URL("https://we-union-store.vle99457.chatgpt.site"),
   title: {
-    default: "WE UNION — Gear Made Personal",
-    template: "%s — WE UNION",
+    default: "WE | Gear Made Personal",
+    template: "%s | WE",
   },
-  description: "Original sportswear built around identity, achievement, and belonging. Original first. Personal after.",
-  applicationName: "WE UNION",
-  keywords: ["WE UNION", "personalized sportswear", "original jerseys", "custom team apparel"],
+  description: "Premium American sportswear with original embroidery and considered personalization.",
+  applicationName: "WE",
+  keywords: ["WE", "custom sportswear", "embroidered apparel", "personalized jerseys", "team apparel"],
   openGraph: {
-    title: "WE UNION — Gear Made Personal",
-    description: "Original sportswear built around identity, achievement, and belonging.",
+    title: "WE | Gear Made Personal",
+    description: "Premium American sportswear with original embroidery and considered personalization.",
     type: "website",
   },
   other: {
@@ -27,7 +31,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0a0a0a",
+  themeColor: "#0b0c0e",
   colorScheme: "dark light",
 };
 

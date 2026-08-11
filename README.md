@@ -1,20 +1,19 @@
-# WE UNION
+# WE
 
-Document-driven, responsive commerce and personalization prototype for WE UNION. The implementation follows the V2.1 homepage reconstruction and customization-system requirements, with a US-English storefront and a bilingual operations prototype.
+Document-driven responsive commerce and personalization prototype for WE. The storefront follows the V2.4 information architecture and visual system for a premium American custom sportswear and embroidered apparel brand.
 
 ## What is implemented
 
-- Strict nine-module homepage and the required global navigation/footer system
-- 18 storefront page types plus a bilingual admin prototype
-- Shared product data for home, shop, PDP, cart, checkout, and search
-- Interactive four-step jersey customizer with live front/back/left/right preview
-- Name, number, color, size, patch, approved upload types, rights attestation, Design ID, proof version, and live price
-- Cart persistence, personalized line-item metadata, four-stage checkout, order confirmation, account, and order tracking
-- Shop filters/sort, site search, FAQ accordions, community lightbox, team roster builder, and CSV input
-- Obsidian / Warm Ivory / Union Gold design tokens, responsive layouts, keyboard focus, reduced-motion support, and 44px interaction targets
-- Hosted-payment placeholder only; this prototype never requests or stores card details
+- V2.4 nine-module homepage in the required order
+- Collection gateway at `/collections` and series product pages at `/collections/:series`
+- CREATE, HONOR, and BELONG world pages without a top-level SHOP navigation item
+- Product details, cart persistence, four-stage checkout, account, and order tracking
+- Four-step Create Yours studio with live garment preview, draft save, proof approval, and cart handoff
+- Team roster builder, search, FAQ accordions, community lightbox, policies, stories, and bilingual admin prototype
+- Bebas Neue display typography, Roboto interface typography, local WOFF2 assets, metallic-silver palette, visible focus, reduced motion, and responsive layouts
+- Hosted-payment placeholder only; the prototype never requests or stores card details
 
-The detailed document-to-code mapping is in [REQUIREMENTS_TRACEABILITY.md](./REQUIREMENTS_TRACEABILITY.md).
+The detailed document-to-code mapping is in [REQUIREMENTS_TRACEABILITY.md](./REQUIREMENTS_TRACEABILITY.md). The generated and curated design system is in [design-system/we/MASTER.md](./design-system/we/MASTER.md).
 
 ## Run locally
 
@@ -38,26 +37,28 @@ npm test
 | Experience | Route |
 | --- | --- |
 | Homepage | `/` |
-| Shop | `/shop` |
+| Collection gateway | `/collections` |
+| Series products | `/collections/water-ripple`, `/collections/black-rift` |
+| Product archive alias | `/shop` |
 | Worlds | `/world/create`, `/world/honor`, `/world/belong` |
-| Product detail | `/product/union-01-jersey` |
-| Create Yours | `/create-yours` |
-| Cart / checkout | `/cart`, `/checkout` |
-| Account / tracking | `/account`, `/track` |
+| Product detail | `/product/water-ripple-24-jersey` |
+| Create Yours | `/custom`, `/create-yours` |
+| Cart and checkout | `/cart`, `/checkout` |
+| Account and tracking | `/account`, `/track` |
 | Stories | `/stories`, `/stories/the-mark-we-carry` |
-| Craft / community / about | `/craftsmanship`, `/community`, `/about` |
-| Support / team orders / search | `/support`, `/team-orders`, `/search` |
+| Craft, community, about | `/craftsmanship`, `/community`, `/about` |
+| Support, team orders, search | `/support`, `/team-orders`, `/search` |
 | Policy and guides | `/policies/shipping` and related policy routes |
 | Admin prototype | `/admin` |
 
 ## Architecture
 
-- `app/data.ts` — the shared prototype catalog, stories, worlds, FAQ, and tracking states
-- `app/site-app.tsx` — route-specific experiences and all working storefront/admin interactions
-- `app/globals.css` — WE UNION tokens, editorial layouts, component styles, and breakpoints
-- `app/[...slug]/page.tsx` — dynamic route entry for the required page set
-- `public/reference/` — visual references supplied in the requirements document
+- `app/data.ts`: shared catalog, series, stories, worlds, FAQ, and tracking states
+- `app/site-app.tsx`: route-specific experiences and working storefront/admin interactions
+- `app/globals.css`: WE tokens, editorial layouts, components, motion, and breakpoints
+- `app/[...slug]/page.tsx`: dynamic route entry for the preserved page set
+- `public/reference/`: visual references supplied in the requirements document
 
 ## Production boundaries
 
-This is a high-fidelity functional prototype, not a production commerce backend. Before launch, connect approved systems for identity/MFA, CMS versioning, inventory, tax, hosted/tokenized payment, malware scanning, proof approval, production/QC, carrier tracking, notifications, analytics consent, and audit retention. Replace all editorial samples with licensed, approved final content and complete legal review.
+This is a high-fidelity functional prototype, not a production commerce backend. Before launch, connect approved systems for identity, CMS versioning, inventory, tax, hosted payment, malware scanning, proof approval, production and quality control, carrier tracking, notifications, analytics consent, and audit retention. Replace prototype editorial samples with licensed final content and complete legal review.
