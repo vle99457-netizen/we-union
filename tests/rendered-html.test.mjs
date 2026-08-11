@@ -153,3 +153,25 @@ test("routes every CREATE entry through the series gateway", async () => {
   assert.match(gateway, /SeriesFeature/);
   assert.doesNotMatch(gateway, /ProductCard|formatPrice|QUICK ADD|shop-filters/);
 });
+
+test("uses the reference-led series product listing without losing commerce actions", async () => {
+  const source = await readFile(new URL("../app/site-app.tsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  const collectionStart = source.indexOf("function CollectionPage");
+  const collectionEnd = source.indexOf("function ShopPage");
+  const collection = source.slice(collectionStart, collectionEnd);
+
+  assert.match(source, /function SeriesProductCard/);
+  assert.match(source, /series-product-figure--rear/);
+  assert.match(source, /series-product-figure--front/);
+  assert.match(source, />QUICK ADD</);
+  assert.match(source, />View Details</);
+  assert.match(source, /aria-pressed=\{saved\}/);
+  assert.match(collection, /series-product-grid/);
+  assert.match(collection, /SeriesProductCard/);
+  assert.match(collection, /series-catalog-menu/);
+  assert.doesNotMatch(collection, /product-grid product-grid--shop/);
+  assert.match(css, /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(css, /scroll-snap-type: x mandatory/);
+  assert.match(css, /@media \(hover: none\), \(pointer: coarse\)/);
+});

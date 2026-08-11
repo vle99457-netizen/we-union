@@ -6,12 +6,14 @@ import {
   ArrowRight,
   Check,
   Handbag,
+  Heart,
   List,
   MagnifyingGlass,
   Minus,
   Plus,
   ShieldCheck,
   Sparkle,
+  Star,
   Truck,
   User,
   X,
@@ -192,6 +194,56 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: (product: Pr
   );
 }
 
+function SeriesProductCard({ product, onAdd }: { product: Product; onAdd: (product: Product) => void }) {
+  const [saved, setSaved] = useState(false);
+  const availability = product.tag === "READY TO SHIP"
+    ? "In stock"
+    : product.customizable
+      ? "Made to order"
+      : product.tag === "LIMITED"
+        ? "Limited release"
+        : "Available";
+  const titleId = `series-product-${product.id}`;
+
+  return (
+    <article className="series-product-card" aria-labelledby={titleId}>
+      <div className="series-product-media">
+        <a className="series-product-visual-link" href={`/product/${product.id}`} aria-label={`View details for ${product.name}`}>
+          <span className="series-product-figure series-product-figure--rear" aria-hidden="true"><MediaImage src={product.image} alt="" style={{ objectPosition: product.imagePosition }} loading="lazy" /></span>
+          <span className="series-product-figure series-product-figure--front"><MediaImage src={product.image} alt={product.name} style={{ objectPosition: product.imagePosition }} loading="lazy" /></span>
+        </a>
+        <button
+          className={`series-save-button ${saved ? "saved" : ""}`}
+          type="button"
+          aria-pressed={saved}
+          aria-label={saved ? `Remove ${product.name} from saved items` : `Save ${product.name}`}
+          onClick={() => setSaved(!saved)}
+        >
+          <Heart aria-hidden="true" size={22} weight={saved ? "fill" : "regular"} />
+        </button>
+        <button className="series-quick-add" type="button" onClick={() => onAdd(product)} aria-label={`Quick add ${product.name} to cart`}>
+          <Handbag aria-hidden="true" size={20} weight="regular" />
+          <span>QUICK ADD</span>
+        </button>
+      </div>
+      <div className="series-product-details">
+        <div className="series-product-labels">
+          <span>{product.category.toUpperCase()}</span>
+          <strong>{product.tag}</strong>
+        </div>
+        <h3 id={titleId}><a href={`/product/${product.id}`}>{product.name}</a></h3>
+        <div className="series-product-rating" aria-label="No customer reviews yet">
+          <span aria-hidden="true">{Array.from({ length: 5 }).map((_, index) => <Star key={index} size={14} weight="regular" />)}</span>
+          <small>(0) REVIEWS</small>
+        </div>
+        <p className="series-product-price">{formatPrice(product.price)}</p>
+        <p className="series-product-availability">{availability}</p>
+        <a className="series-view-details" href={`/product/${product.id}`}>View Details</a>
+      </div>
+    </article>
+  );
+}
+
 function Newsletter() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -316,6 +368,7 @@ function CollectionPage({ slug, onAdd }: { slug: string; onAdd: (product: Produc
   const activeSeries = seriesData[key];
   const [category, setCategory] = useState("ALL");
   const [sort, setSort] = useState("FEATURED");
+  const listingTitle = `${activeSeries.edition.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase())} Series`;
   useEffect(() => {
     setCategory(queryChoice("type", PRODUCT_CATEGORIES, "ALL"));
     setSort(queryChoice("sort", PRODUCT_SORTS, "FEATURED"));
@@ -327,12 +380,32 @@ function CollectionPage({ slug, onAdd }: { slug: string; onAdd: (product: Produc
     return result;
   }, [category, key, sort]);
   return (
-    <main className="page-shell series-page">
-      <section className={`series-intro series-intro--${activeSeries.tone}`}><MediaImage src={activeSeries.image} alt="" style={{ objectPosition: activeSeries.position }} /><div><p>{activeSeries.edition}</p><h1>{activeSeries.name}</h1><span>{activeSeries.copy}</span></div></section>
-      <div className="shop-toolbar"><div className="shop-toolbar-title"><strong>{filtered.length} Products</strong></div><label className="sort-select">SORT<select name="series-sort" autoComplete="off" value={sort} onChange={(event) => { setSort(event.target.value); replaceQuery({ sort: event.target.value }, { sort: "FEATURED" }); }}><option>FEATURED</option><option>PRICE LOW</option><option>PRICE HIGH</option></select></label></div>
-      <div className="shop-filters"><div className="filter-group"><span>TYPE</span>{PRODUCT_CATEGORIES.map((item) => <button type="button" className={category === item ? "active" : ""} aria-pressed={category === item} onClick={() => { setCategory(item); replaceQuery({ type: item }, { type: "ALL" }); }} key={item}>{item}</button>)}</div></div>
-      <h2 className="sr-only">Products in {activeSeries.name}</h2>
-      <div className="product-grid product-grid--shop">{filtered.map((product) => <ProductCard key={product.id} product={product} onAdd={onAdd} />)}</div>
+    <main className="series-product-page">
+      <section className="series-catalog" id="series-products" aria-labelledby="series-catalog-title">
+        <header className="series-catalog-header">
+          <div>
+            <nav className="series-breadcrumb" aria-label="Breadcrumb"><a href="/collections">CREATE</a><span aria-hidden="true">/</span><span>{activeSeries.edition}</span></nav>
+            <h1 id="series-catalog-title">{listingTitle}</h1>
+            <p>{activeSeries.copy}</p>
+          </div>
+          <details className="series-catalog-menu">
+            <summary>View More <ArrowRight aria-hidden="true" size={21} weight="bold" /></summary>
+            <div className="series-catalog-panel">
+              <div>
+                <span>TYPE</span>
+                <div className="series-filter-options">{PRODUCT_CATEGORIES.map((item) => <button type="button" className={category === item ? "active" : ""} aria-pressed={category === item} onClick={() => { setCategory(item); replaceQuery({ type: item }, { type: "ALL" }); }} key={item}>{item}</button>)}</div>
+              </div>
+              <label>SORT BY<select name="series-sort" autoComplete="off" value={sort} onChange={(event) => { setSort(event.target.value); replaceQuery({ sort: event.target.value }, { sort: "FEATURED" }); }}><option>FEATURED</option><option>PRICE LOW</option><option>PRICE HIGH</option></select></label>
+              <p aria-live="polite">{filtered.length} {filtered.length === 1 ? "PRODUCT" : "PRODUCTS"}</p>
+            </div>
+          </details>
+        </header>
+        {filtered.length > 0 ? (
+          <div className="series-product-grid">{filtered.map((product) => <SeriesProductCard key={product.id} product={product} onAdd={onAdd} />)}</div>
+        ) : (
+          <div className="series-products-empty"><h2>No pieces in this filter.</h2><button type="button" onClick={() => { setCategory("ALL"); replaceQuery({ type: "ALL" }, { type: "ALL" }); }}>VIEW ALL PRODUCTS</button></div>
+        )}
+      </section>
     </main>
   );
 }
