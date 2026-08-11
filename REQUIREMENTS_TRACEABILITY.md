@@ -10,7 +10,7 @@ Status `Implemented` means the interaction works in the browser prototype. Statu
 | US-first storefront | Storefront language, USD pricing, delivery, and sizing patterns target US buyers | Implemented |
 | Required typography | Bebas Neue for display and Roboto for interface/body, with Noto Sans CJK SC fallback | Implemented |
 | Premium sportswear palette | Obsidian, Graphite, Warm White, Metallic Silver, Steel, and rare blue/red accents | Implemented |
-| Remove top-level SHOP patterns | Primary navigation is CREATE, HONOR, BELONG, CREATE YOURS, STORIES, ABOUT | Implemented |
+| Remove top-level SHOP patterns | Primary navigation is CREATE, HONOR, BELONG, CREATE YOURS, STORIES, ABOUT; CREATE opens `/collections` | Implemented |
 | Mobile navigation | Menu, centered WE mark, Search, Cart, grouped drawer, and Escape close | Implemented |
 | Announcement | Original Design, Personalized for You, Made with Purpose | Implemented |
 
@@ -33,6 +33,7 @@ Status `Implemented` means the interaction works in the browser prototype. Statu
 | Requirement | Implementation | Status |
 | --- | --- | --- |
 | Collection gateway | `/collections` shows one large series module per row | Implemented |
+| CREATE entry behavior | Header, mobile navigation, homepage world card, footer, and legacy `/world/create` open the series gateway | Implemented |
 | Series product list | `/collections/:series` filters only products from the current series | Implemented |
 | Existing routes retained | `/shop` and `/create-yours` remain functional aliases | Implemented |
 | Shared product data | Series, worlds, PDP, search, cart, and checkout share `app/data.ts` | Implemented |

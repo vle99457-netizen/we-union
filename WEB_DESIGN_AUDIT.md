@@ -15,7 +15,7 @@ This audit covers the redesign requirements in `WE 网站需求文档 V2.4`, the
 | Typography | Pass | Self-hosted Bebas Neue headings and Roboto interface/body fonts with CJK fallbacks. |
 | Color system | Pass | Near-black, graphite, warm white, metallic silver, and restrained signal blue/red tokens. |
 | Homepage structure | Pass | Automated source-order gate verifies Hero, Three Worlds, Featured Series, Create Yours, Craftsmanship, four Promises, Stories, Community, and Newsletter/Footer. |
-| Collections | Pass | `/collections` and `/collections/:series` are primary; `/shop` remains a compatibility archive. |
+| Collections | Pass | CREATE opens `/collections`, which renders one full-width visual series per row; `/collections/:series` contains the product list. |
 | Existing functionality | Pass | Product, customizer, cart, checkout, account, tracking, stories, support, team order, policy, search, and admin routes render successfully. |
 | Responsive behavior | Pass | Mobile-first layout coverage includes 320/375, 768, 1024, and wide 1440 behavior through compact, tablet, and desktop rules. |
 | Motion | Pass | Purposeful hero and product motion uses transform/opacity; reduced-motion preferences suppress nonessential animation. |

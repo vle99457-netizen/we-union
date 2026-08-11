@@ -139,3 +139,17 @@ test("keeps the required homepage module order", async () => {
     previous = current;
   }
 });
+
+test("routes every CREATE entry through the series gateway", async () => {
+  const source = await readFile(new URL("../app/site-app.tsx", import.meta.url), "utf8");
+  const gatewayStart = source.indexOf("function CollectionsGatewayPage");
+  const gatewayEnd = source.indexOf("function CollectionPage");
+  const gateway = source.slice(gatewayStart, gatewayEnd);
+
+  assert.match(source, /\["CREATE", "\/collections"\]/);
+  assert.match(source, /slug === "create" \? "\/collections"/);
+  assert.match(source, /if \(key === "create"\) return <CollectionsGatewayPage \/>/);
+  assert.match(gateway, /SERIES_SLUGS\.map/);
+  assert.match(gateway, /SeriesFeature/);
+  assert.doesNotMatch(gateway, /ProductCard|formatPrice|QUICK ADD|shop-filters/);
+});

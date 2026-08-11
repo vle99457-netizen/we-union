@@ -6,7 +6,7 @@ Document-driven responsive commerce and personalization prototype for WE. The st
 
 - V2.4 nine-module homepage in the required order
 - Collection gateway at `/collections` and series product pages at `/collections/:series`
-- CREATE, HONOR, and BELONG world pages without a top-level SHOP navigation item
+- CREATE opens the series gateway directly; HONOR and BELONG retain their editorial world pages
 - Product details, cart persistence, four-stage checkout, account, and order tracking
 - Four-step Create Yours studio with live garment preview, draft save, proof approval, and cart handoff
 - Team roster builder, search, FAQ accordions, community lightbox, policies, stories, and bilingual admin prototype
@@ -40,7 +40,8 @@ npm test
 | Collection gateway | `/collections` |
 | Series products | `/collections/water-ripple`, `/collections/black-rift` |
 | Product archive alias | `/shop` |
-| Worlds | `/world/create`, `/world/honor`, `/world/belong` |
+| CREATE gateway alias | `/world/create` → series gateway |
+| Worlds | `/world/honor`, `/world/belong` |
 | Product detail | `/product/water-ripple-24-jersey` |
 | Create Yours | `/custom`, `/create-yours` |
 | Cart and checkout | `/cart`, `/checkout` |

@@ -43,6 +43,7 @@ const PRODUCT_CATEGORIES = ["ALL", "JERSEYS", "OUTERWEAR", "TOPS", "ACCESSORIES"
 const PRODUCT_SORTS = ["FEATURED", "PRICE LOW", "PRICE HIGH"] as const;
 const PRODUCT_WORLDS = ["ALL", "CREATE", "HONOR", "BELONG"] as const;
 const ACCOUNT_TABS = ["ORDERS", "SAVED DESIGNS", "PROFILE", "ADDRESSES", "RETURNS"] as const;
+const SERIES_SLUGS = Object.keys(seriesData) as SeriesSlug[];
 
 function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   const icons = { menu: List, search: MagnifyingGlass, user: User, bag: Handbag, arrow: ArrowRight, plus: Plus, minus: Minus, close: X, check: Check, sparkle: Sparkle, shield: ShieldCheck, truck: Truck };
@@ -89,7 +90,7 @@ function Header({ cartCount }: { cartCount: number }) {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const drawerCloseRef = useRef<HTMLButtonElement>(null);
   const nav = [
-    ["CREATE", "/world/create"],
+    ["CREATE", "/collections"],
     ["HONOR", "/world/honor"],
     ["BELONG", "/world/belong"],
     ["CREATE YOURS", "/custom"],
@@ -146,7 +147,7 @@ function Header({ cartCount }: { cartCount: number }) {
 function Footer() {
   const groups = [
     ["COLLECTIONS", [["All Series", "/collections"], ["Water Ripple", "/collections/water-ripple"], ["Black Rift", "/collections/black-rift"]]],
-    ["WORLDS", [["Create", "/world/create"], ["Honor", "/world/honor"], ["Belong", "/world/belong"]]],
+    ["WORLDS", [["Create", "/collections"], ["Honor", "/world/honor"], ["Belong", "/world/belong"]]],
     ["CUSTOMIZE", [["Create Yours", "/custom"], ["Team Orders", "/team-orders"], ["Saved Designs", "/account"]]],
     ["EXPLORE", [["Stories", "/stories"], ["Community", "/community"], ["Craftsmanship", "/craftsmanship"]]],
     ["SUPPORT", [["Help & FAQ", "/support"], ["Order Tracking", "/track"], ["Shipping", "/policies/shipping"], ["Returns", "/policies/returns"]]],
@@ -209,15 +210,16 @@ function SeriesFeature({ slug, compact = false }: { slug: SeriesSlug; compact?: 
   const series = seriesData[slug];
   const selected = products.filter((product) => product.series === slug).slice(0, 3);
   const SeriesHeading = compact ? "h3" : "h2";
+  const headingId = `series-${slug}-title`;
   return (
-    <article className={`series-showcase series-showcase--${series.tone} ${compact ? "series-showcase--compact" : ""}`}>
+    <article className={`series-showcase series-showcase--${series.tone} ${compact ? "series-showcase--compact" : ""}`} aria-labelledby={headingId} data-series={slug}>
       <MediaImage className="series-showcase-background" src={series.image} alt="" style={{ objectPosition: series.position }} loading="lazy" />
       <div className="series-showcase-shade" />
       <div className="series-showcase-copy">
         <p>{series.edition}</p>
-        <SeriesHeading>{series.name}</SeriesHeading>
+        <SeriesHeading id={headingId}>{series.name}</SeriesHeading>
         <span>{series.copy}</span>
-        <a className={`button ${series.tone === "dark" ? "button--light" : "button--dark"}`} href={`/collections/${slug}`}>EXPLORE SERIES <Icon name="arrow" /></a>
+        <a className={`button ${series.tone === "dark" ? "button--light" : "button--dark"}`} href={`/collections/${slug}`}>EXPLORE THE SERIES <Icon name="arrow" /></a>
       </div>
       <div className="series-products" aria-hidden="true">
         {selected.map((product) => <MediaImage key={product.id} src={product.image} alt="" style={{ objectPosition: product.imagePosition }} loading="lazy" />)}
@@ -251,7 +253,7 @@ function HomePage() {
       <section className="section worlds-section">
         <SectionTitle title="THREE WORLDS. ONE POINT OF VIEW." copy="Create a mark. Honor a story. Belong to something larger." />
         <div className="world-grid">
-          {Object.entries(worlds).map(([slug, world]) => <a className="world-card" href={`/world/${slug}`} key={world.name}><MediaImage src={world.image} alt="" style={{ objectPosition: world.position }} loading="lazy" /><div className="world-shade" /><div><h3>{world.name}</h3><p>{world.kicker}</p><span className="text-link">ENTER WORLD <Icon name="arrow" /></span></div></a>)}
+          {Object.entries(worlds).map(([slug, world]) => <a className="world-card" href={slug === "create" ? "/collections" : `/world/${slug}`} key={world.name}><MediaImage src={world.image} alt="" style={{ objectPosition: world.position }} loading="lazy" /><div className="world-shade" /><div><h3>{world.name}</h3><p>{world.kicker}</p><span className="text-link">{slug === "create" ? "EXPLORE SERIES" : "ENTER WORLD"} <Icon name="arrow" /></span></div></a>)}
         </div>
       </section>
 
@@ -287,7 +289,7 @@ function HomePage() {
 }
 
 function CollectionsGatewayPage() {
-  return <main className="collections-page"><section className="collections-intro"><p className="eyebrow"><span />FEATURED SERIES</p><h1>BUILT AROUND<br />A POINT OF VIEW.</h1><p>Start with a series. Each one carries its own line, texture, and way to make the piece personal.</p></section><div className="collections-stack"><SeriesFeature slug="water-ripple" /><SeriesFeature slug="black-rift" /></div></main>;
+  return <main className="collections-page"><section className="collections-intro"><p className="eyebrow"><span />CREATE / ORIGINAL SERIES</p><h1>CHOOSE A SERIES.<br />MAKE IT YOURS.</h1><p>Each row presents one distinct visual language with its representative pieces. Enter a series to see every available product.</p></section><div className="collections-stack">{SERIES_SLUGS.map((slug) => <SeriesFeature key={slug} slug={slug} />)}</div></main>;
 }
 
 function CollectionPage({ slug, onAdd }: { slug: string; onAdd: (product: Product) => void }) {
@@ -348,6 +350,7 @@ function ShopPage({ onAdd }: { onAdd: (product: Product) => void }) {
 
 function WorldPage({ slug, onAdd }: { slug: string; onAdd: (product: Product) => void }) {
   const key = (slug in worlds ? slug : "create") as keyof typeof worlds;
+  if (key === "create") return <CollectionsGatewayPage />;
   const world = worlds[key];
   const selected = products.filter((p) => p.world === world.name);
   return (
