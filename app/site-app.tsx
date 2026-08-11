@@ -85,7 +85,7 @@ function Logo() {
   );
 }
 
-function Header({ cartCount }: { cartCount: number }) {
+function Header({ cartCount, seriesGateway = false }: { cartCount: number; seriesGateway?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const drawerCloseRef = useRef<HTMLButtonElement>(null);
@@ -93,7 +93,7 @@ function Header({ cartCount }: { cartCount: number }) {
     ["CREATE", "/collections"],
     ["HONOR", "/world/honor"],
     ["BELONG", "/world/belong"],
-    ["CREATE YOURS", "/custom"],
+    ["CUSTOM", "/custom"],
     ["STORIES", "/stories"],
     ["ABOUT", "/about"],
   ];
@@ -111,23 +111,24 @@ function Header({ cartCount }: { cartCount: number }) {
   }, [menuOpen]);
   return (
     <>
-      <div className="utility-bar">
+      {!seriesGateway && <div className="utility-bar">
         <span>UNITED STATES / USD</span>
         <nav aria-label="Utility navigation"><a href="/support">Help</a><a href="/track">Order Status</a><a href="/account">Join Us</a><a href="/account">Sign In</a></nav>
-      </div>
-      <header className="site-header">
+      </div>}
+      <header className={`site-header ${seriesGateway ? "site-header--series-gateway" : ""}`}>
         <button ref={menuButtonRef} className="icon-button mobile-only" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Icon name="menu" /></button>
         <Logo />
         <nav className="desktop-nav" aria-label="Primary navigation">
-          {nav.map(([label, href]) => <a className={href === "/custom" ? "nav-accent" : ""} key={href} href={href}>{label}</a>)}
+          {nav.map(([label, href]) => <a className={href === "/custom" && !seriesGateway ? "nav-accent" : ""} key={href} href={href}>{label}{seriesGateway && <span className="nav-chevron" aria-hidden="true" />}</a>)}
         </nav>
         <div className="header-tools">
-          <a className="search-pill" href="/search" aria-label="Search"><Icon name="search" /><span>Search</span></a>
+          {seriesGateway && <span className="gateway-locale" aria-label="United States, English">US EN<span className="nav-chevron" aria-hidden="true" /></span>}
+          <a className={`search-pill ${seriesGateway ? "search-pill--icon" : ""}`} href="/search" aria-label="Search"><Icon name="search" />{!seriesGateway && <span>Search</span>}</a>
           <a className="icon-button desktop-only" href="/account" aria-label="Account"><Icon name="user" /></a>
           <a className="icon-button bag-button" href="/cart" aria-label={`Cart with ${cartCount} items`}><Icon name="bag" />{cartCount > 0 && <span>{cartCount}</span>}</a>
         </div>
       </header>
-      <div className="announcement" aria-label="Brand promise"><strong>ORIGINAL DESIGN</strong><span>PERSONALIZED FOR YOU</span><span>MADE WITH PURPOSE</span></div>
+      {!seriesGateway && <div className="announcement" aria-label="Brand promise"><strong>ORIGINAL DESIGN</strong><span>PERSONALIZED FOR YOU</span><span>MADE WITH PURPOSE</span></div>}
       {menuOpen && (
         <div className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="drawer-top"><Logo /><button ref={drawerCloseRef} className="icon-button" onClick={() => { setMenuOpen(false); requestAnimationFrame(() => menuButtonRef.current?.focus()); }} aria-label="Close menu"><Icon name="close" /></button></div>
@@ -206,11 +207,29 @@ function Newsletter() {
   );
 }
 
-function SeriesFeature({ slug, compact = false }: { slug: SeriesSlug; compact?: boolean }) {
+function SeriesFeature({ slug, compact = false, gateway = false, index = 0 }: { slug: SeriesSlug; compact?: boolean; gateway?: boolean; index?: number }) {
   const series = seriesData[slug];
   const selected = products.filter((product) => product.series === slug).slice(0, 3);
   const SeriesHeading = compact ? "h3" : "h2";
   const headingId = `series-${slug}-title`;
+  if (gateway) {
+    const gatewayImages = slug === "water-ripple"
+      ? ["/products/ivory-signal-17.jpg", "/products/ivory-signal-17.jpg", "/products/ivory-signal-17.jpg"]
+      : ["/products/black-rift-24.jpg", "/products/legacy-34.jpg", "/products/night-form-01.jpg"];
+    return (
+      <article className={`series-gateway-card series-gateway-card--${series.tone}`} aria-labelledby={headingId} data-series={slug}>
+        <div className="series-gateway-copy">
+          <p>{String(index + 1).padStart(2, "0")} / {series.edition}</p>
+          <h2 id={headingId}>{series.name}</h2>
+          <span>{series.copy}</span>
+          <a className="series-gateway-cta" href={`/collections/${slug}`}>EXPLORE THE SERIES</a>
+        </div>
+        <div className="series-gateway-products" aria-hidden="true">
+          {gatewayImages.map((image, productIndex) => <span className="series-gateway-garment" key={`${slug}-${productIndex}`}><MediaImage src={image} alt="" loading={index === 0 ? "eager" : "lazy"} fetchPriority={index === 0 && productIndex === 1 ? "high" : undefined} /></span>)}
+        </div>
+      </article>
+    );
+  }
   return (
     <article className={`series-showcase series-showcase--${series.tone} ${compact ? "series-showcase--compact" : ""}`} aria-labelledby={headingId} data-series={slug}>
       <MediaImage className="series-showcase-background" src={series.image} alt="" style={{ objectPosition: series.position }} loading="lazy" />
@@ -289,7 +308,7 @@ function HomePage() {
 }
 
 function CollectionsGatewayPage() {
-  return <main className="collections-page"><section className="collections-intro"><p className="eyebrow"><span />CREATE / ORIGINAL SERIES</p><h1>CHOOSE A SERIES.<br />MAKE IT YOURS.</h1><p>Each row presents one distinct visual language with its representative pieces. Enter a series to see every available product.</p></section><div className="collections-stack">{SERIES_SLUGS.map((slug) => <SeriesFeature key={slug} slug={slug} />)}</div></main>;
+  return <main className="collections-page"><h1 className="sr-only">CREATE SERIES</h1><div className="collections-stack">{SERIES_SLUGS.map((slug, index) => <SeriesFeature key={slug} slug={slug} gateway index={index} />)}</div></main>;
 }
 
 function CollectionPage({ slug, onAdd }: { slug: string; onAdd: (product: Product) => void }) {
@@ -626,6 +645,7 @@ export default function SiteApp({ path = "/" }: { path?: string }) {
     setToast(`${product.name} added to cart`); setTimeout(() => setToast(""), 2600);
   }
   const segments = path.split("/").filter(Boolean);
+  const isSeriesGateway = (segments[0] === "collections" && !segments[1]) || (segments[0] === "world" && (segments[1] || "create") === "create");
   let page: React.ReactNode;
   if (!segments.length) page = <HomePage />;
   else if (segments[0] === "collections" && segments[1]) page = <CollectionPage slug={segments[1]} onAdd={addToCart} />;
@@ -648,5 +668,5 @@ export default function SiteApp({ path = "/" }: { path?: string }) {
   else if (segments[0] === "policies") page = <PolicyPage type={segments[1] || "shipping"} />;
   else if (segments[0] === "admin") return <><AdminPage />{toast && <div className="toast" role="status" aria-live="polite"><Icon name="check" />{toast}<a href="/cart">VIEW CART</a></div>}</>;
   else page = <NotFoundPage />;
-  return <><a className="skip-link" href="#main-content">Skip to main content</a><Header cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} /><div id="main-content">{page}</div><Footer />{toast && <div className="toast" role="status" aria-live="polite"><Icon name="check" />{toast}<a href="/cart">VIEW CART</a></div>}</>;
+  return <><a className="skip-link" href="#main-content">Skip to main content</a><Header cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} seriesGateway={isSeriesGateway} /><div id="main-content">{page}</div><Footer />{toast && <div className="toast" role="status" aria-live="polite"><Icon name="check" />{toast}<a href="/cart">VIEW CART</a></div>}</>;
 }
