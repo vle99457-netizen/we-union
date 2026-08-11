@@ -34,7 +34,8 @@ Status `Implemented` means the interaction works in the browser prototype. Statu
 | --- | --- | --- |
 | Collection gateway | `/collections` shows one large series module per row | Implemented |
 | CREATE entry behavior | Header, mobile navigation, homepage world card, footer, and legacy `/world/create` open the series gateway | Implemented |
-| Series product list | `/collections/:series` filters only products from the current series | Implemented |
+| Series product list | `/collections/:series` filters only products from the current series and presents four large paired-view cards on desktop, two on tablet, and a contained mobile scroll-snap rail | Implemented |
+| Product-list actions | View Details remains primary; saved state, truthful availability, Quick Add, URL-backed filters, and sorting remain keyboard and touch accessible | Implemented |
 | Existing routes retained | `/shop` and `/create-yours` remain functional aliases | Implemented |
 | Shared product data | Series, worlds, PDP, search, cart, and checkout share `app/data.ts` | Implemented |
 | Product detail | Color, size, care, delivery, customization entry, and add to cart | Implemented |
