@@ -1,0 +1,115 @@
+openapi: 3.1.0
+info:
+  title: WE Commerce and Personalization API
+  version: 3.0.0-draft
+  description: Contract boundary for discovery, city tags, personalization, cart and order timeline.
+servers:
+  - url: /api
+paths:
+  /cities:
+    get:
+      summary: Search active WE editorial city tags
+      parameters:
+        - in: query
+          name: query
+          schema: { type: string, minLength: 1, maxLength: 80 }
+      responses:
+        '200':
+          description: City suggestions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/City' }
+  /products:
+    get:
+      summary: Query published products
+      parameters:
+        - in: query
+          name: city
+          schema: { type: string }
+        - in: query
+          name: series
+          schema: { type: string }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200':
+          description: Product page
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, total]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/ProductSummary' } }
+                  total: { type: integer, minimum: 0 }
+                  next_cursor: { type: [string, 'null'] }
+  /designs:
+    post:
+      summary: Create a personalization design
+      responses:
+        '201':
+          description: Design created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Design' }
+  /designs/{id}:
+    patch:
+      summary: Autosave a design using optimistic concurrency
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: header
+          name: If-Match
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Saved }
+        '409': { description: Version conflict }
+  /orders/{id}/timeline:
+    get:
+      summary: Return customer-safe order, production, QC and shipment events
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Authorized timeline }
+        '404': { description: Not found or not authorized }
+components:
+  schemas:
+    City:
+      type: object
+      required: [id, slug, display_name]
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        display_name: { type: string }
+        state_code: { type: string }
+    ProductSummary:
+      type: object
+      required: [id, slug, title, price]
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        title: { type: string }
+        price: { type: number }
+        city_tags: { type: array, items: { type: string } }
+    Design:
+      type: object
+      required: [id, proof_version, version]
+      properties:
+        id: { type: string }
+        proof_version: { type: integer, minimum: 1 }
+        version: { type: integer, minimum: 1 }
+        review_status:
+          enum: [draft, submitted, needs_changes, approved, rejected]
