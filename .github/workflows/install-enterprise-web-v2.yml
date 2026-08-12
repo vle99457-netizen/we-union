@@ -1,0 +1,53 @@
+name: Install Enterprise Web V2 Skills
+
+on:
+  push:
+    branches:
+      - agent/enterprise-web-orchestrator-v2
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: agent/enterprise-web-orchestrator-v2
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Anthropic frontend-design
+        run: npx -y skills add https://github.com/anthropics/skills --skill "frontend-design" --agent claude-code --yes --copy
+
+      - name: Install Vercel React Best Practices
+        run: npx -y skills add https://github.com/vercel-labs/agent-skills --skill "vercel-react-best-practices" --agent claude-code --yes --copy
+
+      - name: Validate installed skills
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .claude/skills/frontend-design/SKILL.md
+          test -f .claude/skills/vercel-react-best-practices/SKILL.md
+          grep -q '^name: frontend-design$' .claude/skills/frontend-design/SKILL.md
+          grep -q '^name: vercel-react-best-practices$' .claude/skills/vercel-react-best-practices/SKILL.md
+
+      - name: Commit installed skills
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .claude/skills/frontend-design .claude/skills/vercel-react-best-practices
+          if git diff --cached --quiet; then
+            echo "No skill changes to commit"
+          else
+            git commit -m "install enterprise website V2 skills"
+            git push origin HEAD:agent/enterprise-web-orchestrator-v2
+          fi
