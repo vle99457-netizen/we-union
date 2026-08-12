@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-12T01:44:18Z",
+  "title": "Design System: WE",
+  "extensions": {
+    "colorMeta": {
+      "obsidian": {
+        "role": "primary",
+        "displayName": "Obsidian",
+        "tonalRamp": ["#0A0A0A", "#202020", "#383838", "#555555", "#747474", "#969696", "#BDBDBD", "#F0F0F0"]
+      },
+      "warm-ivory": {
+        "role": "neutral",
+        "displayName": "Warm Ivory",
+        "tonalRamp": ["#272622", "#44423C", "#625F57", "#817D73", "#A19D92", "#C3BFB5", "#E1DED5", "#F7F4ED"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Editorial Paper",
+        "tonalRamp": ["#292825", "#484640", "#67645C", "#87837A", "#A8A49A", "#CAC6BD", "#E9E6DE", "#FFFDF8"]
+      },
+      "we-gold": {
+        "role": "secondary",
+        "displayName": "WE Gold",
+        "tonalRamp": ["#2C2113", "#46351F", "#60492B", "#7C5E36", "#9A7442", "#B59162", "#D2B387", "#F1DCB8"]
+      },
+      "functional-gold": {
+        "role": "secondary",
+        "displayName": "Functional Gold",
+        "tonalRamp": ["#24190D", "#382814", "#4D371D", "#614625", "#76552D", "#957344", "#B99768", "#E4CEAB"]
+      },
+      "light-gold": {
+        "role": "secondary",
+        "displayName": "Light Gold",
+        "tonalRamp": ["#302817", "#4C3F25", "#685833", "#867244", "#A58D5C", "#C5A879", "#DDC79F", "#F4E8CF"]
+      },
+      "steel": {
+        "role": "neutral",
+        "displayName": "Steel",
+        "tonalRamp": ["#1C1C1C", "#303030", "#464646", "#5B5B5B", "#737373", "#919191", "#B5B5B5", "#E7E7E7"]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Structural Rule",
+        "tonalRamp": ["#242421", "#41413D", "#5F5F59", "#7E7E77", "#9E9E97", "#BEBEB8", "#D8D8D4", "#F2F2EF"]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": ["#262626", "#444444", "#636363", "#838383", "#A4A4A4", "#C6C6C6", "#E5E5E5", "#FFFFFF"]
+      },
+      "water-cobalt": {
+        "role": "tertiary",
+        "displayName": "Water Cobalt",
+        "tonalRamp": ["#07182C", "#0B294B", "#103A6B", "#174A8B", "#376AA8", "#668FC2", "#9EB9D9", "#DDE9F5"]
+      },
+      "product-field": {
+        "role": "neutral",
+        "displayName": "Product Field",
+        "tonalRamp": ["#25241F", "#414039", "#5E5C54", "#7C7A70", "#9B988F", "#BBB8AF", "#D8D5CD", "#F2F0EA"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Campaign Display",
+        "purpose": "Hero declarations and the largest identity moments only."
+      },
+      "headline": {
+        "displayName": "Editorial Headline",
+        "purpose": "Section statements anchoring asymmetric compositions."
+      },
+      "title": {
+        "displayName": "Condensed Title",
+        "purpose": "Compact feature, stage, and confirmation headings."
+      },
+      "body": {
+        "displayName": "Functional Body",
+        "purpose": "Product truth, forms, explanations, and long reading."
+      },
+      "label": {
+        "displayName": "Editorial Label",
+        "purpose": "Navigation, metadata, controls, and genuine eyebrows."
+      }
+    },
+    "shadows": [
+      {
+        "name": "studio-preview-lift",
+        "value": "0 30px 55px rgba(10, 10, 10, 0.14)",
+        "purpose": "Raises the interactive garment canvas above its neutral working field."
+      },
+      {
+        "name": "search-panel-lift",
+        "value": "0 18px 32px rgba(10, 10, 10, 0.10)",
+        "purpose": "Separates the expanded search panel from page content."
+      },
+      {
+        "name": "transient-toast-lift",
+        "value": "0 20px 40px rgba(10, 10, 10, 0.22)",
+        "purpose": "Signals temporary undo feedback above the cart view."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-fast",
+        "value": "180ms ease",
+        "purpose": "Control color, border, icon, and selected-state changes."
+      },
+      {
+        "name": "preview-state",
+        "value": "320ms cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Front, back, and detail preview transformations."
+      },
+      {
+        "name": "featured-series-reveal",
+        "value": "720ms cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "The single visible-by-default authored entrance moment."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-desktop",
+        "value": "1180px"
+      },
+      {
+        "name": "tablet-and-menu",
+        "value": "960px"
+      },
+      {
+        "name": "mobile",
+        "value": "700px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Obsidian Button",
+      "kind": "button",
+      "refersTo": "button-dark",
+      "description": "The decisive command on light editorial and commerce surfaces.",
+      "html": "<button class=\"ds-btn-dark\" type=\"button\">CREATE YOURS <span aria-hidden=\"true\">→</span></button>",
+      "css": ".ds-btn-dark { min-height: 48px; padding: 13px 20px; display: inline-flex; align-items: center; justify-content: center; gap: 14px; color: #fff; background: #0a0a0a; border: 1px solid #0a0a0a; border-radius: 0; font: 700 .78rem/1 Roboto, Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; transition: color 180ms ease, background-color 180ms ease, transform 180ms ease; } .ds-btn-dark:hover { color: #0a0a0a; background: #c5a879; transform: translateY(-2px); } .ds-btn-dark:focus-visible { outline: 3px solid #0a0a0a; outline-offset: 3px; }"
+    },
+    {
+      "name": "WE Gold Button",
+      "kind": "button",
+      "refersTo": "button-gold",
+      "description": "The highest-energy campaign action over an Obsidian field.",
+      "html": "<button class=\"ds-btn-gold\" type=\"button\">EXPLORE ORIGINALS <span aria-hidden=\"true\">→</span></button>",
+      "css": ".ds-btn-gold { min-height: 48px; padding: 13px 20px; display: inline-flex; align-items: center; justify-content: center; gap: 14px; color: #0a0a0a; background: #c5a879; border: 1px solid #c5a879; border-radius: 0; font: 700 .78rem/1 Roboto, Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; transition: background-color 180ms ease, transform 180ms ease; } .ds-btn-gold:hover { background: #fff; transform: translateY(-2px); } .ds-btn-gold:focus-visible { outline: 3px solid #f7f4ed; outline-offset: 3px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "A secondary action that preserves the flat, sharp hierarchy.",
+      "html": "<button class=\"ds-btn-outline\" type=\"button\">VIEW SERIES</button>",
+      "css": ".ds-btn-outline { min-height: 48px; padding: 13px 20px; color: #0a0a0a; background: transparent; border: 1px solid #0a0a0a; border-radius: 0; font: 700 .78rem/1 Roboto, Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; transition: color 180ms ease, background-color 180ms ease; } .ds-btn-outline:hover { color: #fff; background: #0a0a0a; } .ds-btn-outline:focus-visible { outline: 3px solid #0a0a0a; outline-offset: 3px; }"
+    },
+    {
+      "name": "Editorial Text Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "A quiet squared field for product, team, account, and support workflows.",
+      "html": "<label class=\"ds-field\"><span>PLAYER NAME</span><input type=\"text\" value=\"MORGAN\" aria-label=\"Player name\"></label>",
+      "css": ".ds-field { display: grid; gap: 8px; color: #666; font: 700 .7rem/1.3 Roboto, Arial, sans-serif; letter-spacing: .06em; } .ds-field input { min-height: 50px; padding: 12px; color: #0a0a0a; background: #fffdf8; border: 1px solid #d8d8d4; border-radius: 0; font: 400 1rem/1.4 Roboto, Arial, sans-serif; } .ds-field input:hover { border-color: #9a7442; } .ds-field input:focus-visible { border-color: #0a0a0a; outline: 3px solid #0a0a0a; outline-offset: 3px; }"
+    },
+    {
+      "name": "Primary Navigation",
+      "kind": "nav",
+      "description": "The centered WE world navigation on an opaque Obsidian bar.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Primary\"><a class=\"ds-nav-active\" href=\"#\">CREATE</a><a href=\"#\">HONOR</a><a href=\"#\">BELONG</a><a href=\"#\">CREATE YOURS</a></nav>",
+      "css": ".ds-nav { min-height: 76px; padding: 0 28px; display: flex; align-items: center; justify-content: center; gap: 30px; color: #fff; background: #0a0a0a; } .ds-nav a { position: relative; min-height: 44px; display: inline-flex; align-items: center; color: inherit; text-decoration: none; font: 700 .73rem/1 Roboto, Arial, sans-serif; letter-spacing: .09em; } .ds-nav a::after { position: absolute; right: 0; bottom: 7px; left: 0; height: 1px; background: #c5a879; content: ''; transform: scaleX(0); transform-origin: right; transition: transform 180ms ease; } .ds-nav a:hover::after, .ds-nav .ds-nav-active::after { transform: scaleX(1); transform-origin: left; } .ds-nav a:focus-visible { outline: 3px solid #f7f4ed; outline-offset: 3px; }"
+    },
+    {
+      "name": "Image-first Product Card",
+      "kind": "card",
+      "refersTo": "product-image",
+      "description": "Commerce metadata attached directly to an unrounded product field without generic chrome.",
+      "html": "<article class=\"ds-product\"><a class=\"ds-product-image\" href=\"#\" aria-label=\"View Water Ripple Game Jersey\"><span>WE / WR–01</span><b aria-hidden=\"true\">↗</b></a><div class=\"ds-product-meta\"><div><h3>WATER RIPPLE GAME JERSEY</h3><p>Cobalt / Ivory</p></div><strong>$99*</strong></div></article>",
+      "css": ".ds-product { width: 280px; color: #0a0a0a; font-family: Roboto, Arial, sans-serif; } .ds-product-image { aspect-ratio: 1/1.12; padding: 18px; display: flex; align-items: flex-end; justify-content: space-between; color: #0a0a0a; background: #e9e7df; border-radius: 0; text-decoration: none; overflow: hidden; } .ds-product-image span { font: 700 .68rem/1.3 Roboto, Arial, sans-serif; letter-spacing: .1em; } .ds-product-image b { width: 44px; height: 44px; display: grid; place-items: center; color: #fff; background: #0a0a0a; font-size: 1.2rem; transition: color 180ms ease, background-color 180ms ease; } .ds-product-image:hover b { color: #0a0a0a; background: #c5a879; } .ds-product-image:focus-visible { outline: 3px solid #0a0a0a; outline-offset: 3px; } .ds-product-meta { padding-top: 18px; display: flex; justify-content: space-between; gap: 20px; } .ds-product-meta h3 { margin: 0 0 8px; font-size: .96rem; line-height: 1.35; } .ds-product-meta p, .ds-product-meta strong { margin: 0; font-size: .82rem; } .ds-product-meta p { color: #666; }"
+    },
+    {
+      "name": "Studio View Switcher",
+      "kind": "custom",
+      "description": "The squared segmented state control for Front, Back, and Detail views.",
+      "html": "<div class=\"ds-view-switcher\" aria-label=\"Jersey view\"><button class=\"ds-view-active\" type=\"button\" aria-pressed=\"true\">FRONT</button><button type=\"button\" aria-pressed=\"false\">BACK</button><button type=\"button\" aria-pressed=\"false\">DETAIL</button></div>",
+      "css": ".ds-view-switcher { display: inline-flex; border: 1px solid #c7c7c2; } .ds-view-switcher button { min-width: 74px; min-height: 44px; padding: 0 14px; color: #0a0a0a; background: transparent; border: 0; border-right: 1px solid #c7c7c2; border-radius: 0; font: 700 .68rem/1 Roboto, Arial, sans-serif; letter-spacing: .05em; } .ds-view-switcher button:last-child { border-right: 0; } .ds-view-switcher button:hover { background: #fffdf8; } .ds-view-switcher .ds-view-active { color: #fff; background: #0a0a0a; } .ds-view-switcher button:focus-visible { outline: 3px solid #0a0a0a; outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Stadium Tunnel Editorial",
+    "overview": "The Stadium Tunnel Editorial treats every WE surface like the charged threshold between preparation and the field: dark architectural frames, warm product light, monumental declarations, documentary detail, and a clear route forward. The system makes original series and personal meaning feel inseparable, with campaign-scale emotion giving way to exact, trustworthy commerce.\n\nThe visual voice is premium US editorial-performance commerce: athletic and decisive, but never borrowed from another sports brand. Composition is spacious and asymmetric; depth comes from tonal planes, rules, cropping, and image scale rather than ornamental chrome. Gold is held back for signals, proof points, selected states, and decisive moments so its rarity carries authority.",
+    "keyCharacteristics": [
+      "Monumental condensed display type paired with quiet, highly legible functional copy.",
+      "Obsidian editorial frames alternating with Warm Ivory and Paper product fields.",
+      "Sharp squared controls, image-first commerce, precise rules, and generous negative space.",
+      "Full-bleed campaign imagery and close documentary craft details with intentional crops.",
+      "One visible-by-default authored reveal, plus restrained state and image transitions.",
+      "Series-first discovery: visitors enter a visual world before product comparison begins."
+    ],
+    "rules": [
+      {
+        "name": "The Gold Is a Signal Rule",
+        "body": "Reserve gold for emphasis, selection, proof, and navigation cues; never turn it into a broad decorative wash.",
+        "section": "colors"
+      },
+      {
+        "name": "The Contrast Before Branding Rule",
+        "body": "Use Functional Gold for small text on light surfaces, Light Gold only where its foreground/background pairing is readable, and Warm Ivory or White when gold cannot meet WCAG 2.2 AA.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Display Voice Rule",
+        "body": "Bebas Neue is for uppercase declarations and short titles only; never use it for paragraphs, prices, form values, or dense functional UI.",
+        "section": "typography"
+      },
+      {
+        "name": "The Functional Copy Stays Quiet Rule",
+        "body": "Roboto carries every decision, disclosure, error, and status message with normal casing and generous line-height; visual intensity must never obscure product truth.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat by Default Rule",
+        "body": "Resting surfaces are separated by tone, crop, whitespace, or a one-pixel rule; shadows are reserved for a preview plane or a transient layer that must sit above the page.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Opaque Overlay Rule",
+        "body": "Menus and dialogs use solid fields with clear boundaries; never use backdrop blur, glass, translucency-as-material, or gradients.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do lead discovery with original series and their visual worlds before exposing product comparison.",
+      "Do preserve the V2.4 home-module order and the two decisive first-viewport routes: Explore Originals and Create Yours.",
+      "Do use the supplied WE wordmark without changing its geometry, and use the public name WE everywhere.",
+      "Do use restrained gold, hard rules, tonal planes, generous space, and authored image crops to create hierarchy.",
+      "Do keep keyboard, touch, reduced-motion, contrast, and 320px overflow behavior part of every component definition.",
+      "Do label all demonstration values and connect operational facts only to verified sources."
+    ],
+    "donts": [
+      "Don't use gradients, glassmorphism, backdrop blur, rounded generic card chrome, or decorative shadow stacks.",
+      "Don't copy Nike, Adidas, league, team, or other sports-brand trademarks, layouts, campaigns, assets, or trade dress.",
+      "Don't organize navigation around ‘Shop,’ ‘Shop by Sport,’ leagues, or teams.",
+      "Don't turn WE Gold or collection colors into playful, saturated page washes.",
+      "Don't add repeated opacity-and-rise entrances, layout-shifting hover effects, or motion that hides default content.",
+      "Don't fabricate pricing, shipping thresholds, inventory, reviews, testimonials, origin, production, delivery, or performance claims.",
+      "Don't collapse Create, Honor, Belong, and Create Yours into interchangeable imagery or language when approved content becomes available."
+    ]
+  }
+}

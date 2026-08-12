@@ -1,0 +1,7 @@
+node_modules/
+dist/
+visual-review/
+*.log
+*.tsbuildinfo
+**/__pycache__/
+.DS_Store
