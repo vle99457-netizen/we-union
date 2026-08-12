@@ -1,0 +1,112 @@
+name: Install Extended Web Skill Pack
+
+on:
+  push:
+    branches:
+      - agent/install-extended-web-skill-pack
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Update UI UX Pro Max
+        run: npx -y ui-ux-pro-max-cli@latest init --ai claude
+
+      - name: Install Impeccable
+        run: npx -y impeccable@latest skills install -y --providers=claude --scope=project --no-hooks
+
+      - name: Install React Bits skill
+        run: npx -y skills add lumacoder/react-bits-skills --agent claude-code --yes --copy
+
+      - name: Install Karpathy guidelines skill
+        run: npx -y skills add multica-ai/andrej-karpathy-skills --agent claude-code --yes --copy
+
+      - name: Add web design orchestrator
+        shell: bash
+        run: |
+          mkdir -p .claude/skills/web-design-orchestrator
+          cat > .claude/skills/web-design-orchestrator/SKILL.md <<'EOF'
+          ---
+          name: web-design-orchestrator
+          description: Coordinate the installed design, UI/UX, motion, audit, and coding-discipline skills for high-quality production websites. Use for website design, redesign, landing pages, ecommerce, brand sites, and frontend quality improvement.
+          ---
+
+          # Web Design Orchestrator
+
+          Use the installed skills as a pipeline rather than as competing instructions.
+
+          ## Core sequence
+
+          1. **Karpathy discipline first** — apply `karpathy-guidelines` throughout: understand the request, keep scope surgical, prefer simple solutions, and verify the result.
+          2. **Design system** — use `ui-ux-pro-max` to determine page pattern, typography, color system, spacing, component behavior, accessibility requirements, and stack-specific guidance.
+          3. **Art direction** — use `design-taste-frontend` to strengthen hierarchy, composition, imagery, typography, motion, and brand distinctiveness while avoiding generic AI-looking layouts.
+          4. **Implementation** — build with the project's existing stack. Preserve routes, backend behavior, data contracts, and working features unless the request explicitly changes them.
+          5. **React Bits selectively** — use `reactbits-ui-skills` only when the project is React-compatible and a React Bits component clearly improves the experience. Prefer a small number of purposeful components over decorative overload. Verify dependency, accessibility, performance, mobile behavior, and reduced-motion support before adding one.
+          6. **Design cleanup** — use `impeccable` to audit, normalize, distill, and polish the implemented interface. Fix high-impact anti-patterns and inconsistencies instead of blindly applying every stylistic suggestion.
+          7. **Final web audit** — use `web-design-guidelines` for accessibility, responsive behavior, interaction states, forms, semantics, navigation, and web best practices. Resolve important findings before completion.
+
+          ## Conflict resolution
+
+          - Project requirements and existing functionality outrank aesthetic preferences.
+          - Accessibility and usability outrank animation or novelty.
+          - Performance outranks unnecessary visual effects.
+          - When two design skills disagree, prefer the choice that best matches the brand brief and user task, then verify it in the final audit.
+          - Do not install a component library or add a dependency merely because a skill mentions it.
+
+          ## Delivery checklist
+
+          - Existing functionality preserved unless intentionally changed.
+          - Clear visual hierarchy and coherent design system.
+          - No generic AI template look or excessive card nesting.
+          - Responsive at mobile, tablet, laptop, and large desktop sizes.
+          - Keyboard/focus states and accessible contrast verified.
+          - Motion is purposeful and respects reduced-motion preferences.
+          - No obvious unnecessary dependency or bundle-cost increase.
+          - Final audit findings addressed.
+          EOF
+
+      - name: Validate skill installation
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        shell: bash
+        run: |
+          test -f .claude/skills/ui-ux-pro-max/SKILL.md
+          test -f .claude/skills/impeccable/SKILL.md
+          test -f .claude/skills/reactbits-ui-skills/SKILL.md
+          test -f .claude/skills/karpathy-guidelines/SKILL.md
+          test -f .claude/skills/web-design-orchestrator/SKILL.md
+          grep -q '^name: ui-ux-pro-max' .claude/skills/ui-ux-pro-max/SKILL.md
+          grep -q '^name: impeccable' .claude/skills/impeccable/SKILL.md
+          grep -q '^name: reactbits-ui-skills' .claude/skills/reactbits-ui-skills/SKILL.md
+          grep -q '^name: karpathy-guidelines' .claude/skills/karpathy-guidelines/SKILL.md
+          grep -q '^name: web-design-orchestrator' .claude/skills/web-design-orchestrator/SKILL.md
+          python3 .claude/skills/ui-ux-pro-max/scripts/search.py 'premium custom sportswear ecommerce' --design-system -f markdown > /tmp/uipro-validation.md
+
+      - name: Commit installed skills
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .claude
+          if git diff --cached --quiet; then
+            echo 'No skill changes to commit.'
+          else
+            git commit -m 'install extended web design skill pack'
+            git push
+          fi
