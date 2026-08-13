@@ -13,12 +13,12 @@
       "file": "docs/previews/v3/desktop/01-homepage.webp",
       "passed": true,
       "health": {
-        "title": "WE — Gear Made Personal",
+        "title": "WE — Sports Heritage Meets Personal Identity",
         "h1Count": 1,
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 11009
+        "bodyHeight": 9504
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -39,14 +39,14 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 3770
+        "bodyHeight": 3772
       },
       "consoleErrors": [],
       "pageErrors": []
     },
     {
       "label": "V02B Series Product List",
-      "route": "/collections/water-ripple",
+      "route": "/collections/white-pulse",
       "viewport": {
         "width": 1440,
         "height": 1000,
@@ -55,12 +55,12 @@
       "file": "docs/previews/v3/desktop/03-series-list.webp",
       "passed": true,
       "health": {
-        "title": "Water Ripple — WE",
+        "title": "White Pulse — WE",
         "h1Count": 1,
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 2629
+        "bodyHeight": 2730
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -81,14 +81,14 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 3301
+        "bodyHeight": 5185
       },
       "consoleErrors": [],
       "pageErrors": []
     },
     {
       "label": "V04 Product Detail",
-      "route": "/products/water-ripple-game-jersey",
+      "route": "/products/white-pulse-game-jersey",
       "viewport": {
         "width": 1440,
         "height": 1000,
@@ -97,19 +97,19 @@
       "file": "docs/previews/v3/desktop/05-product-detail.webp",
       "passed": true,
       "health": {
-        "title": "Water Ripple Game Jersey — WE",
+        "title": "White Pulse Game Jersey — WE",
         "h1Count": 1,
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 2895
+        "bodyHeight": 5502
       },
       "consoleErrors": [],
       "pageErrors": []
     },
     {
       "label": "V05 Create Studio",
-      "route": "/custom?style=crack-game-jersey&size=M",
+      "route": "/custom?style=black-rift-game-jersey&size=M",
       "viewport": {
         "width": 1440,
         "height": 1000,
@@ -123,7 +123,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 2053
+        "bodyHeight": 2148
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -144,7 +144,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 1629
+        "bodyHeight": 1672
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -165,7 +165,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 2217
+        "bodyHeight": 2244
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -186,7 +186,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 1681
+        "bodyHeight": 1683
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -207,7 +207,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 1501
+        "bodyHeight": 1503
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -228,14 +228,14 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 3829
+        "bodyHeight": 3121
       },
       "consoleErrors": [],
       "pageErrors": []
     },
     {
       "label": "V11 Story Detail",
-      "route": "/stories/the-number-24",
+      "route": "/stories/from-buyer-to-creator",
       "viewport": {
         "width": 1440,
         "height": 1000,
@@ -244,12 +244,12 @@
       "file": "docs/previews/v3/desktop/12-story-detail.webp",
       "passed": true,
       "health": {
-        "title": "What a Number Carries — WE",
+        "title": "From Buyer to Creator — WE",
         "h1Count": 1,
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 3241
+        "bodyHeight": 3313
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -270,7 +270,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 3985
+        "bodyHeight": 3988
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -291,7 +291,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 3113
+        "bodyHeight": 3014
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -312,7 +312,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 2473
+        "bodyHeight": 2475
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -333,7 +333,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 2614
+        "bodyHeight": 2617
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -354,14 +354,14 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 2575
+        "bodyHeight": 2578
       },
       "consoleErrors": [],
       "pageErrors": []
     },
     {
       "label": "V17 Search",
-      "route": "/search?q=ripple",
+      "route": "/search?q=identity",
       "viewport": {
         "width": 1440,
         "height": 1000,
@@ -375,7 +375,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 1980
+        "bodyHeight": 1984
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -396,7 +396,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 1715
+        "bodyHeight": 1720
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -417,7 +417,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 1481
+        "bodyHeight": 1483
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -438,7 +438,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 3214
+        "bodyHeight": 3216
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -459,28 +459,28 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 3301
+        "bodyHeight": 3303
       },
       "consoleErrors": [],
       "pageErrors": []
     },
     {
-      "label": "Crack Series Product List",
-      "route": "/collections/crack",
+      "label": "Black Rift Series Product List",
+      "route": "/collections/black-rift",
       "viewport": {
         "width": 1440,
         "height": 1000,
         "deviceScaleFactor": 1
       },
-      "file": "docs/previews/v3/desktop/23-crack-series-list.webp",
+      "file": "docs/previews/v3/desktop/23-black-rift-series-list.webp",
       "passed": true,
       "health": {
-        "title": "Crack Series — WE",
+        "title": "Black Rift — WE",
         "h1Count": 1,
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 2629
+        "bodyHeight": 2730
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -501,7 +501,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 2181
+        "bodyHeight": 2057
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -522,7 +522,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 2053
+        "bodyHeight": 2148
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -543,7 +543,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 2614
+        "bodyHeight": 2617
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -559,12 +559,12 @@
       "file": "docs/previews/v3/mobile/01-homepage-mobile.webp",
       "passed": true,
       "health": {
-        "title": "WE — Gear Made Personal",
+        "title": "WE — Sports Heritage Meets Personal Identity",
         "h1Count": 1,
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 14431
+        "bodyHeight": 10774
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -585,14 +585,14 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 3719
+        "bodyHeight": 3694
       },
       "consoleErrors": [],
       "pageErrors": []
     },
     {
       "label": "V04 Product Detail / Mobile",
-      "route": "/products/water-ripple-game-jersey",
+      "route": "/products/white-pulse-game-jersey",
       "viewport": {
         "width": 390,
         "height": 844,
@@ -601,19 +601,19 @@
       "file": "docs/previews/v3/mobile/05-product-detail-mobile.webp",
       "passed": true,
       "health": {
-        "title": "Water Ripple Game Jersey — WE",
+        "title": "White Pulse Game Jersey — WE",
         "h1Count": 1,
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 4653
+        "bodyHeight": 7724
       },
       "consoleErrors": [],
       "pageErrors": []
     },
     {
       "label": "V05 Create Studio / Mobile",
-      "route": "/custom?style=crack-game-jersey&size=M",
+      "route": "/custom?style=black-rift-game-jersey&size=M",
       "viewport": {
         "width": 390,
         "height": 844,
@@ -627,7 +627,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 3020
+        "bodyHeight": 3022
       },
       "consoleErrors": [],
       "pageErrors": []
@@ -648,7 +648,7 @@
         "hasMain": true,
         "hasContent": true,
         "hasErrorOverlay": false,
-        "bodyHeight": 3194
+        "bodyHeight": 3271
       },
       "consoleErrors": [],
       "pageErrors": []

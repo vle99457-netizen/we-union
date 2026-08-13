@@ -24,6 +24,7 @@ import {
   formatPrice,
   getProduct,
   getSeries,
+  honorConcepts,
   products,
   prototypeNotice,
   searchCatalog,
@@ -42,17 +43,17 @@ const promiseItems = [
   },
   {
     title: 'Personalized production',
-    copy: 'Your details are built into the piece.',
+    copy: 'Your approved details are built into a production-ready proof.',
     icon: CirclesThreePlus,
   },
   {
     title: 'Strict quality inspection',
-    copy: 'Each finished piece is checked before release.',
+    copy: 'Verified inspection milestones connect before public release.',
     icon: ShieldCheck,
   },
   {
     title: 'Tracked delivery',
-    copy: 'Follow your order from production to delivery.',
+    copy: 'Verified production and carrier events will connect here.',
     icon: Package,
   },
 ]
@@ -60,10 +61,10 @@ const promiseItems = [
 export function HomePage() {
   const [activeStep, setActiveStep] = useState(0)
   const customSteps = [
-    ['Choose', 'Start with a WE original built for movement.'],
-    ['Personalize', 'Set the color, name, number, and meaningful details.'],
-    ['Review', 'Check every view before it enters production.'],
-    ['Order & track', 'Follow the piece from production to delivery.'],
+    ['CHOOSE', 'Start with a WE original visual system.'],
+    ['PERSONALIZE', 'Set the color, name, number, and approved details.'],
+    ['REVIEW', 'Confirm the four-view proof and content rights.'],
+    ['ORDER & TRACK', 'Freeze the proof before an order review begins.'],
   ] as const
 
   return (
@@ -80,7 +81,7 @@ export function HomePage() {
         />
         <div className="home-hero__veil" />
         <div className="home-hero__content shell">
-          <p className="eyebrow eyebrow--gold">WE originals / Made to mean more</p>
+          <p className="eyebrow eyebrow--gold">Sports heritage meets personal identity</p>
           <h1 id="home-title">Gear made<br />personal.</h1>
           <p className="hero-copy">A uniform can identify you. A WE original can tell your story.</p>
           <div className="button-row">
@@ -116,6 +117,7 @@ export function HomePage() {
                 <span className="world-card__shade" />
                 <span className="world-card__index">{world.index}</span>
                 <span className="world-card__content">
+                  <span className="world-card__status">{world.statusLabel}</span>
                   <strong>{world.title}</strong>
                   <span>{world.copy}</span>
                 </span>
@@ -131,10 +133,10 @@ export function HomePage() {
           <SectionHeading
             id="series-title"
             eyebrow="New & featured / Series 01"
-            title="Water Ripple"
-            copy="A graphic system built from the moment still water meets forward motion."
+            title="White Pulse"
+            copy="Continuous waves and flowing paths translate personal rhythm into an original visual language."
             action={
-              <Link className="text-link" to="/collections/water-ripple">
+              <Link className="text-link" to="/collections/white-pulse">
                 View the series <ArrowRight size={17} weight="bold" />
               </Link>
             }
@@ -143,15 +145,15 @@ export function HomePage() {
         <AnimatedContent className="series-banner">
           <img
             src="/images/water-ripple.webp"
-            alt="An original white and cobalt jersey displayed above rippling water"
+            alt="White Pulse original concept displayed above a flowing surface"
             loading="lazy"
             decoding="async"
             width="1672"
             height="941"
           />
           <div className="series-banner__copy">
-            <p>WE / WR–01</p>
-            <h3>Move first.<br />Let the world answer.</h3>
+            <p>WE / WP–01</p>
+            <h3>Feel the motion.<br />Make it yours.</h3>
           </div>
         </AnimatedContent>
       </section>
@@ -167,7 +169,7 @@ export function HomePage() {
             </Link>
           </div>
           <div className="custom-story__visual" aria-live="polite">
-            <img src="/images/product-water.webp" alt="Water Ripple jersey personalization preview" loading="lazy" width="941" height="941" />
+            <img src="/images/product-water.webp" alt="White Pulse personalization concept preview" loading="lazy" width="941" height="941" />
             <div className="jersey-mark">
               <span>{activeStep === 1 ? 'MORGAN' : 'WE'}</span>
               <strong>{activeStep >= 1 ? '17' : '01'}</strong>
@@ -197,7 +199,7 @@ export function HomePage() {
         <div className="craft-story__image">
           <img
             src="/images/craft-embroidery.webp"
-            alt="A craftsperson inspecting gold embroidery on black performance fabric"
+            alt="A craftsperson inspecting embroidery on a black garment concept"
             loading="lazy"
             decoding="async"
             width="1672"
@@ -317,10 +319,10 @@ export function SeriesPage() {
   const { slug } = useParams()
   const current = getSeries(slug)
   const [controls, setControls] = useSearchParams()
-  const sort = ['featured', 'low', 'high'].includes(controls.get('sort') ?? '')
+  const sort = ['featured', 'name-asc', 'name-desc'].includes(controls.get('sort') ?? '')
     ? controls.get('sort')!
     : 'featured'
-  const filter = ['all', 'personalizable', 'team'].includes(controls.get('filter') ?? '')
+  const filter = ['all', 'personalizable'].includes(controls.get('filter') ?? '')
     ? controls.get('filter')!
     : 'all'
 
@@ -338,8 +340,8 @@ export function SeriesPage() {
   const filtered = available.filter((product) => filter === 'all' || product.badge?.toLowerCase().includes(filter))
   const visible = [...filtered].sort((a, b) => {
     if (sort === 'featured') return 0
-    if (sort === 'low') return a.price - b.price
-    if (sort === 'high') return b.price - a.price
+    if (sort === 'name-asc') return a.name.localeCompare(b.name)
+    if (sort === 'name-desc') return b.name.localeCompare(a.name)
     return 0
   })
 
@@ -358,7 +360,7 @@ export function SeriesPage() {
       <section className="listing-section section-pad shell">
         <div className="listing-toolbar">
           <div>
-            <p className="eyebrow">{visible.length} pieces / prototype</p>
+            <p className="eyebrow">{visible.length} concepts / pre-launch</p>
             <h2>Build the full story.</h2>
           </div>
           <div className="listing-controls">
@@ -367,15 +369,14 @@ export function SeriesPage() {
               <select name="filter" value={filter} onChange={(event) => updateControl('filter', event.target.value)}>
                 <option value="all">All pieces</option>
                 <option value="personalizable">Personalizable</option>
-                <option value="team">Team ready</option>
               </select>
             </label>
             <label>
               Sort
               <select name="sort" value={sort} onChange={(event) => updateControl('sort', event.target.value)}>
                 <option value="featured">Featured</option>
-                <option value="low">Price: low to high</option>
-                <option value="high">Price: high to low</option>
+                <option value="name-asc">Name: A to Z</option>
+                <option value="name-desc">Name: Z to A</option>
               </select>
             </label>
           </div>
@@ -387,7 +388,14 @@ export function SeriesPage() {
         ) : (
           <div className="empty-state"><h3>No matching pieces</h3><p>Try a broader filter.</p></div>
         )}
-        <p className="prototype-note">* {prototypeNotice}</p>
+        <div className="listing-more"><span>All current concepts shown</span><p>Additional pieces appear only after catalog and product facts are verified.</p></div>
+        <nav className="series-crosslinks" aria-label="Other original series">
+          <p className="eyebrow">Continue through CREATE</p>
+          {series.filter((item) => item.slug !== current.slug).map((item) => (
+            <Link key={item.slug} to={`/collections/${item.slug}`}>{item.name}<ArrowRight size={17} /></Link>
+          ))}
+        </nav>
+        <p className="prototype-note">{prototypeNotice}</p>
       </section>
     </>
   )
@@ -396,11 +404,10 @@ export function SeriesPage() {
 export function WorldPage({ world }: { world: WorldSlug }) {
   const current = worlds.find((item) => item.slug === world)
   if (!current) return <NotFoundPage />
-  const worldSeries = series.filter((item) => item.world === world)
   const supporting = {
-    create: ['Original systems', 'Personal details', 'No borrowed identities'],
-    honor: ['Numbers with meaning', 'Memory in the details', 'Made to be carried'],
-    belong: ['Individual within team', 'Shared visual language', 'Built for groups'],
+    create: ['Original systems', 'Personal details', 'Rights-confirmed content'],
+    honor: ['Original heritage language', 'Documented rights first', 'No implied affiliation'],
+    belong: ['Future team identity', 'Future city heritage', 'Future culture series'],
   }[world]
 
   return (
@@ -409,21 +416,27 @@ export function WorldPage({ world }: { world: WorldSlug }) {
         <img src={current.image} alt="" fetchPriority="high" width="1672" height="941" />
         <div className="world-hero__shade" />
         <div className="world-hero__content shell">
-          <p className="eyebrow eyebrow--gold">World {current.index}</p>
+          <p className="eyebrow eyebrow--gold">World {current.index} / {current.statusLabel}</p>
           <h1>{current.title}</h1>
           <p>{current.copy}</p>
-          <Link className="button button--light" to="/collections">Explore originals <ArrowRight size={18} /></Link>
+          {world === 'create' ? (
+            <Link className="button button--light" to="/collections">Explore originals <ArrowRight size={18} /></Link>
+          ) : world === 'belong' ? (
+            <Link className="button button--light" to="/custom/team">Plan a future brief <ArrowRight size={18} /></Link>
+          ) : (
+            <Link className="button button--light" to="/stories">Read the design position <ArrowRight size={18} /></Link>
+          )}
         </div>
       </section>
       <section className="world-manifesto section-pad shell">
         <p className="eyebrow">Why {current.title}</p>
-        <h2>{world === 'create' ? 'Expression deserves structure.' : world === 'honor' ? 'The detail is the memory.' : 'Together should still feel personal.'}</h2>
+        <h2>{world === 'create' ? 'Expression deserves structure.' : world === 'honor' ? 'Heritage requires evidence.' : 'Together should still feel personal.'}</h2>
         <div className="world-manifesto__list">
           {supporting.map((item, index) => <p key={item}><span>0{index + 1}</span>{item}</p>)}
         </div>
       </section>
       <section className="world-series section-pad">
-        {worldSeries.map((item) => (
+        {world === 'create' ? series.map((item) => (
           <div className="shell split-feature" key={item.slug}>
             <img src={item.image} alt="" loading="lazy" width="1672" height="941" />
             <div>
@@ -433,7 +446,27 @@ export function WorldPage({ world }: { world: WorldSlug }) {
               <Link className="text-link" to={`/collections/${item.slug}`}>View series <ArrowRight size={17} /></Link>
             </div>
           </div>
-        ))}
+        )) : world === 'honor' ? honorConcepts.map((concept) => (
+          <article className="shell split-feature world-gate" key={concept.slug}>
+            <img src={concept.image} alt="" loading="lazy" width="1672" height="941" />
+            <div>
+              <p className="eyebrow">Original concept / Rights review</p>
+              <h2>{concept.name}</h2>
+              <p>{concept.description}</p>
+              <div className="rights-status"><ShieldCheck size={22} /><span>Not for sale · documented authorization required before publication</span></div>
+            </div>
+          </article>
+        )) : (
+          <div className="shell split-feature world-gate">
+            <img src="/images/world-belong.webp" alt="A future community identity direction" loading="lazy" width="1672" height="941" />
+            <div>
+              <p className="eyebrow">Future direction / Coming soon</p>
+              <h2>Wear where you belong.</h2>
+              <p>BELONG currently has no formal series or products. Team Identity, City Heritage, and Culture Series remain future directions until their stories, rights, and product facts are approved.</p>
+              <Link className="text-link" to="/custom/team">Share a future team brief <ArrowRight size={17} /></Link>
+            </div>
+          </div>
+        )}
       </section>
     </>
   )
@@ -451,6 +484,9 @@ export function ProductPage() {
 
   if (!product) return <NotFoundPage />
   const currentSeries = getSeries(product.series)
+  const relatedProducts = products
+    .filter((item) => item.series === product.series && item.slug !== product.slug)
+    .slice(0, 3)
 
   const findCity = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -482,6 +518,7 @@ export function ProductPage() {
     if (!size) return
     addItem({
       id: `${product.slug}-${size}`,
+      productSlug: product.slug,
       name: product.name,
       detail: `${product.color} · Size ${size}`,
       price: product.price,
@@ -491,10 +528,11 @@ export function ProductPage() {
   }
 
   return (
-    <section className="product-page shell">
+    <>
+    <section className="product-page shell" aria-label={`${product.name} product information`}>
       <div className="product-gallery">
         <div className="product-gallery__main"><img src={product.image} alt={product.name} fetchPriority="high" width="941" height="941" /></div>
-        <div className="product-gallery__detail"><img src="/images/craft-embroidery.webp" alt="Gold embroidery construction detail" loading="lazy" width="1672" height="941" /></div>
+        <div className="product-gallery__detail"><img src="/images/craft-embroidery.webp" alt="Embroidery construction concept detail" loading="lazy" width="1672" height="941" /></div>
       </div>
       <div className="product-info">
         <aside className="city-discovery" aria-labelledby="find-city-title">
@@ -528,18 +566,14 @@ export function ProductPage() {
             {cityChoices.map((city) => <Link key={city.slug} to={`/search?city=${city.slug}`}>{city.name}</Link>)}
           </div>
         </aside>
-        <p className="eyebrow">{currentSeries?.name} / Prototype piece</p>
+        <p className="eyebrow">{currentSeries?.name} / Concept preview</p>
         <h1>{product.name}</h1>
-        <p className="product-info__price">{formatPrice(product.price)}*</p>
-        <p className="product-info__description">
-          {product.personalizable
-            ? 'An original WE performance layer designed to hold personal names and numbers without losing the series concept.'
-            : 'An original WE performance layer presented as a standard sample construction for this prototype.'}
-        </p>
+        <p className="product-info__price">{formatPrice(product.price)}</p>
+        <p className="product-info__description">{product.story}</p>
         <dl className="product-facts">
           <div><dt>Color</dt><dd>{product.color}</dd></div>
-          <div><dt>Build</dt><dd>Performance knit / sample specification</dd></div>
-          <div><dt>Finish</dt><dd>{product.personalizable ? 'Personalized production available' : 'Standard sample construction'}</dd></div>
+          <div><dt>Design status</dt><dd>Original concept / product facts TBD</dd></div>
+          <div><dt>Personalization</dt><dd>{product.personalizable ? 'Proof and IP review supported' : 'Not enabled for this concept'}</dd></div>
         </dl>
         <fieldset className="size-picker">
           <legend>Choose size</legend>
@@ -558,8 +592,8 @@ export function ProductPage() {
           </div>
         </fieldset>
         <div className="product-actions">
-          <button className="button button--dark" type="button" onClick={add} disabled={!size} aria-live="polite">
-            {added ? <><Check size={18} /> Added to cart</> : size ? <>Add to cart <ArrowRight size={18} /></> : <>Choose a size</>}
+          <button className="button button--dark" type="button" onClick={add} disabled={!size}>
+            {added ? <><Check size={18} /> Added to selection</> : size ? <>Add to selection <ArrowRight size={18} /></> : <>Choose a size</>}
           </button>
           {product.personalizable ? (
             size ? (
@@ -573,25 +607,71 @@ export function ProductPage() {
             <button className="button button--outline" type="button" disabled>Personalization unavailable</button>
           )}
         </div>
-        <p className="prototype-note">* {prototypeNotice}</p>
+        <p className="product-action-status" role="status" aria-live="polite">{added ? 'Concept added. Pricing and availability remain unconfirmed.' : !size ? 'Choose a size to continue to an order review.' : ''}</p>
+        <p className="prototype-note">{prototypeNotice}</p>
         <details>
-          <summary>Fit & material</summary>
-          <p>Sample specification: athletic fit, breathable knit zones, and reinforced personalized areas. Final specifications require merchandising approval.</p>
-        </details>
-        <details>
-          <summary>Production & delivery</summary>
-          <p>Production timing and shipping estimates connect to live operations data before launch; no estimate is presented in this prototype.</p>
+          <summary>Delivery status</summary>
+          <p>Production and delivery estimates appear only after product, operations, and carrier data are verified. No timeline is promised in this concept.</p>
         </details>
       </div>
     </section>
+    <div className="mobile-purchase-bar" aria-label="Product action">
+      <span>{formatPrice(product.price)}</span>
+      <button type="button" onClick={add} disabled={!size}>{added ? 'Added to selection' : size ? 'Add to selection' : 'Select size'}</button>
+    </div>
+    <div className="product-detail-stack shell">
+      <section data-product-module="story" aria-labelledby="product-story-title">
+        <p className="eyebrow">06 / The story</p>
+        <h2 id="product-story-title">{product.theme}.</h2>
+        <p>{product.story}</p>
+        <p>{product.connection}</p>
+      </section>
+      <section data-product-module="craft" aria-labelledby="product-craft-title">
+        <p className="eyebrow">07 / Design &amp; craft</p>
+        <h2 id="product-craft-title">Intent before claim.</h2>
+        <dl>
+          <div><dt>Design language</dt><dd>{product.design}</dd></div>
+          <div><dt>Craft direction</dt><dd>{product.craft}</dd></div>
+        </dl>
+      </section>
+      <section data-product-module="size-fit" aria-labelledby="product-fit-title">
+        <p className="eyebrow">08 / Size &amp; fit</p>
+        <h2 id="product-fit-title">Product specification pending.</h2>
+        <p>Fit, garment measurements, material composition, care, and performance information will be published only after verified product data is approved.</p>
+        <Link className="text-link" to="/legal/size-guide">View size-guide framework <ArrowRight size={17} /></Link>
+      </section>
+      <section data-product-module="shipping" aria-labelledby="product-shipping-title">
+        <p className="eyebrow">09 / Shipping &amp; returns</p>
+        <h2 id="product-shipping-title">Terms follow verified operations.</h2>
+        <p>Pricing, availability, production timing, delivery, changes, and personalized-product remedies remain TBD until approved policies and live services are connected.</p>
+        <Link className="text-link" to="/legal/shipping">Read the policy framework <ArrowRight size={17} /></Link>
+      </section>
+      <section data-product-module="community" aria-labelledby="product-community-title">
+        <p className="eyebrow">10 / Community</p>
+        <h2 id="product-community-title">No fabricated reviews.</h2>
+        <p>Verified wearer stories can appear here only with consent, moderation, and a documented right to publish. There are no customer reviews in this concept build.</p>
+      </section>
+      <section data-product-module="related" aria-labelledby="related-products-title">
+        <p className="eyebrow">11 / Related</p>
+        <h2 id="related-products-title">Continue the series.</h2>
+        {relatedProducts.length ? (
+          <div className="product-grid">
+            {relatedProducts.map((item) => <ProductCard key={item.slug} product={item} />)}
+          </div>
+        ) : (
+          <Link className="text-link" to={`/collections/${product.series}`}>View the full series <ArrowRight size={17} /></Link>
+        )}
+      </section>
+    </div>
+    </>
   )
 }
 
 const colors = [
-  { name: 'Cobalt', value: '#174A8B' },
-  { name: 'Obsidian', value: '#0A0A0A' },
-  { name: 'WE Gold', value: '#9A7442' },
-  { name: 'Crimson', value: '#8F1D2C' },
+  { name: 'Pulse Green / visual preview', value: '#43B67A' },
+  { name: 'WE BLACK / visual preview', value: '#0A0A0A' },
+  { name: 'METAL SILVER / visual preview', value: '#A7ABB0' },
+  { name: 'Rift Blue / visual preview', value: '#174A8B' },
 ]
 
 const apparelSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'] as const
@@ -602,25 +682,25 @@ const cityChoices = [
     slug: 'sacramento',
     name: 'Sacramento',
     statement: 'Sunlit neutrals, deep green accents, and originals made for long seasons.',
-    productSlugs: ['water-ripple-game-jersey', 'common-thread-training-top'],
+    productSlugs: ['white-pulse-game-jersey', 'identity-fusion-game-jersey'],
   },
   {
     slug: 'chicago',
     name: 'Chicago',
     statement: 'High-contrast layers and cold-weather depth, built around original WE series.',
-    productSlugs: ['crack-game-jersey', 'crack-travel-jacket'],
+    productSlugs: ['black-rift-game-jersey', 'black-rift-travel-layer'],
   },
   {
     slug: 'los-angeles',
     name: 'Los Angeles',
-    statement: 'Bright movement, warm neutrals, and lightweight originals for the everyday field.',
-    productSlugs: ['water-ripple-warmup', 'common-thread-travel-shell'],
+    statement: 'Bright movement, warm neutrals, and a light visual language for the everyday field.',
+    productSlugs: ['white-pulse-motion-top', 'identity-fusion-studio-layer'],
   },
   {
     slug: 'new-york',
     name: 'New York',
     statement: 'Sharp contrast and city-ready layers with no borrowed team identity.',
-    productSlugs: ['crack-game-jersey', 'common-thread-training-top'],
+    productSlugs: ['black-rift-game-jersey', 'identity-fusion-game-jersey'],
   },
 ] as const
 
@@ -630,7 +710,11 @@ function isApparelSize(value: string | null | undefined): value is ApparelSize {
   return apparelSizes.includes(value as ApparelSize)
 }
 
-type StudioView = 'front' | 'back' | 'detail'
+type StudioView = 'front' | 'back' | 'left' | 'right'
+
+function isStudioView(value: string | undefined): value is StudioView {
+  return value === 'front' || value === 'back' || value === 'left' || value === 'right'
+}
 
 type SavedDesignDraft = {
   productSlug?: string
@@ -677,17 +761,24 @@ export function CustomPage() {
       ? searchParams.get('size') as ApparelSize
       : isApparelSize(draft?.size) ? draft.size : 'M',
   )
-  const [view, setView] = useState<StudioView>(draft?.view ?? 'front')
+  const [view, setView] = useState<StudioView>(isStudioView(draft?.view) ? draft.view : 'front')
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const [ordered, setOrdered] = useState(false)
+  const [rightsConfirmed, setRightsConfirmed] = useState(false)
+  const [proofCreated, setProofCreated] = useState(false)
+  const [proofRevision, setProofRevision] = useState(1)
+  const [designId] = useState(
+    () => `WE-CY-${Date.now().toString(36).slice(-6).toUpperCase()}`,
+  )
   const { addItem } = useCart()
   const navigate = useNavigate()
 
-  const steps = ['Choose', 'Personalize', 'Review', 'Order & track']
+  const steps = ['CHOOSE', 'PERSONALIZE', 'REVIEW', 'ORDER & TRACK']
   const selectedProduct = getProduct(selectedProductSlug) ?? personalizableProducts[0]!
   const templateSeries = getSeries(selectedProduct.series) ?? series[0]!
   const templateImage = selectedProduct.image
+  const proofVersion = `P${String(proofRevision).padStart(2, '0')}`
   const next = () => setStep((current) => Math.min(steps.length - 1, current + 1))
   const previous = () => setStep((current) => Math.max(0, current - 1))
 
@@ -715,6 +806,14 @@ export function CustomPage() {
     }
   }, [color.name, name, number, selectedProduct.slug, size, templateSeries.name, view])
 
+  useEffect(() => {
+    if (!proofCreated || ordered) return
+    setProofRevision((current) => current + 1)
+    setProofCreated(false)
+    setSaved(false)
+    setRightsConfirmed(false)
+  }, [color.name, name, number, ordered, selectedProduct.slug, size])
+
   const save = () => {
     try {
       window.localStorage.setItem(
@@ -722,6 +821,7 @@ export function CustomPage() {
         JSON.stringify({ productSlug: selectedProduct.slug, template: templateSeries.name, name, number, colorName: color.name, size, view }),
       )
       setSaved(true)
+      setProofCreated(true)
       setSaveError(false)
     } catch {
       setSaved(false)
@@ -729,12 +829,16 @@ export function CustomPage() {
     }
   }
   const addDesign = () => {
+    if (!rightsConfirmed) return
     addItem({
       id: `custom-${selectedProduct.slug}-${name}-${number}-${size}-${color.name}`,
+      productSlug: selectedProduct.slug,
       name: `${selectedProduct.name} / Personalized`,
       detail: `${name || 'No name'} · ${number || 'No number'} · ${size} · ${color.name}`,
       price: selectedProduct.price,
       image: templateImage,
+      designId,
+      proofVersion,
     })
     setOrdered(true)
   }
@@ -749,7 +853,7 @@ export function CustomPage() {
         <ol className="studio-progress" aria-label="Customization progress">
           {steps.map((label, index) => (
             <li className={index === step ? 'is-current' : index < step ? 'is-complete' : ''} key={label}>
-              <button type="button" onClick={() => setStep(index)} aria-current={index === step ? 'step' : undefined}>
+              <button type="button" onClick={() => setStep(index)} disabled={ordered} aria-current={index === step ? 'step' : undefined}>
                 <span>{index < step ? <Check size={15} /> : index + 1}</span>{label}
               </button>
             </li>
@@ -757,7 +861,7 @@ export function CustomPage() {
         </ol>
       </div>
       <div className="studio-workspace shell">
-        <div className="studio-preview" aria-live="polite">
+        <div className="studio-preview">
           <p className="studio-preview__label">Interactive sample / {view} view</p>
           <div
             className={`studio-preview__canvas studio-preview__canvas--${view}`}
@@ -770,7 +874,7 @@ export function CustomPage() {
               height="941"
             />
             <div className="studio-preview__tint" />
-            {view !== 'detail' ? (
+            {view === 'front' || view === 'back' ? (
               <div className="studio-preview__mark">
                 <span>{view === 'back' ? name || 'YOUR NAME' : 'WE'}</span>
                 <strong>{view === 'back' ? number || '00' : '01'}</strong>
@@ -778,7 +882,7 @@ export function CustomPage() {
             ) : null}
           </div>
           <div className="view-switcher" aria-label="Jersey view">
-            {(['front', 'back', 'detail'] as const).map((option) => (
+            {(['front', 'back', 'left', 'right'] as const).map((option) => (
               <button
                 className={view === option ? 'is-active' : ''}
                 type="button"
@@ -868,12 +972,18 @@ export function CustomPage() {
                 <div><dt>Name / number</dt><dd>{name || 'None'} / {number || 'None'}</dd></div>
                 <div><dt>Accent</dt><dd>{color.name}</dd></div>
                 <div><dt>Size</dt><dd>{size}</dd></div>
-                <div><dt>Prototype price</dt><dd>{formatPrice(selectedProduct.price)}*</dd></div>
+                <div><dt>Design ID</dt><dd>{designId}</dd></div>
+                <div><dt>Proof Version</dt><dd>{proofVersion}</dd></div>
+                <div><dt>Price</dt><dd>{formatPrice(selectedProduct.price)}</dd></div>
               </dl>
               <button className="text-link text-link--button" type="button" onClick={save}>
                 {saved ? <><Check size={17} /> Design saved locally</> : <>Save this design <ArrowRight size={17} /></>}
               </button>
               <p className="draft-status" role="status">{saveError ? 'Browser storage is unavailable. Keep this page open to preserve the draft.' : 'Draft changes are kept in this browser.'}</p>
+              <label className="rights-confirmation">
+                <input name="rights-confirmation" type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} />
+                I confirm the submitted name, number, handwriting, and artwork are mine to use and may be reviewed before production.
+              </label>
             </div>
           ) : null}
           {step === 3 ? (
@@ -883,9 +993,9 @@ export function CustomPage() {
               {ordered ? (
                 <div className="order-confirmation" role="status">
                   <CheckCircle size={42} weight="fill" />
-                  <h3>Added to your prototype cart.</h3>
-                  <p>No payment has been processed. Continue to review the checkout experience.</p>
-                  <button className="button button--dark" type="button" onClick={() => navigate('/cart')}>View cart <ArrowRight size={18} /></button>
+                  <h3>Proof frozen for order review.</h3>
+                  <p><strong>Design ID {designId}</strong><br />Proof Version {proofVersion} is read-only in this selection. No payment or production order has been processed.</p>
+                  <button className="button button--dark" type="button" onClick={() => navigate('/cart')}>View selection <ArrowRight size={18} /></button>
                 </div>
               ) : (
                 <>
@@ -895,16 +1005,17 @@ export function CustomPage() {
                     <div><span>03</span><p><strong>Inspection</strong>Release after review.</p></div>
                     <div><span>04</span><p><strong>Delivery</strong>Tracking connects here.</p></div>
                   </div>
-                  <button className="button button--dark" type="button" onClick={addDesign}>Add sample design to cart <ArrowRight size={18} /></button>
+                  <button className="button button--dark" type="button" onClick={addDesign} disabled={!rightsConfirmed}>Freeze proof for order review <ArrowRight size={18} /></button>
+                  {!rightsConfirmed ? <p className="draft-status">Return to REVIEW and confirm content rights before freezing the proof.</p> : null}
                 </>
               )}
             </div>
           ) : null}
           <div className="studio-nav">
-            <button type="button" onClick={previous} disabled={step === 0}><ArrowLeft size={17} /> Back</button>
-            {step < steps.length - 1 ? <button type="button" onClick={next}>Continue to {steps[step + 1] ?? 'next step'} <ArrowRight size={17} /></button> : null}
+            <button type="button" onClick={previous} disabled={step === 0 || ordered}><ArrowLeft size={17} /> Back</button>
+            {step < steps.length - 1 ? <button type="button" onClick={next} disabled={ordered}>Continue to {steps[step + 1] ?? 'next step'} <ArrowRight size={17} /></button> : null}
           </div>
-          <p className="prototype-note">* Prototype content only. Production settings, price, and availability require live catalog data.</p>
+          <p className="prototype-note">Temporary screen-preview color tokens are not official brand color values. Production settings, price, and availability require verified catalog data.</p>
         </div>
       </div>
       <aside className="create-disclaimer shell" aria-labelledby="create-disclaimer-title">
@@ -965,9 +1076,9 @@ export function StoryPage() {
 export function CraftsmanshipPage() {
   const stages = [
     ['01', 'Concept', 'Each piece begins as a WE visual system, not a blank template.'],
-    ['02', 'Material', 'Performance needs guide knit, stretch, and reinforcement decisions.'],
+    ['02', 'Specification', 'Materials and construction become public only after evidence is approved.'],
     ['03', 'Personalization', 'Names, numbers, and marks are placed inside the original composition.'],
-    ['04', 'Inspection', 'Alignment, color, construction, and finish are checked before release.'],
+    ['04', 'Inspection', 'Verified checks can record alignment, color, construction, and finish before release.'],
   ]
   return (
     <>
@@ -983,8 +1094,8 @@ export function CraftsmanshipPage() {
       </section>
       <section className="material-proof section-pad">
         <div className="shell split-feature split-feature--reverse">
-          <img src="/images/water-ripple.webp" alt="Performance jersey material above water" loading="lazy" width="1672" height="941" />
-          <div><p className="eyebrow">Material follows movement</p><h2>Performance first. Meaning built in.</h2><p>The final production specification will connect verified fabric performance, care, and testing data here. This prototype intentionally avoids unsupported claims.</p></div>
+          <img src="/images/water-ripple.webp" alt="White Pulse garment concept above a flowing surface" loading="lazy" width="1672" height="941" />
+          <div><p className="eyebrow">Evidence before claims</p><h2>Meaning first. Specifications verified.</h2><p>Final material, care, construction, and test information will appear only when a traceable product record is approved. No unsupported performance claim is presented here.</p></div>
         </div>
       </section>
     </>
@@ -999,8 +1110,8 @@ export function CommunityPage() {
         <div className="community-hero__content shell"><p className="eyebrow eyebrow--gold">Worn your way</p><h1>One original.<br />Countless meanings.</h1><p>A community preview showing how WE can hold individual and shared stories.</p></div>
       </section>
       <section className="community-grid section-pad shell">
-        <article className="community-grid__quote"><p>“The number is the first thing people see. The reason behind it is what I carry.”</p><span>Sample community story / Not a customer testimonial</span></article>
-        <img src="/images/water-ripple.webp" alt="Water Ripple jersey creative study" loading="lazy" width="1672" height="941" />
+        <article className="community-grid__quote"><p>Verified wearer stories will live here.</p><span>Consent, moderation, attribution, and withdrawal controls required before publication</span></article>
+        <img src="/images/water-ripple.webp" alt="White Pulse creative concept study" loading="lazy" width="1672" height="941" />
         <img src="/images/craft-embroidery.webp" alt="Embroidery detail study" loading="lazy" width="1672" height="941" />
         <article className="community-grid__cta"><HandHeart size={32} /><h2>Share the meaning.</h2><p>Community submission workflows can connect here once moderation and consent systems are approved.</p><Link className="text-link" to="/support">Learn about submissions <ArrowRight size={17} /></Link></article>
       </section>
@@ -1011,7 +1122,7 @@ export function CommunityPage() {
 export function AboutPage() {
   return (
     <>
-      <PageIntro index="About WE" title="A uniform is never just a uniform." copy="WE creates original performance apparel for the individual inside every team, memory, and moment." />
+      <PageIntro index="About WE" title="A uniform is never just a uniform." copy="WE brings sports heritage, personal identity, original design, and documented craft into one connected experience." />
       <section className="about-statement section-pad shell"><p>WE exists between two ideas that are usually separated:</p><h2>I am part of this.<br /><span>And this is still mine.</span></h2></section>
       <section className="about-pillars section-pad shell">
         <article><Cube size={30} /><p className="eyebrow">Original</p><h3>Begin with a point of view.</h3><p>Every WE series is designed as a complete visual world before personalization begins.</p></article>
@@ -1038,7 +1149,7 @@ export function TeamPage() {
             <label>Work email <input name="email" type="email" maxLength={120} required autoComplete="email" spellCheck={false} /></label>
             <label>Organization <input name="organization" maxLength={120} required autoComplete="organization" /></label>
             <div className="field-grid">
-              <label>Estimated group size <select name="group-size" defaultValue="" required><option value="" disabled>Select a range</option><option>10–24</option><option>25–49</option><option>50–99</option><option>100+</option></select></label>
+              <label>Estimated group size <select name="group-size" defaultValue="" required><option value="" disabled>Select a range</option><option>10–24</option><option>25–49</option><option>50–99</option><option>100+ / eligibility TBD</option></select></label>
               <label>Needed by <input name="needed-by" type="date" autoComplete="off" required /></label>
             </div>
             <label>Team or event type <select name="purpose" defaultValue="" required><option value="" disabled>Select one</option><option>School or club</option><option>Company or organization</option><option>Event or creative community</option><option>Other</option></select></label>
@@ -1052,7 +1163,7 @@ export function TeamPage() {
 }
 
 export function CartPage() {
-  const { items, subtotal, removeItem, restoreItem, updateQuantity } = useCart()
+  const { items, subtotal, hasPendingPricing, removeItem, restoreItem, updateQuantity } = useCart()
   const [removed, setRemoved] = useState<CartItem | null>(null)
   const remove = (item: CartItem) => {
     removeItem(item.id)
@@ -1070,12 +1181,12 @@ export function CartPage() {
         <div className="cart-items">
           {items.map((item) => <article className="cart-item" key={item.id}>
             <img src={item.image} alt="" width="941" height="941" />
-            <div><h2>{item.name}</h2><p>{item.detail}</p><button type="button" onClick={() => remove(item)}>Remove</button></div>
+            <div><h2>{item.name}</h2><p>{item.detail}</p>{item.designId ? <p>Design ID {item.designId} · Proof {item.proofVersion}</p> : null}<button type="button" onClick={() => remove(item)}>Remove</button></div>
             <label>Quantity <select name={`quantity-${item.id}`} value={item.quantity} onChange={(event) => updateQuantity(item.id, Number(event.target.value))}>{[1,2,3,4].map((value) => <option key={value}>{value}</option>)}</select></label>
-            <p>{formatPrice(item.price * item.quantity)}*</p>
+            <p>{formatPrice(item.price.status === 'confirmed' ? { ...item.price, amount: item.price.amount * item.quantity } : item.price)}</p>
           </article>)}
         </div>
-        <aside className="order-summary"><p className="eyebrow">Sample order summary</p><div><span>Subtotal</span><strong>{formatPrice(subtotal)}*</strong></div><div><span>Shipping</span><span>Calculated with live service</span></div><div><span>Tax</span><span>Calculated at checkout</span></div><Link className="button button--dark" to="/checkout">Continue to demo checkout <ArrowRight size={18} /></Link><p className="prototype-note">* No charge will be made in this prototype.</p></aside>
+        <aside className="order-summary"><p className="eyebrow">Order review</p><div><span>Subtotal</span><strong>{subtotal === null ? 'PRICE TBD' : formatPrice({ status: 'confirmed', amount: subtotal, currency: 'USD' })}</strong></div><div><span>Shipping</span><span>TBD</span></div><div><span>Tax</span><span>TBD</span></div><Link className="button button--dark" to="/checkout">Continue to order review <ArrowRight size={18} /></Link><p className="prototype-note">{hasPendingPricing ? 'One or more prices remain unverified. This flow cannot collect payment or create a production order.' : 'No charge will be made in this concept build.'}</p></aside>
       </div> : <div className="empty-state empty-state--large"><BagIcon /><h2>Your cart is open space.</h2><p>Choose a WE original or begin a personalized piece.</p><Link className="button button--dark" to="/collections">Explore originals <ArrowRight size={18} /></Link></div>}
       {removed ? <div className="undo-toast" role="status"><span>{removed.name} removed.</span><button type="button" onClick={undoRemove}>Undo</button><button type="button" aria-label="Dismiss removed item message" onClick={() => setRemoved(null)}>×</button></div> : null}
     </section>
@@ -1085,13 +1196,13 @@ export function CartPage() {
 function BagIcon() { return <Package size={42} weight="light" /> }
 
 export function CheckoutPage() {
-  const { items, subtotal, clearCart } = useCart()
+  const { items, subtotal, hasPendingPricing, clearCart } = useCart()
   const [complete, setComplete] = useState(false)
   if (!items.length && !complete) return <Navigate to="/cart" replace />
 
   return (
     <section className="checkout-page shell">
-      <div className="checkout-heading"><p className="eyebrow">Secure-flow prototype</p><h1>Checkout</h1><p>No payment, order, or personal data will be transmitted.</p></div>
+      <div className="checkout-heading"><p className="eyebrow">Non-transactional prototype</p><h1>Order review</h1><p>No payment, production order, or personal data will be transmitted.</p></div>
       {complete ? <div className="checkout-complete"><CheckCircle size={56} weight="fill" /><p className="eyebrow">Demo complete</p><h2>Your experience is ready for integration.</h2><p>This prototype intentionally stops before payment processing.</p><Link className="button button--dark" to="/">Return home</Link></div> : <form className="checkout-form" onSubmit={(event) => { event.preventDefault(); setComplete(true); clearCart() }}>
         <div className="checkout-fields">
           <fieldset><legend>Contact</legend><label>Email <input name="email" type="email" maxLength={120} autoComplete="email" spellCheck={false} required /></label></fieldset>
@@ -1108,9 +1219,9 @@ export function CheckoutPage() {
             </div>
             <label>ZIP code <input name="postal-code" inputMode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" maxLength={10} title="Enter a 5-digit ZIP code or ZIP+4" autoComplete="postal-code" required /></label>
           </fieldset>
-          <fieldset><legend>Payment demonstration</legend><div className="demo-payment"><ShieldCheck size={25} /><p><strong>Payment integration intentionally disabled</strong><br />Connect an approved PCI-compliant provider before launch.</p></div></fieldset>
+          <fieldset><legend>Pricing &amp; payment status</legend><div className="demo-payment"><ShieldCheck size={25} /><p><strong>{hasPendingPricing ? 'PRICE TBD · payment unavailable' : 'Payment integration intentionally disabled'}</strong><br />Verified catalog pricing, approved terms, and a compliant payment provider are required before launch.</p></div></fieldset>
         </div>
-        <aside className="order-summary"><p className="eyebrow">Order summary</p>{items.map((item) => <p key={item.id}>{item.name} × {item.quantity}</p>)}<div><span>Prototype total</span><strong>{formatPrice(subtotal)}*</strong></div><button className="button button--dark" type="submit">Complete demo <ArrowRight size={18} /></button></aside>
+        <aside className="order-summary"><p className="eyebrow">Review summary</p>{items.map((item) => <p key={item.id}>{item.name} × {item.quantity}{item.designId ? <><br /><small>{item.designId} / {item.proofVersion}</small></> : null}</p>)}<div><span>Total</span><strong>{subtotal === null ? 'PRICE TBD' : formatPrice({ status: 'confirmed', amount: subtotal, currency: 'USD' })}</strong></div><button className="button button--dark" type="submit">Complete review demo <ArrowRight size={18} /></button></aside>
       </form>}
     </section>
   )
@@ -1177,7 +1288,7 @@ export function SearchPage() {
         <>
           {initial ? <p className="search-count" role="status">{results.length} {results.length === 1 ? 'result' : 'results'}</p> : null}
           <div className="search-results">{results.map((result) => <article key={`${result.type}-${result.href}`}><Link to={result.href}><img src={result.image} alt="" width="1672" height="941" /><div><p className="eyebrow">{result.type}</p><h2>{result.title}</h2><p>{result.description}</p></div><ArrowUpRight size={23} /></Link></article>)}</div>
-          {initial && !results.length ? <div className="empty-state"><h2>Nothing matched yet.</h2><p>Try a series name such as Water Ripple, or search “jersey.”</p></div> : null}
+          {initial && !results.length ? <div className="empty-state"><h2>Nothing matched yet.</h2><p>Try a series name such as White Pulse, or search “jersey.”</p></div> : null}
         </>
       )}
     </section>
@@ -1199,7 +1310,7 @@ export function SupportPage() {
       <section className="faq-section section-pad shell"><SectionHeading eyebrow="FAQ" title="A few useful answers." /><div>{[
         ['Can I personalize every WE piece?', 'Personalization availability is defined per product. Eligible sample items are clearly labeled in the prototype.'],
         ['How long does production take?', 'Live production estimates are intentionally withheld until they can be supplied by the operations system.'],
-        ['Can WE support a whole team?', 'Yes—the team brief is designed for coordinated styles, player data, approvals, and tracking.'],
+        ['Can WE support a whole team?', 'The prototype supports a structured brief intake. Eligibility, minimum quantity, capacity, timing, and commercial terms remain TBD.'],
       ].map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div></section>
     </>
   )
@@ -1210,6 +1321,7 @@ const legalContent: Record<string, { title: string; intro: string; sections: [st
   terms: { title: 'Terms framework', intro: 'These are product-language placeholders, not legal terms.', sections: [['Orders', 'Define acceptance, production approval, changes, cancellations, and remedies using the final operating model.'], ['Intellectual property', 'Document rights for customer-supplied names, numbers, and marks alongside WE original designs.']] },
   accessibility: { title: 'Accessibility', intro: 'WE is designed toward WCAG 2.2 AA across navigation, content, customization, and purchase flows.', sections: [['Current build', 'Keyboard navigation, visible focus, semantic controls, text alternatives, and reduced-motion preferences are supported.'], ['Feedback', 'A monitored accessibility contact channel must be added before launch.']] },
   shipping: { title: 'Shipping & returns framework', intro: 'Operational timelines and policies connect only when verified services and rules are ready.', sections: [['Personalized pieces', 'Define approval, production, change, and return rules in plain language before the buyer commits.'], ['Tracking', 'Expose carrier events and production milestones from the verified fulfillment source.']] },
+  'size-guide': { title: 'Size guide framework', intro: 'Final garment measurements and fit guidance require approved product specifications.', sections: [['Measurements', 'Publish measurements by verified product and variant rather than applying a generic chart.'], ['Before launch', 'Document measurement method, tolerance, fit terminology, and support escalation before recommending a size.']] },
 }
 
 export function PolicyPage() {
