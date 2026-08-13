@@ -39,6 +39,7 @@ jobs:
           npm test
           npm run audit:source
           npm run smoke:routes
+          npm run e2e
           npm run build
 
       - name: Regenerate page previews

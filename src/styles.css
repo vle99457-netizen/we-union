@@ -1417,6 +1417,7 @@ summary:focus-visible {
 }
 
 .collection-row {
+  display: block;
   position: relative;
   min-height: clamp(560px, 68vw, 820px);
   overflow: hidden;
@@ -1470,7 +1471,8 @@ summary:focus-visible {
   left: auto;
 }
 
-.collection-row__content h2 {
+.collection-row__content > strong {
+  display: block;
   margin-bottom: 22px;
   font-family: var(--display);
   font-size: clamp(5rem, 10vw, 10rem);
@@ -1479,7 +1481,8 @@ summary:focus-visible {
   text-transform: uppercase;
 }
 
-.collection-row__content > p:not(.eyebrow) {
+.collection-row__statement {
+  display: block;
   margin-bottom: 30px;
   color: #e1e1dc;
   font-size: 1.08rem;
@@ -1837,6 +1840,14 @@ summary:focus-visible {
   color: var(--white);
   border-color: var(--obsidian);
   background: var(--obsidian);
+}
+
+.city-discovery__status {
+  min-height: 1.2em;
+  margin: 10px 0 0;
+  color: var(--gold-ink);
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 
 .product-info h1 {
@@ -3839,7 +3850,7 @@ summary:focus-visible {
     right: 20px;
   }
 
-  .collection-row__content h2 {
+  .collection-row__content > strong {
     font-size: 5.4rem;
   }
 

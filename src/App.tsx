@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import { SiteChrome } from './components/SiteChrome'
+import { RouteMetadata } from './components/RouteMetadata'
 import {
   AboutPage,
   AccountPage,
@@ -26,6 +27,7 @@ import {
 export default function App() {
   return (
     <SiteChrome>
+      <RouteMetadata />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/create" element={<WorldPage world="create" />} />
