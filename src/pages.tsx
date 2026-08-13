@@ -8,6 +8,7 @@ import {
   CirclesThreePlus,
   Cube,
   HandHeart,
+  MagnifyingGlass,
   Needle,
   Package,
   ShieldCheck,
@@ -438,10 +439,23 @@ export function ProductPage() {
   const product = getProduct(slug)
   const [size, setSize] = useState<ApparelSize | ''>('')
   const [added, setAdded] = useState(false)
+  const [cityQuery, setCityQuery] = useState('')
   const { addItem } = useCart()
+  const navigate = useNavigate()
 
   if (!product) return <NotFoundPage />
   const currentSeries = getSeries(product.series)
+
+  const findCity = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const normalized = cityQuery.trim().toLowerCase()
+    const match = cityChoices.find((city) =>
+      city.name.toLowerCase() === normalized ||
+      city.slug === normalized ||
+      city.name.toLowerCase().includes(normalized),
+    )
+    navigate(match ? `/search?city=${match.slug}` : `/search?q=${encodeURIComponent(cityQuery.trim())}`)
+  }
 
   const add = () => {
     if (!size) return
@@ -462,6 +476,36 @@ export function ProductPage() {
         <div className="product-gallery__detail"><img src="/images/craft-embroidery.webp" alt="Gold embroidery construction detail" loading="lazy" width="1672" height="941" /></div>
       </div>
       <div className="product-info">
+        <aside className="city-discovery" aria-labelledby="find-city-title">
+          <div className="city-discovery__header">
+            <div>
+              <p className="eyebrow" id="find-city-title">Find your city</p>
+              <p>Discover original WE color stories curated around a place—not an official team identity.</p>
+            </div>
+            <form role="search" onSubmit={findCity}>
+              <label className="sr-only" htmlFor="product-city-search">Search by city</label>
+              <MagnifyingGlass aria-hidden="true" size={18} />
+              <input
+                id="product-city-search"
+                name="city"
+                type="search"
+                list="product-city-options"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder="Search by city"
+                value={cityQuery}
+                onChange={(event) => setCityQuery(event.target.value)}
+              />
+              <button type="submit">Find</button>
+              <datalist id="product-city-options">
+                {cityChoices.map((city) => <option key={city.slug} value={city.name} />)}
+              </datalist>
+            </form>
+          </div>
+          <div className="city-chips" aria-label="Popular cities">
+            {cityChoices.map((city) => <Link key={city.slug} to={`/search?city=${city.slug}`}>{city.name}</Link>)}
+          </div>
+        </aside>
         <p className="eyebrow">{currentSeries?.name} / Prototype piece</p>
         <h1>{product.name}</h1>
         <p className="product-info__price">{formatPrice(product.price)}*</p>
@@ -530,6 +574,33 @@ const colors = [
 
 const apparelSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'] as const
 type ApparelSize = (typeof apparelSizes)[number]
+
+const cityChoices = [
+  {
+    slug: 'sacramento',
+    name: 'Sacramento',
+    statement: 'Sunlit neutrals, deep green accents, and originals made for long seasons.',
+    productSlugs: ['water-ripple-game-jersey', 'common-thread-training-top'],
+  },
+  {
+    slug: 'chicago',
+    name: 'Chicago',
+    statement: 'High-contrast layers and cold-weather depth, built around original WE series.',
+    productSlugs: ['crack-game-jersey', 'crack-travel-jacket'],
+  },
+  {
+    slug: 'los-angeles',
+    name: 'Los Angeles',
+    statement: 'Bright movement, warm neutrals, and lightweight originals for the everyday field.',
+    productSlugs: ['water-ripple-warmup', 'common-thread-travel-shell'],
+  },
+  {
+    slug: 'new-york',
+    name: 'New York',
+    statement: 'Sharp contrast and city-ready layers with no borrowed team identity.',
+    productSlugs: ['crack-game-jersey', 'common-thread-training-top'],
+  },
+] as const
 
 const personalizableProducts = products.filter((product) => product.personalizable)
 
@@ -814,6 +885,10 @@ export function CustomPage() {
           <p className="prototype-note">* Prototype content only. Production settings, price, and availability require live catalog data.</p>
         </div>
       </div>
+      <aside className="create-disclaimer shell" aria-labelledby="create-disclaimer-title">
+        <p className="eyebrow" id="create-disclaimer-title">Personalization &amp; intellectual property</p>
+        <p>WE UNION CREATE products are built on original garment designs and customer-led personalization. WE UNION does not reproduce or accept official league, team, athlete, or third-party brand names, logos, wordmarks, signatures, or confusingly similar variations. Customer-submitted artwork must be original or properly authorized and is subject to intellectual property review.</p>
+      </aside>
     </section>
   )
 }
@@ -1046,16 +1121,31 @@ export function TrackPage() {
 export function SearchPage() {
   const [params, setParams] = useSearchParams()
   const initial = params.get('q') ?? ''
+  const citySlug = params.get('city') ?? ''
+  const city = cityChoices.find((item) => item.slug === citySlug)
   const [query, setQuery] = useState(initial)
   const results = useMemo(() => searchCatalog(initial), [initial])
+  const cityProducts = city
+    ? city.productSlugs.map((slug) => getProduct(slug)).filter((product): product is NonNullable<typeof product> => Boolean(product))
+    : []
   const submit = (event: React.FormEvent<HTMLFormElement>) => { event.preventDefault(); setParams(query.trim() ? { q: query.trim() } : {}) }
   return (
     <section className="search-page shell">
-      <p className="eyebrow">Search WE</p><h1>{initial ? `Results for “${initial}”` : 'Find your way in.'}</h1>
+      <p className="eyebrow">{city ? 'Find your city' : 'Search WE'}</p><h1>{city ? `${city.name} originals.` : initial ? `Results for “${initial}”` : 'Find your way in.'}</h1>
       <form role="search" onSubmit={submit}><label htmlFor="search-page-input">Search products, series, and stories</label><input id="search-page-input" name="q" type="search" autoComplete="off" spellCheck={false} value={query} onChange={(event) => setQuery(event.target.value)} /><button type="submit"><ArrowRight size={23} /><span className="sr-only">Search</span></button></form>
-      {initial ? <p className="search-count" role="status">{results.length} {results.length === 1 ? 'result' : 'results'}</p> : null}
-      <div className="search-results">{results.map((result) => <article key={`${result.type}-${result.href}`}><Link to={result.href}><img src={result.image} alt="" width="1672" height="941" /><div><p className="eyebrow">{result.type}</p><h2>{result.title}</h2><p>{result.description}</p></div><ArrowUpRight size={23} /></Link></article>)}</div>
-      {initial && !results.length ? <div className="empty-state"><h2>Nothing matched yet.</h2><p>Try a series name such as Water Ripple, or search “jersey.”</p></div> : null}
+      {city ? (
+        <div className="city-results">
+          <div className="city-results__intro"><p>{city.statement}</p><span>{cityProducts.length} original pieces / prototype</span></div>
+          <div className="product-grid">{cityProducts.map((product, index) => <ProductCard key={product.slug} product={product} priority={index < 2} />)}</div>
+          <p className="city-results__note">City discovery is an original WE merchandising layer. It does not imply affiliation with a league, team, athlete, or third-party brand.</p>
+        </div>
+      ) : (
+        <>
+          {initial ? <p className="search-count" role="status">{results.length} {results.length === 1 ? 'result' : 'results'}</p> : null}
+          <div className="search-results">{results.map((result) => <article key={`${result.type}-${result.href}`}><Link to={result.href}><img src={result.image} alt="" width="1672" height="941" /><div><p className="eyebrow">{result.type}</p><h2>{result.title}</h2><p>{result.description}</p></div><ArrowUpRight size={23} /></Link></article>)}</div>
+          {initial && !results.length ? <div className="empty-state"><h2>Nothing matched yet.</h2><p>Try a series name such as Water Ripple, or search “jersey.”</p></div> : null}
+        </>
+      )}
     </section>
   )
 }
