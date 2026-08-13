@@ -7,6 +7,8 @@ const defaultDescription = 'Sports heritage meets personal identity. Explore WE 
 function routeMetadata(pathname: string): [string, string] {
   if (pathname === '/') return ['WE — Sports Heritage Meets Personal Identity', defaultDescription]
   if (pathname === '/collections') return ['Original Series — WE', 'Explore WE original series as full-width visual worlds before entering each product list.']
+  if (pathname === '/custom/team') return ['Team Orders — WE', 'Plan an original WE group system through a structured, non-transactional team brief.']
+  if (pathname.startsWith('/custom/saved/')) return ['Create Yours — WE', 'Return to a locally saved WE personalization draft.']
   if (pathname === '/custom') return ['Create Yours — WE', 'Personalize a WE original through Choose, Personalize, Review, and Order & Track.']
   if (pathname === '/search') return ['Search — WE', 'Find WE originals, series, stories, and support.']
 

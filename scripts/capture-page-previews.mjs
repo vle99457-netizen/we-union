@@ -195,6 +195,7 @@ async function capture([fileName, route, label, state], viewport, folder) {
   const health = await page.evaluate(() => ({
     title: document.title,
     h1Count: document.querySelectorAll('h1').length,
+    h1Text: document.querySelector('h1')?.innerText.replace(/\s+/g, ' ').trim() ?? '',
     hasMain: Boolean(document.querySelector('#main-content')),
     hasContent: document.body.innerText.trim().length > 120,
     hasErrorOverlay: Boolean(document.querySelector('.vite-error-overlay, #webpack-dev-server-client-overlay')),
@@ -203,7 +204,12 @@ async function capture([fileName, route, label, state], viewport, folder) {
   const screenshotPath = path.join(outputRoot, folder, `${fileName}.webp`)
   await page.screenshot({ path: screenshotPath, type: 'webp', quality: 80, fullPage: true })
 
-  const passed = health.h1Count === 1 && health.hasMain && health.hasContent && !health.hasErrorOverlay && pageErrors.length === 0
+  const passed = health.h1Count === 1
+    && health.hasMain
+    && health.hasContent
+    && !health.hasErrorOverlay
+    && consoleErrors.length === 0
+    && pageErrors.length === 0
   report.push({ label, route, viewport, file: path.relative(root, screenshotPath), passed, health, consoleErrors, pageErrors })
   process.stdout.write(`${passed ? 'PASS' : 'FAIL'} ${label} ${route} -> ${path.relative(root, screenshotPath)}\n`)
 }

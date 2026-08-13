@@ -8,8 +8,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'public/**'
-      - 'scripts/capture-page-previews.mjs'
-      - 'scripts/route-smoke.mjs'
+      - 'scripts/**'
       - 'src/**'
       - 'docs/previews/v3/**'
 
@@ -45,8 +44,8 @@ jobs:
       - name: Regenerate page previews
         run: npm run preview:capture
 
-      - name: Verify committed previews are current
-        run: git diff --exit-code -- docs/previews/v3
+      - name: Verify preview routes, health, and image files
+        run: npm run preview:verify
 
       - name: Upload verified preview package
         uses: actions/upload-artifact@v4
