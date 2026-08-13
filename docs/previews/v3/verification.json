@@ -1,0 +1,657 @@
+{
+  "schemaVersion": 1,
+  "source": "Local Vite route render",
+  "report": [
+    {
+      "label": "V01 Homepage",
+      "route": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/01-homepage.webp",
+      "passed": true,
+      "health": {
+        "title": "WE — Gear Made Personal",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 11009
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V02A Collection Gateway",
+      "route": "/collections",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/02-collection-gateway.webp",
+      "passed": true,
+      "health": {
+        "title": "Original Series — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 3770
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V02B Series Product List",
+      "route": "/collections/water-ripple",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/03-series-list.webp",
+      "passed": true,
+      "health": {
+        "title": "Water Ripple — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 2629
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V03 World Landing / Create",
+      "route": "/create",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/04-world-create.webp",
+      "passed": true,
+      "health": {
+        "title": "Create — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 3301
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V04 Product Detail",
+      "route": "/products/water-ripple-game-jersey",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/05-product-detail.webp",
+      "passed": true,
+      "health": {
+        "title": "Water Ripple Game Jersey — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 2895
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V05 Create Studio",
+      "route": "/custom?style=crack-game-jersey&size=M",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/06-create-studio.webp",
+      "passed": true,
+      "health": {
+        "title": "Create Yours — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 2053
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V06 Cart",
+      "route": "/cart",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/07-cart.webp",
+      "passed": true,
+      "health": {
+        "title": "Cart — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 1629
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V07 Checkout",
+      "route": "/checkout",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/08-checkout.webp",
+      "passed": true,
+      "health": {
+        "title": "Checkout — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 2217
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V08 Account",
+      "route": "/account",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/09-account.webp",
+      "passed": true,
+      "health": {
+        "title": "Account — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 1681
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V09 Order Tracking",
+      "route": "/track",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/10-order-track.webp",
+      "passed": true,
+      "health": {
+        "title": "Order Tracking — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 1501
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V10 Stories",
+      "route": "/stories",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/11-stories.webp",
+      "passed": true,
+      "health": {
+        "title": "Stories — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 3829
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V11 Story Detail",
+      "route": "/stories/the-number-24",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/12-story-detail.webp",
+      "passed": true,
+      "health": {
+        "title": "What a Number Carries — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 3241
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V12 Craftsmanship",
+      "route": "/craftsmanship",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/13-craftsmanship.webp",
+      "passed": true,
+      "health": {
+        "title": "Craftsmanship — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 3985
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V13 Community",
+      "route": "/community",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/14-community.webp",
+      "passed": true,
+      "health": {
+        "title": "Community — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 3113
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V14 About",
+      "route": "/about",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/15-about.webp",
+      "passed": true,
+      "health": {
+        "title": "About — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 2473
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V15 Support",
+      "route": "/support",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/16-support.webp",
+      "passed": true,
+      "health": {
+        "title": "Support — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 2614
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V16 Team Orders",
+      "route": "/custom/team",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/17-team-orders.webp",
+      "passed": true,
+      "health": {
+        "title": "Page Not Found — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 2575
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V17 Search",
+      "route": "/search?q=ripple",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/18-search.webp",
+      "passed": true,
+      "health": {
+        "title": "Search — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 1980
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V18 Policy",
+      "route": "/legal/privacy",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/19-policy.webp",
+      "passed": true,
+      "health": {
+        "title": "Policies — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 1715
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V19 Not Found",
+      "route": "/not-a-real-route",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/20-not-found.webp",
+      "passed": true,
+      "health": {
+        "title": "Page Not Found — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 1481
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "World Landing / Honor",
+      "route": "/honor",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/21-world-honor.webp",
+      "passed": true,
+      "health": {
+        "title": "Honor — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 3214
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "World Landing / Belong",
+      "route": "/belong",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/22-world-belong.webp",
+      "passed": true,
+      "health": {
+        "title": "Belong — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 3301
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "Crack Series Product List",
+      "route": "/collections/crack",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/23-crack-series-list.webp",
+      "passed": true,
+      "health": {
+        "title": "Crack Series — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 2629
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "City Discovery Results",
+      "route": "/search?city=chicago",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/24-city-results.webp",
+      "passed": true,
+      "health": {
+        "title": "Search — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 2181
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "Saved Design State",
+      "route": "/custom/saved/demo",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/25-saved-design.webp",
+      "passed": true,
+      "health": {
+        "title": "Page Not Found — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 2053
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "FAQ Route",
+      "route": "/faq",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/desktop/26-faq.webp",
+      "passed": true,
+      "health": {
+        "title": "FAQ — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 2614
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V01 Homepage / Mobile",
+      "route": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/mobile/01-homepage-mobile.webp",
+      "passed": true,
+      "health": {
+        "title": "WE — Gear Made Personal",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 14431
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V02A Collection Gateway / Mobile",
+      "route": "/collections",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/mobile/02-collection-gateway-mobile.webp",
+      "passed": true,
+      "health": {
+        "title": "Original Series — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 3719
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V04 Product Detail / Mobile",
+      "route": "/products/water-ripple-game-jersey",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/mobile/05-product-detail-mobile.webp",
+      "passed": true,
+      "health": {
+        "title": "Water Ripple Game Jersey — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 4653
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V05 Create Studio / Mobile",
+      "route": "/custom?style=crack-game-jersey&size=M",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/mobile/06-create-studio-mobile.webp",
+      "passed": true,
+      "health": {
+        "title": "Create Yours — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 3020
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "V07 Checkout / Mobile",
+      "route": "/checkout",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1
+      },
+      "file": "docs/previews/v3/mobile/08-checkout-mobile.webp",
+      "passed": true,
+      "health": {
+        "title": "Checkout — WE",
+        "h1Count": 1,
+        "hasMain": true,
+        "hasContent": true,
+        "hasErrorOverlay": false,
+        "bodyHeight": 3194
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    }
+  ]
+}

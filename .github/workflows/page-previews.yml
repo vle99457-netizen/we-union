@@ -1,0 +1,57 @@
+name: Page preview verification
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/page-previews.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'public/**'
+      - 'scripts/capture-page-previews.mjs'
+      - 'scripts/route-smoke.mjs'
+      - 'src/**'
+      - 'docs/previews/v3/**'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-previews:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run source and route checks
+        run: |
+          npm run check
+          npm test
+          npm run audit:source
+          npm run smoke:routes
+          npm run e2e
+          npm run build
+
+      - name: Regenerate page previews
+        run: npm run preview:capture
+
+      - name: Verify committed previews are current
+        run: git diff --exit-code -- docs/previews/v3
+
+      - name: Upload verified preview package
+        uses: actions/upload-artifact@v4
+        with:
+          name: we-v3-page-previews
+          path: docs/previews/v3
+          if-no-files-found: error
+          retention-days: 30

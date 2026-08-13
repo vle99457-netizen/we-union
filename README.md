@@ -1,6 +1,6 @@
 # WE — Gear Made Personal
 
-A premium, editorial sportswear commerce prototype for the US market. The experience translates the WE V2.4 product brief into a responsive React site spanning discovery, original series, product detail, personalization, team briefs, stories, support, cart, and a deliberately non-transactional checkout demonstration.
+A premium, editorial sportswear commerce website for the US market. The experience implements the WE Website Requirements V3.0 across 19 page types, original-series discovery, city merchandising, product detail, personalization, team briefs, stories, support, cart, and a deliberately non-transactional checkout demonstration.
 
 ## Experience principles
 
@@ -25,10 +25,12 @@ npm run test
 npm run audit:source
 npm run smoke:routes
 npm run build
+# or run the complete gate:
+npm run verify
 ```
 
 The source audit covers image dimensions and alternatives, semantic control types, form names, motion anti-patterns, zoom safety, and the required visual-direction contract. The route smoke test server-renders 24 representative routes and verifies one `h1` plus a main landmark on every surface.
 
 ## Integration boundaries
 
-The current repository is a front-end product prototype. Before a commercial launch, connect and verify the product catalog, inventory, pricing, personalization production rules, authentication, payments, fulfillment tracking, CRM, legal policies, consent, analytics, and CMS. The UI intentionally explains unavailable integrations instead of pretending they are live.
+The current repository is a production-candidate front end. Before a commercial launch, connect and verify the product catalog, inventory, pricing, personalization production rules, authentication, payments, fulfillment tracking, CRM, legal policies, consent, analytics, and CMS. The UI intentionally explains unavailable integrations instead of pretending they are live.
