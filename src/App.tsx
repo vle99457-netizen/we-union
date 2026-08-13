@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { SiteChrome } from './components/SiteChrome'
 import { RouteMetadata } from './components/RouteMetadata'
 import {
@@ -34,7 +34,15 @@ export default function App() {
         <Route path="/honor" element={<WorldPage world="honor" />} />
         <Route path="/belong" element={<WorldPage world="belong" />} />
         <Route path="/collections" element={<CollectionsPage />} />
+        <Route path="/shop" element={<Navigate to="/collections" replace />} />
+        <Route path="/collections/water-ripple" element={<Navigate to="/collections/white-pulse" replace />} />
+        <Route path="/collections/crack" element={<Navigate to="/collections/black-rift" replace />} />
+        <Route path="/collections/common-thread" element={<Navigate to="/belong" replace />} />
         <Route path="/collections/:slug" element={<SeriesPage />} />
+        <Route path="/products/water-ripple-game-jersey" element={<Navigate to="/products/white-pulse-game-jersey" replace />} />
+        <Route path="/products/water-ripple-warmup" element={<Navigate to="/products/white-pulse-motion-top" replace />} />
+        <Route path="/products/crack-game-jersey" element={<Navigate to="/products/black-rift-game-jersey" replace />} />
+        <Route path="/products/crack-travel-jacket" element={<Navigate to="/products/black-rift-travel-layer" replace />} />
         <Route path="/products/:slug" element={<ProductPage />} />
         <Route path="/custom" element={<CustomPage />} />
         <Route path="/custom/team" element={<TeamPage />} />

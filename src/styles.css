@@ -6,35 +6,13 @@
   src: url('/fonts/bebas-neue-latin-400-normal.woff2') format('woff2');
 }
 
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url('/fonts/roboto-latin-400-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 500;
-  src: url('/fonts/roboto-latin-500-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url('/fonts/roboto-latin-700-normal.woff2') format('woff2');
-}
-
 :root {
+  /* All concrete color values below are temporary visual preview tokens, not official WE color specifications. */
   --obsidian: #0a0a0a;
   --black: #111111;
   --ivory: #f7f4ed;
   --paper: #fffdf8;
+  /* Temporary preview accent tokens; these values are not official WE brand colors. */
   --gold: #9a7442;
   --gold-ink: #76552d;
   --gold-light: #c5a879;
@@ -43,7 +21,7 @@
   --white: #ffffff;
   --blue: #174a8b;
   --display: 'Bebas Neue', Impact, sans-serif;
-  --body: 'Roboto', 'Noto Sans', 'Noto Sans CJK SC', Arial, sans-serif;
+  --body: 'Neue Haas Grotesk Text Pro', 'Neue Haas Grotesk', 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
   --shell: min(1440px, calc(100vw - 80px));
   --header-h: 76px;
   color: var(--obsidian);
@@ -200,7 +178,7 @@ summary:focus-visible {
 .eyebrow {
   margin-bottom: 16px;
   color: var(--steel);
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.18em;
   line-height: 1.3;
@@ -220,7 +198,7 @@ summary:focus-visible {
   padding: 13px 20px;
   border: 1px solid transparent;
   border-radius: 0;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1;
@@ -324,7 +302,7 @@ summary:focus-visible {
 .prototype-note {
   margin-top: 26px;
   color: var(--steel);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   line-height: 1.55;
 }
 
@@ -337,7 +315,7 @@ summary:focus-visible {
   padding: 5px 28px;
   color: var(--obsidian);
   background: var(--gold-light);
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -395,7 +373,7 @@ summary:focus-visible {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
-  font-size: 0.73rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -456,7 +434,7 @@ summary:focus-visible {
   color: var(--obsidian);
   border-radius: 999px;
   background: var(--gold-light);
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 
@@ -482,7 +460,7 @@ summary:focus-visible {
 }
 
 .header-search label {
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -553,7 +531,7 @@ summary:focus-visible {
 .mobile-menu nav a span {
   color: var(--gold-light);
   font-family: var(--body);
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 700;
 }
 
@@ -563,7 +541,7 @@ summary:focus-visible {
   gap: 16px 24px;
   padding: 36px 24px 60px;
   color: #c9c9c4;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -685,7 +663,7 @@ summary:focus-visible {
   min-height: 44px;
   align-items: center;
   gap: 14px;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -787,6 +765,15 @@ summary:focus-visible {
   line-height: 1.5;
 }
 
+.world-card__content .world-card__status {
+  margin: 0 0 10px;
+  color: var(--gold-light);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .world-card__arrow {
   top: 24px;
   right: 24px;
@@ -807,6 +794,7 @@ summary:focus-visible {
 
 .series-banner > img {
   width: 100%;
+  height: clamp(520px, 66vw, 820px);
   min-height: inherit;
   object-fit: cover;
 }
@@ -837,7 +825,7 @@ summary:focus-visible {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   padding-top: 48px;
 }
@@ -869,7 +857,7 @@ summary:focus-visible {
   padding: 8px 10px;
   color: var(--obsidian);
   background: var(--ivory);
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -953,6 +941,7 @@ summary:focus-visible {
 
 .custom-story__visual img {
   width: 100%;
+  height: auto;
   aspect-ratio: 0.86;
   object-fit: cover;
 }
@@ -1014,7 +1003,7 @@ summary:focus-visible {
 }
 
 .custom-steps button span {
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 700;
 }
 
@@ -1122,7 +1111,7 @@ summary:focus-visible {
 
 .promise-grid__top span {
   color: var(--steel);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
 }
 
@@ -1168,6 +1157,7 @@ summary:focus-visible {
 
 .story-card__image img {
   width: 100%;
+  height: auto;
   aspect-ratio: 1.45;
   object-fit: cover;
   transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -1188,7 +1178,7 @@ summary:focus-visible {
   padding: 9px 12px;
   color: var(--white);
   background: var(--obsidian);
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1290,7 +1280,7 @@ summary:focus-visible {
   grid-column: 1 / -1;
   margin-bottom: 8px;
   color: #aaa9a5;
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1341,7 +1331,7 @@ summary:focus-visible {
 .footer-links h3 {
   margin: 0 0 24px;
   color: var(--gold-light);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -1378,7 +1368,7 @@ summary:focus-visible {
 .footer-bottom p {
   margin: 0;
   color: #848480;
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   letter-spacing: 0.04em;
 }
 
@@ -1611,6 +1601,56 @@ summary:focus-visible {
   background: var(--paper);
 }
 
+.listing-more {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 56px;
+  padding-block: 20px;
+  border-block: 1px solid var(--line);
+}
+
+.listing-more span {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.listing-more p {
+  max-width: 540px;
+  margin: 0;
+  color: var(--steel);
+  font-size: 0.86rem;
+  line-height: 1.6;
+  text-align: right;
+}
+
+.series-crosslinks {
+  display: grid;
+  grid-template-columns: 1fr repeat(2, minmax(180px, auto));
+  align-items: center;
+  gap: 12px;
+  margin-top: 48px;
+}
+
+.series-crosslinks p {
+  margin: 0;
+}
+
+.series-crosslinks a {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  padding-inline: 18px;
+  color: var(--white);
+  background: var(--obsidian);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .empty-state {
   display: flex;
   min-height: 280px;
@@ -1673,7 +1713,7 @@ summary:focus-visible {
 
 .world-manifesto__list span {
   color: var(--gold-ink);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
 }
 
 .world-series,
@@ -1720,6 +1760,27 @@ summary:focus-visible {
   margin-bottom: 24px;
   color: var(--steel);
   line-height: 1.7;
+}
+
+.world-gate + .world-gate {
+  margin-top: 40px;
+}
+
+.rights-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  color: var(--obsidian);
+  border: 1px solid var(--line);
+  background: var(--ivory);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.rights-status svg {
+  flex: 0 0 auto;
 }
 
 /* Product detail */
@@ -1810,7 +1871,7 @@ summary:focus-visible {
   color: var(--white);
   border: 0;
   background: var(--obsidian);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1964,6 +2025,85 @@ summary:focus-visible {
   line-height: 1.7;
 }
 
+.product-action-status {
+  min-height: 1.4em;
+  margin: 12px 0;
+  color: var(--gold-ink);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.product-detail-stack {
+  padding-bottom: 130px;
+}
+
+.mobile-purchase-bar {
+  display: none;
+}
+
+.product-detail-stack > section {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.34fr) minmax(0, 1.16fr) minmax(260px, 0.7fr);
+  gap: clamp(28px, 5vw, 84px);
+  padding-block: 70px;
+  border-top: 1px solid var(--line);
+}
+
+.product-detail-stack > section > .eyebrow {
+  grid-column: 1;
+}
+
+.product-detail-stack > section > h2 {
+  grid-column: 2;
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(3.2rem, 5vw, 5.8rem);
+  font-weight: 400;
+  line-height: 0.88;
+  text-transform: uppercase;
+}
+
+.product-detail-stack > section > p,
+.product-detail-stack > section > dl,
+.product-detail-stack > section > .text-link {
+  grid-column: 3;
+  margin: 0;
+  color: var(--steel);
+  line-height: 1.7;
+}
+
+.product-detail-stack > section > p + p,
+.product-detail-stack > section > p + .text-link {
+  margin-top: 18px;
+}
+
+.product-detail-stack dl div {
+  padding-block: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.product-detail-stack dl div:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.product-detail-stack dt {
+  margin-bottom: 7px;
+  color: var(--obsidian);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.product-detail-stack dd {
+  margin: 0;
+}
+
+.product-detail-stack [data-product-module='related'] .product-grid {
+  grid-column: 2 / -1;
+  padding-top: 0;
+}
+
 /* Studio */
 .studio-page {
   min-height: 900px;
@@ -2024,7 +2164,7 @@ summary:focus-visible {
   color: var(--steel);
   border: 0;
   background: transparent;
-  font-size: 0.7rem;
+  font-size: 0.74rem;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -2072,7 +2212,7 @@ summary:focus-visible {
   top: 20px;
   left: 22px;
   color: var(--steel);
-  font-size: 0.66rem;
+  font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2103,9 +2243,12 @@ summary:focus-visible {
   transform: scaleX(-1);
 }
 
-.studio-preview__canvas--detail img {
-  transform: scale(1.65);
-  transform-origin: 72% 42%;
+.studio-preview__canvas--left img {
+  transform: translateX(-6%) scale(1.08);
+}
+
+.studio-preview__canvas--right img {
+  transform: translateX(6%) scaleX(-1) scale(1.08);
 }
 
 .studio-preview__tint {
@@ -2156,7 +2299,7 @@ summary:focus-visible {
   border: 0;
   border-right: 1px solid #c7c7c2;
   background: transparent;
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -2389,6 +2532,25 @@ summary:focus-visible {
   line-height: 1.5;
 }
 
+.rights-confirmation {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.rights-confirmation input {
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+}
+
 .studio-nav {
   display: flex;
   justify-content: space-between;
@@ -2427,6 +2589,7 @@ summary:focus-visible {
 
 .journal-card img {
   width: 100%;
+  height: auto;
   aspect-ratio: 1.35;
   margin-bottom: 24px;
   object-fit: cover;
@@ -3143,7 +3306,7 @@ summary:focus-visible {
   grid-column: 1 / -1;
   margin-bottom: 8px;
   color: var(--steel);
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -3383,7 +3546,11 @@ summary:focus-visible {
   }
 
   .desktop-nav a {
-    font-size: 0.66rem;
+    font-size: 0.7rem;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .custom-story__grid {
@@ -3520,8 +3687,74 @@ summary:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  .product-gallery {
+    display: contents;
+  }
+
+  .product-gallery__main {
+    order: 1;
+  }
+
   .product-info {
     position: static;
+    order: 2;
+  }
+
+  .product-gallery__detail {
+    order: 3;
+  }
+
+  .product-detail-stack > section {
+    grid-template-columns: minmax(130px, 0.38fr) 1.62fr;
+  }
+
+  .product-detail-stack > section > h2 {
+    grid-column: 2;
+  }
+
+  .product-detail-stack > section > p,
+  .product-detail-stack > section > dl,
+  .product-detail-stack > section > .text-link {
+    grid-column: 2;
+  }
+
+  .product-detail-stack [data-product-module='related'] .product-grid {
+    grid-column: 2;
+  }
+
+  .mobile-purchase-bar {
+    position: sticky;
+    z-index: 20;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: 0.75fr 1.25fr;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: var(--white);
+    background: var(--obsidian);
+    box-shadow: 0 -10px 30px rgba(10, 10, 10, 0.16);
+  }
+
+  .mobile-purchase-bar span {
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+
+  .mobile-purchase-bar button {
+    min-height: 48px;
+    padding: 0 16px;
+    color: var(--obsidian);
+    border: 0;
+    background: var(--white);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .mobile-purchase-bar button:disabled {
+    color: #555;
+    background: #d8d8d4;
   }
 
   .studio-workspace {
@@ -3603,7 +3836,7 @@ summary:focus-visible {
   }
 
   .section-pad {
-    padding-block: 76px;
+    padding-block: clamp(58px, 15vw, 72px);
   }
 
   .utility-bar {
@@ -3640,7 +3873,7 @@ summary:focus-visible {
   }
 
   .home-hero {
-    min-height: max(660px, calc(100svh - 112px));
+    min-height: max(580px, calc(100svh - 112px));
   }
 
   .home-hero__image {
@@ -3678,7 +3911,7 @@ summary:focus-visible {
   }
 
   .world-card {
-    min-height: 450px;
+    min-height: 390px;
     margin-bottom: 10px;
   }
 
@@ -3687,11 +3920,11 @@ summary:focus-visible {
   }
 
   .series-banner {
-    min-height: 600px;
+    min-height: 520px;
   }
 
   .series-banner > img {
-    min-height: 600px;
+    min-height: 520px;
     object-position: 57% center;
   }
 
@@ -3741,7 +3974,7 @@ summary:focus-visible {
   }
 
   .craft-story__image {
-    min-height: 500px;
+    min-height: 440px;
   }
 
   .craft-story__panel {
@@ -3754,7 +3987,7 @@ summary:focus-visible {
 
   .promise-grid article,
   .promise-grid article:nth-child(2) {
-    min-height: 250px;
+    min-height: 218px;
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
@@ -3764,13 +3997,13 @@ summary:focus-visible {
   }
 
   .promise-grid__top {
-    margin-bottom: 54px;
+    margin-bottom: 38px;
   }
 
   .story-mosaic,
   .journal-grid {
     grid-template-columns: 1fr;
-    gap: 64px;
+    gap: 48px;
   }
 
   .story-card--lead,
@@ -3785,7 +4018,7 @@ summary:focus-visible {
   }
 
   .community-banner {
-    min-height: 680px;
+    min-height: 580px;
   }
 
   .community-banner > img {
@@ -3805,7 +4038,7 @@ summary:focus-visible {
 
   .footer-top {
     gap: 80px;
-    padding-block: 80px;
+    padding-block: 64px;
   }
 
   .footer-links {
@@ -3883,6 +4116,19 @@ summary:focus-visible {
     justify-content: space-between;
   }
 
+  .listing-more {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .listing-more p {
+    text-align: left;
+  }
+
+  .series-crosslinks {
+    grid-template-columns: 1fr;
+  }
+
   .listing-controls select {
     flex: 1;
   }
@@ -3902,19 +4148,54 @@ summary:focus-visible {
 
   .product-page {
     width: 100%;
+    row-gap: 0;
     padding-top: 0;
   }
 
   .product-gallery {
-    gap: 5px;
+    display: contents;
+  }
+
+  .product-gallery__main {
+    order: 1;
   }
 
   .product-info {
+    order: 2;
+    padding-block: 38px 48px;
     padding-inline: 16px;
+  }
+
+  .product-gallery__detail {
+    order: 3;
   }
 
   .product-info h1 {
     font-size: 4.6rem;
+  }
+
+  .product-detail-stack {
+    width: calc(100% - 32px);
+    padding-bottom: 80px;
+  }
+
+  .product-detail-stack > section {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding-block: 52px;
+  }
+
+  .product-detail-stack > section > .eyebrow,
+  .product-detail-stack > section > h2,
+  .product-detail-stack > section > p,
+  .product-detail-stack > section > dl,
+  .product-detail-stack > section > .text-link,
+  .product-detail-stack [data-product-module='related'] .product-grid {
+    grid-column: 1;
+  }
+
+  .product-detail-stack > section > h2 {
+    font-size: 3.7rem;
   }
 
   .city-discovery__header {
@@ -3948,11 +4229,25 @@ summary:focus-visible {
   }
 
   .studio-progress {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0;
+    overflow: visible;
   }
 
   .studio-progress button {
-    padding-inline: 8px;
+    width: 100%;
+    min-width: 0;
+    min-height: 64px;
+    align-items: center;
+    flex-direction: column;
+    gap: 6px;
+    padding: 5px 2px;
+    font-size: clamp(0.62rem, 2.5vw, 0.72rem);
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
   }
 
   .studio-progress button span {
@@ -3967,8 +4262,10 @@ summary:focus-visible {
   }
 
   .studio-preview {
-    min-height: 490px;
-    padding: 50px 22px 30px;
+    height: 42svh;
+    min-height: 0;
+    max-height: 520px;
+    padding: 46px 18px 24px;
   }
 
   .studio-panel {
@@ -4129,6 +4426,13 @@ summary:focus-visible {
 
   .not-found h1 {
     font-size: 5.2rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .studio-progress button {
+    font-size: 0.58rem;
+    letter-spacing: -0.01em;
   }
 }
 

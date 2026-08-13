@@ -1,18 +1,34 @@
 import { describe, expect, it } from 'vitest'
-import { formatPrice, getProduct, getSeries, searchCatalog } from './catalog'
+import {
+  formatPrice,
+  getProduct,
+  getSeries,
+  products,
+  searchCatalog,
+  series,
+} from './catalog'
 
 describe('catalog helpers', () => {
-  it('finds stable slugs used by route pages', () => {
-    expect(getSeries('water-ripple')?.name).toBe('Water Ripple')
-    expect(getProduct('water-ripple-game-jersey')?.price).toBe(99)
+  it('exposes exactly the three approved CREATE series and stable primary routes', () => {
+    expect(series.map((item) => item.slug)).toEqual([
+      'white-pulse',
+      'black-rift',
+      'identity-fusion',
+    ])
+    expect(series.every((item) => item.world === 'create')).toBe(true)
+    expect(getSeries('white-pulse')?.name).toBe('White Pulse')
+    expect(getProduct('black-rift-game-jersey')?.series).toBe('black-rift')
   })
 
-  it('formats sample prices for US shoppers', () => {
-    expect(formatPrice(129)).toBe('$129')
+  it('keeps all unverified catalog prices in a non-numeric TBD state', () => {
+    expect(products.every((item) => item.price.status === 'tbd')).toBe(true)
+    expect(formatPrice({ status: 'tbd' })).toBe('PRICE TBD')
   })
 
   it('searches products, series, and stories without case sensitivity', () => {
-    expect(searchCatalog('RIPPLE').length).toBeGreaterThanOrEqual(3)
+    const results = searchCatalog('IDENTITY')
+    expect(results.length).toBeGreaterThanOrEqual(3)
+    expect(results.every((item) => !/\$\s*\d/.test(item.description))).toBe(true)
     expect(searchCatalog('')).toEqual([])
   })
 })

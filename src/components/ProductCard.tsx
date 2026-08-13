@@ -30,7 +30,7 @@ export function ProductCard({ product, priority = false }: { product: Product; p
           </h3>
           <p>{product.color}</p>
         </div>
-        <p className="product-card__price">{formatPrice(product.price)}*</p>
+        <p className="product-card__price">{formatPrice(product.price)}</p>
       </div>
     </article>
   )

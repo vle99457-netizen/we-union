@@ -5,10 +5,11 @@
 - 桌面端：26 张，视口 1440 × 1000，完整页面截图。
 - 移动端：5 张，视口 390 × 844，完整页面截图。
 - 浏览器验证：31 / 31 通过；每页均含唯一 H1、`#main-content` 主内容区、有效正文，且无运行时页面错误或 Vite 错误遮罩。
-- 字体：标题 Bebas Neue；正文 Roboto；CJK 回退 Noto Sans / Noto Sans CJK SC。
+- 字体：标题 Bebas Neue；正文 Helvetica Neue / Neue Haas Grotesk 系统回退。文档未指定中文品牌字体。
 - 品牌：面向用户的品牌统一为 WE；仅 Create 页法律免责声明保留需求指定的 `WE UNION` 原文。
 - 导航：无 SHOP、无 SHOP BY SPORT。
 - 商品发现：Collection Gateway 采用“一行一个系列”的全宽主题带；商品网格仅存在于系列列表页。
+- 产品治理：CREATE 为 White Pulse / Black Rift / Identity Fusion；HONOR 处于 rights review；BELONG 为 Coming Soon；未核验价格统一显示 `PRICE TBD`。
 
 ## 总览
 
@@ -22,22 +23,22 @@
 |---|---|---|---|
 | V01 | Homepage | `/` | [01-homepage.webp](desktop/01-homepage.webp) |
 | V02A | Collection Gateway | `/collections` | [02-collection-gateway.webp](desktop/02-collection-gateway.webp) |
-| V02B | Series Product List | `/collections/water-ripple` | [03-series-list.webp](desktop/03-series-list.webp) |
+| V02B | Series Product List | `/collections/white-pulse` | [03-series-list.webp](desktop/03-series-list.webp) |
 | V03 | World Landing / Create | `/create` | [04-world-create.webp](desktop/04-world-create.webp) |
-| V04 | Product Detail + FIND YOUR CITY | `/products/water-ripple-game-jersey` | [05-product-detail.webp](desktop/05-product-detail.webp) |
+| V04 | Product Detail + FIND YOUR CITY | `/products/white-pulse-game-jersey` | [05-product-detail.webp](desktop/05-product-detail.webp) |
 | V05 | Create Studio + IP Disclaimer | `/custom` | [06-create-studio.webp](desktop/06-create-studio.webp) |
 | V06 | Cart | `/cart` | [07-cart.webp](desktop/07-cart.webp) |
 | V07 | Checkout | `/checkout` | [08-checkout.webp](desktop/08-checkout.webp) |
 | V08 | Account | `/account` | [09-account.webp](desktop/09-account.webp) |
 | V09 | Order Tracking | `/track` | [10-order-track.webp](desktop/10-order-track.webp) |
 | V10 | Stories | `/stories` | [11-stories.webp](desktop/11-stories.webp) |
-| V11 | Story Detail | `/stories/the-number-24` | [12-story-detail.webp](desktop/12-story-detail.webp) |
+| V11 | Story Detail | `/stories/from-buyer-to-creator` | [12-story-detail.webp](desktop/12-story-detail.webp) |
 | V12 | Craftsmanship | `/craftsmanship` | [13-craftsmanship.webp](desktop/13-craftsmanship.webp) |
 | V13 | Community | `/community` | [14-community.webp](desktop/14-community.webp) |
 | V14 | About | `/about` | [15-about.webp](desktop/15-about.webp) |
 | V15 | Support | `/support` | [16-support.webp](desktop/16-support.webp) |
 | V16 | Team Orders | `/custom/team` | [17-team-orders.webp](desktop/17-team-orders.webp) |
-| V17 | Search | `/search?q=ripple` | [18-search.webp](desktop/18-search.webp) |
+| V17 | Search | `/search?q=identity` | [18-search.webp](desktop/18-search.webp) |
 | V18 | Policy | `/legal/privacy` | [19-policy.webp](desktop/19-policy.webp) |
 | V19 | Not Found | `/not-a-real-route` | [20-not-found.webp](desktop/20-not-found.webp) |
 
@@ -47,7 +48,7 @@
 |---|---|---|
 | World Landing / Honor | `/honor` | [21-world-honor.webp](desktop/21-world-honor.webp) |
 | World Landing / Belong | `/belong` | [22-world-belong.webp](desktop/22-world-belong.webp) |
-| Crack Series Product List | `/collections/crack` | [23-crack-series-list.webp](desktop/23-crack-series-list.webp) |
+| Black Rift Series Product List | `/collections/black-rift` | [23-black-rift-series-list.webp](desktop/23-black-rift-series-list.webp) |
 | City Discovery Results | `/search?city=chicago` | [24-city-results.webp](desktop/24-city-results.webp) |
 | Saved Design State | `/custom/saved/demo` | [25-saved-design.webp](desktop/25-saved-design.webp) |
 | FAQ Route | `/faq` | [26-faq.webp](desktop/26-faq.webp) |
@@ -74,4 +75,4 @@ npm run build
 npm run preview:capture
 ```
 
-`preview:capture` 会启动隔离的 Vite 开发服务器，使用 Chromium 逐页加载字体与图片、滚动触发懒加载，再生成完整 WebP 页面截图和 [verification.json](verification.json)。裂纹系列视觉为本预览分支的原创概念素材，不含联盟、球队、运动员或第三方品牌标识；正式上线前应由品牌完成最终素材审定。
+`preview:capture` 会启动隔离的 Vite 开发服务器，使用 Chromium 逐页加载字体与图片、滚动触发懒加载，再生成完整 WebP 页面截图和 [verification.json](verification.json)。Black Rift 视觉为本预览分支的原创概念素材，不含联盟、球队、运动员或第三方品牌标识；正式上线前应由品牌完成最终素材审定。

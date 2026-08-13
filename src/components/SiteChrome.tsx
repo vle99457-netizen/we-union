@@ -24,6 +24,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const searchInput = useRef<HTMLInputElement>(null)
+  const searchTrigger = useRef<HTMLButtonElement>(null)
   const menuDialog = useRef<HTMLDivElement>(null)
   const menuTrigger = useRef<HTMLButtonElement>(null)
   const appShell = useRef<HTMLDivElement>(null)
@@ -38,7 +39,18 @@ export function SiteChrome({ children }: { children: ReactNode }) {
   }, [location.pathname])
 
   useEffect(() => {
-    if (searchOpen) searchInput.current?.focus()
+    if (!searchOpen) return
+
+    searchInput.current?.focus()
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSearchOpen(false)
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      searchTrigger.current?.focus()
+    }
   }, [searchOpen])
 
   useEffect(() => {
@@ -91,7 +103,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
           Skip to content
         </a>
         <div className="utility-bar">
-          <p>Gear made personal.</p>
+          <p>Sports heritage meets personal identity.</p>
           <Link to="/collections">All series <ArrowRight size={14} weight="bold" /></Link>
         </div>
         <header className="site-header">
@@ -100,6 +112,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
             className="icon-button menu-trigger"
             type="button"
             aria-label="Open menu"
+            aria-controls="site-menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(true)}
           >
@@ -117,9 +130,11 @@ export function SiteChrome({ children }: { children: ReactNode }) {
           </nav>
           <div className="header-actions">
             <button
+              ref={searchTrigger}
               className="icon-button"
               type="button"
               aria-label={searchOpen ? 'Close search' : 'Open search'}
+              aria-controls="site-search-panel"
               aria-expanded={searchOpen}
               onClick={() => setSearchOpen((open) => !open)}
             >
@@ -134,7 +149,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
             </Link>
           </div>
           {searchOpen ? (
-            <form className="header-search" role="search" onSubmit={submitSearch}>
+            <form id="site-search-panel" className="header-search" role="search" onSubmit={submitSearch}>
               <label htmlFor="site-search">Search WE</label>
               <input
                 ref={searchInput}
@@ -159,7 +174,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
       </div>
 
       {menuOpen ? (
-        <div ref={menuDialog} className="mobile-menu" role="dialog" aria-modal="true" aria-label="Site menu">
+        <div id="site-menu" ref={menuDialog} className="mobile-menu" role="dialog" aria-modal="true" aria-label="Site menu">
           <div className="mobile-menu__top">
             <img src="/images/we-wordmark.png" alt="WE" width="72" height="38" />
             <button className="icon-button" type="button" aria-label="Close menu" onClick={() => setMenuOpen(false)}>
@@ -205,7 +220,7 @@ function Footer() {
           <p className="eyebrow">Stay in the story</p>
           <h2>New originals.<br />No noise.</h2>
           {submitted ? (
-            <p className="form-success" role="status">You’re on the prototype list. Thank you.</p>
+            <p className="form-success" role="status">You’re on the WE list. Thank you.</p>
           ) : (
             <form className="newsletter-form" onSubmit={submit}>
               <label htmlFor="footer-email">Email address</label>
@@ -252,8 +267,8 @@ function Footer() {
         <Link className="brand-mark brand-mark--footer" to="/" aria-label="WE home">
           <img src="/images/we-wordmark.png" alt="WE" width="120" height="64" />
         </Link>
-        <p>© {new Date().getFullYear()} WE. Prototype experience.</p>
-        <p>Designed for every way we show up.</p>
+        <p>© {new Date().getFullYear()} WE.</p>
+        <p>Original sportswear. Made personal.</p>
       </div>
     </footer>
   )

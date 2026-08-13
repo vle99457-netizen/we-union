@@ -51,27 +51,27 @@ async function resolveChromiumExecutable() {
 const desktopPages = [
   ['01-homepage', '/', 'V01 Homepage'],
   ['02-collection-gateway', '/collections', 'V02A Collection Gateway'],
-  ['03-series-list', '/collections/water-ripple', 'V02B Series Product List'],
+  ['03-series-list', '/collections/white-pulse', 'V02B Series Product List'],
   ['04-world-create', '/create', 'V03 World Landing / Create'],
-  ['05-product-detail', '/products/water-ripple-game-jersey', 'V04 Product Detail'],
-  ['06-create-studio', '/custom?style=crack-game-jersey&size=M', 'V05 Create Studio'],
+  ['05-product-detail', '/products/white-pulse-game-jersey', 'V04 Product Detail'],
+  ['06-create-studio', '/custom?style=black-rift-game-jersey&size=M', 'V05 Create Studio'],
   ['07-cart', '/cart', 'V06 Cart', 'cart'],
   ['08-checkout', '/checkout', 'V07 Checkout', 'cart'],
   ['09-account', '/account', 'V08 Account'],
   ['10-order-track', '/track', 'V09 Order Tracking'],
   ['11-stories', '/stories', 'V10 Stories'],
-  ['12-story-detail', '/stories/the-number-24', 'V11 Story Detail'],
+  ['12-story-detail', '/stories/from-buyer-to-creator', 'V11 Story Detail'],
   ['13-craftsmanship', '/craftsmanship', 'V12 Craftsmanship'],
   ['14-community', '/community', 'V13 Community'],
   ['15-about', '/about', 'V14 About'],
   ['16-support', '/support', 'V15 Support'],
   ['17-team-orders', '/custom/team', 'V16 Team Orders'],
-  ['18-search', '/search?q=ripple', 'V17 Search'],
+  ['18-search', '/search?q=identity', 'V17 Search'],
   ['19-policy', '/legal/privacy', 'V18 Policy'],
   ['20-not-found', '/not-a-real-route', 'V19 Not Found'],
   ['21-world-honor', '/honor', 'World Landing / Honor'],
   ['22-world-belong', '/belong', 'World Landing / Belong'],
-  ['23-crack-series-list', '/collections/crack', 'Crack Series Product List'],
+  ['23-black-rift-series-list', '/collections/black-rift', 'Black Rift Series Product List'],
   ['24-city-results', '/search?city=chicago', 'City Discovery Results'],
   ['25-saved-design', '/custom/saved/demo', 'Saved Design State', 'design'],
   ['26-faq', '/faq', 'FAQ Route'],
@@ -80,28 +80,28 @@ const desktopPages = [
 const mobilePages = [
   ['01-homepage-mobile', '/', 'V01 Homepage / Mobile'],
   ['02-collection-gateway-mobile', '/collections', 'V02A Collection Gateway / Mobile'],
-  ['05-product-detail-mobile', '/products/water-ripple-game-jersey', 'V04 Product Detail / Mobile'],
-  ['06-create-studio-mobile', '/custom?style=crack-game-jersey&size=M', 'V05 Create Studio / Mobile'],
+  ['05-product-detail-mobile', '/products/white-pulse-game-jersey', 'V04 Product Detail / Mobile'],
+  ['06-create-studio-mobile', '/custom?style=black-rift-game-jersey&size=M', 'V05 Create Studio / Mobile'],
   ['08-checkout-mobile', '/checkout', 'V07 Checkout / Mobile', 'cart'],
 ]
 
 const cart = [
   {
-    id: 'crack-game-jersey-M',
-    name: 'Crack Game Jersey',
-    detail: 'Obsidian / Electric Blue · Size M',
-    price: 119,
+    id: 'black-rift-game-jersey-M',
+    name: 'Black Rift Game Jersey',
+    detail: 'WE Black / Rift Blue · Size M',
+    price: { status: 'tbd' },
     image: '/images/product-crack.webp',
     quantity: 1,
   },
 ]
 
 const savedDesign = {
-  productSlug: 'crack-game-jersey',
-  template: 'Crack Series',
+  productSlug: 'black-rift-game-jersey',
+  template: 'Black Rift',
   name: 'MORGAN',
   number: '17',
-  colorName: 'Cobalt',
+  colorName: 'Series Blue (preview)',
   size: 'M',
   view: 'back',
 }
@@ -129,7 +129,7 @@ async function prepareRoute(page, route, state) {
   await page.goto(baseUrl, { waitUntil: 'networkidle0' })
   await page.evaluate(() => localStorage.clear())
   if (state === 'cart') {
-    await page.evaluate((value) => localStorage.setItem('we-cart', JSON.stringify(value)), cart)
+    await page.evaluate((value) => localStorage.setItem('we-cart-v3', JSON.stringify(value)), cart)
   }
   if (state === 'design') {
     await page.evaluate((value) => localStorage.setItem('we-saved-design', JSON.stringify(value)), savedDesign)
@@ -195,6 +195,7 @@ async function capture([fileName, route, label, state], viewport, folder) {
   const health = await page.evaluate(() => ({
     title: document.title,
     h1Count: document.querySelectorAll('h1').length,
+    h1Text: document.querySelector('h1')?.innerText.replace(/\s+/g, ' ').trim() ?? '',
     hasMain: Boolean(document.querySelector('#main-content')),
     hasContent: document.body.innerText.trim().length > 120,
     hasErrorOverlay: Boolean(document.querySelector('.vite-error-overlay, #webpack-dev-server-client-overlay')),
@@ -203,7 +204,12 @@ async function capture([fileName, route, label, state], viewport, folder) {
   const screenshotPath = path.join(outputRoot, folder, `${fileName}.webp`)
   await page.screenshot({ path: screenshotPath, type: 'webp', quality: 80, fullPage: true })
 
-  const passed = health.h1Count === 1 && health.hasMain && health.hasContent && !health.hasErrorOverlay && pageErrors.length === 0
+  const passed = health.h1Count === 1
+    && health.hasMain
+    && health.hasContent
+    && !health.hasErrorOverlay
+    && consoleErrors.length === 0
+    && pageErrors.length === 0
   report.push({ label, route, viewport, file: path.relative(root, screenshotPath), passed, health, consoleErrors, pageErrors })
   process.stdout.write(`${passed ? 'PASS' : 'FAIL'} ${label} ${route} -> ${path.relative(root, screenshotPath)}\n`)
 }

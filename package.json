@@ -11,8 +11,9 @@
     "audit:source": "node scripts/source-audit.mjs",
     "smoke:routes": "node scripts/route-smoke.mjs",
     "preview:capture": "node scripts/capture-page-previews.mjs",
+    "preview:verify": "node scripts/verify-page-previews.mjs",
     "e2e": "node scripts/e2e-site.mjs",
-    "verify": "npm run check && npm test && npm run audit:source && npm run smoke:routes && npm run e2e && npm run build"
+    "verify": "npm run check && npm test && npm run audit:source && npm run smoke:routes && npm run e2e && npm run build && npm run preview:verify"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
