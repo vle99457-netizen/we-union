@@ -11,7 +11,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useCart } from '../store/CartContext'
 
 const primaryLinks = [
-  { to: '/create', label: 'Create' },
+  { to: '/collections', label: 'Create' },
   { to: '/honor', label: 'Honor' },
   { to: '/belong', label: 'Belong' },
   { to: '/custom', label: 'Create Yours' },
