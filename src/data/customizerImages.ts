@@ -19,6 +19,7 @@ export type ManagedCustomizerImages = Partial<Record<CustomizerView, ManagedCust
 export type CustomizerImagesResponse = {
   productSlug: string
   storageConfigured: boolean
+  adminConfigured: boolean
   complete: boolean
   images: ManagedCustomizerImages
 }
