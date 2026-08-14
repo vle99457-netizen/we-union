@@ -78,6 +78,7 @@ export function CustomizerAdminPage() {
   const [preparingView, setPreparingView] = useState<CustomizerView | null>(null)
   const [uploadingView, setUploadingView] = useState<CustomizerView | null>(null)
   const [storageConfigured, setStorageConfigured] = useState<boolean | null>(null)
+  const [adminConfigured, setAdminConfigured] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
@@ -105,9 +106,11 @@ export function CustomizerAdminPage() {
       const payload = await response.json() as CustomizerImagesResponse
       setExistingImages(payload.images)
       setStorageConfigured(payload.storageConfigured)
+      setAdminConfigured(payload.adminConfigured)
     } catch (loadError) {
       setExistingImages({})
       setStorageConfigured(false)
+      setAdminConfigured(false)
       setError(loadError instanceof Error ? loadError.message : 'Preview images could not be loaded.')
     } finally {
       setLoading(false)
@@ -163,6 +166,10 @@ export function CustomizerAdminPage() {
     setStatus('')
     if (!password) {
       setError('Enter the admin password.')
+      return
+    }
+    if (!adminConfigured) {
+      setError('Set CUSTOMIZER_ADMIN_PASSWORD in the Vercel production environment before publishing.')
       return
     }
     if (!hasCompleteSet) {
@@ -290,11 +297,14 @@ export function CustomizerAdminPage() {
         {storageConfigured === false && !loading ? (
           <p className="customizer-admin__storage-note"><WarningCircle size={18} /> Connect a Vercel Blob store and set the server environment variables before publishing.</p>
         ) : null}
+        {adminConfigured === false && !loading ? (
+          <p className="customizer-admin__storage-note"><WarningCircle size={18} /> Set CUSTOMIZER_ADMIN_PASSWORD in the Vercel production environment before publishing.</p>
+        ) : null}
         {error ? <p className="customizer-admin__error" role="alert">{error}</p> : null}
         {status ? <p className="customizer-admin__success" role="status"><CheckCircle size={18} weight="fill" /> {status}</p> : null}
         <div className="customizer-admin__actions">
           <p>{hasCompleteSet ? 'Four-view set ready.' : 'All four views are required for the first publish.'}</p>
-          <button className="button button--dark" type="submit" disabled={loading || Boolean(preparingView || uploadingView) || !hasCompleteSet}>
+          <button className="button button--dark" type="submit" disabled={loading || adminConfigured === false || Boolean(preparingView || uploadingView) || !hasCompleteSet}>
             {uploadingView ? `Publishing ${customizerViewLabels[uploadingView]}…` : 'Publish preview set'}
           </button>
         </div>
