@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { SiteChrome } from './components/SiteChrome'
 import { RouteMetadata } from './components/RouteMetadata'
+import { CustomizerAdminPage } from './admin/CustomizerAdminPage'
 import {
   AboutPage,
   AccountPage,
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/custom" element={<CustomPage />} />
         <Route path="/custom/team" element={<TeamPage />} />
         <Route path="/custom/saved/:id" element={<CustomPage />} />
+        <Route path="/admin/customizer" element={<CustomizerAdminPage />} />
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/stories/:slug" element={<StoryPage />} />
         <Route path="/community" element={<CommunityPage />} />

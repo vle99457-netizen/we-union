@@ -17,6 +17,7 @@ const routes = [
   '/products/identity-fusion-game-jersey',
   '/custom?style=black-rift-game-jersey',
   '/custom/saved/demo',
+  '/admin/customizer',
   '/stories',
   '/stories/from-buyer-to-creator',
   '/community',

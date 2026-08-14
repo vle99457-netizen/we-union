@@ -1,3 +1,5 @@
+import type { CustomizerView } from './customizerImages'
+
 export type WorldSlug = 'create' | 'honor' | 'belong'
 
 export type Price =
@@ -58,6 +60,18 @@ export type PersonalizationRegion = {
 
 export type ProductPersonalization = {
   cleanImage: string
+  viewImages: Record<CustomizerView, {
+    src: string
+    alt: string
+    crop?: {
+      x: number
+      y: number
+      width: number
+      height: number
+      sourceWidth: number
+      sourceHeight: number
+    }
+  }>
   sourceInk: string
   sourceOutline: string
   detectedSourceElements: readonly string[]
@@ -227,6 +241,28 @@ export const products: Product[] = [
     personalizable: true,
     personalization: {
       cleanImage: '/images/white-pulse-game-jersey-custom-base.webp',
+      viewImages: {
+        front: {
+          src: '/images/white-pulse-game-jersey-custom-base.webp',
+          alt: 'White Pulse Game Jersey single front view',
+          crop: { x: 0, y: 145, width: 600, height: 920, sourceWidth: 1254, sourceHeight: 1254 },
+        },
+        back: {
+          src: '/images/white-pulse-game-jersey-custom-base.webp',
+          alt: 'White Pulse Game Jersey single back view',
+          crop: { x: 654, y: 145, width: 600, height: 920, sourceWidth: 1254, sourceHeight: 1254 },
+        },
+        left: {
+          src: '/images/white-pulse-game-jersey-custom-base.webp',
+          alt: 'White Pulse Game Jersey left sleeve detail fallback',
+          crop: { x: 310, y: 250, width: 300, height: 400, sourceWidth: 1254, sourceHeight: 1254 },
+        },
+        right: {
+          src: '/images/white-pulse-game-jersey-custom-base.webp',
+          alt: 'White Pulse Game Jersey right sleeve detail fallback',
+          crop: { x: 15, y: 250, width: 300, height: 400, sourceWidth: 1254, sourceHeight: 1254 },
+        },
+      },
       sourceInk: '#132b4d',
       sourceOutline: '#aeb8c1',
       detectedSourceElements: [
@@ -239,13 +275,13 @@ export const products: Product[] = [
         'Right sleeve logo area',
       ],
       regions: [
-        { id: 'front-city', kind: 'city', side: 'front', x: 17.0, y: 32.2, width: 16.0, height: 3.5 },
-        { id: 'front-number', kind: 'number', side: 'front', x: 15.8, y: 36.2, width: 15.2, height: 16.8 },
-        { id: 'back-number', kind: 'number', side: 'back', x: 63.0, y: 33.0, width: 18.4, height: 20.2 },
-        { id: 'back-name', kind: 'name', side: 'back', x: 64.6, y: 29.3, width: 15.2, height: 4.5 },
-        { id: 'front-logo', kind: 'logo', logoSlot: 'front', side: 'front', x: 17.4, y: 27.7, width: 6.4, height: 5.5, rotate: -1 },
-        { id: 'left-sleeve-logo', kind: 'logo', logoSlot: 'leftSleeve', side: 'left', x: 35.0, y: 34.2, width: 6.0, height: 5.8, rotate: 10 },
-        { id: 'right-sleeve-logo', kind: 'logo', logoSlot: 'rightSleeve', side: 'right', x: 88.0, y: 34.2, width: 6.0, height: 5.8, rotate: -10 },
+        { id: 'front-city', kind: 'city', side: 'front', x: 32, y: 31, width: 36, height: 7 },
+        { id: 'front-number', kind: 'number', side: 'front', x: 35, y: 38, width: 30, height: 34 },
+        { id: 'back-number', kind: 'number', side: 'back', x: 32, y: 39, width: 36, height: 40 },
+        { id: 'back-name', kind: 'name', side: 'back', x: 35, y: 31, width: 30, height: 8 },
+        { id: 'front-logo', kind: 'logo', logoSlot: 'front', side: 'front', x: 30, y: 27, width: 12, height: 10, rotate: -1 },
+        { id: 'left-sleeve-logo', kind: 'logo', logoSlot: 'leftSleeve', side: 'left', x: 42, y: 40, width: 16, height: 16 },
+        { id: 'right-sleeve-logo', kind: 'logo', logoSlot: 'rightSleeve', side: 'right', x: 42, y: 40, width: 16, height: 16 },
       ],
     },
     catalogState: 'concept-preview',

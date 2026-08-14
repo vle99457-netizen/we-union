@@ -17,6 +17,7 @@ import {
 } from '@phosphor-icons/react'
 import {
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -41,8 +42,17 @@ import {
   stories,
   worlds,
   type PersonalizationRegion,
+  type ProductPersonalization,
   type WorldSlug,
 } from './data/catalog'
+import {
+  customizerViewLabels,
+  isCustomizerView,
+  withUploadVersion,
+  type CustomizerImagesResponse,
+  type CustomizerView,
+  type ManagedCustomizerImages,
+} from './data/customizerImages'
 import { useCart, type CartItem } from './store/CartContext'
 
 const promiseItems = [
@@ -849,13 +859,8 @@ function isApparelSize(value: string | null | undefined): value is ApparelSize {
   return apparelSizes.includes(value as ApparelSize)
 }
 
-type StudioView = 'front' | 'back' | 'left' | 'right'
-const studioViewLabels: Record<StudioView, string> = {
-  front: 'Front',
-  back: 'Back',
-  left: 'Left sleeve',
-  right: 'Right sleeve',
-}
+type StudioView = CustomizerView
+const studioViewLabels = customizerViewLabels
 type LogoSlot = 'front' | 'leftSleeve' | 'rightSleeve'
 type LogoAsset = { dataUrl: string; name: string }
 type StudioLogos = Record<LogoSlot, LogoAsset>
@@ -863,7 +868,7 @@ type ArtworkPosition = { x: number; y: number }
 type ArtworkPositions = Partial<Record<PersonalizationRegion['id'], ArtworkPosition>>
 
 function isStudioView(value: string | undefined): value is StudioView {
-  return value === 'front' || value === 'back' || value === 'left' || value === 'right'
+  return isCustomizerView(value)
 }
 
 type SavedDesignDraft = {
@@ -884,7 +889,7 @@ type SavedDesignDraft = {
 
 function getArtworkRegionPosition(region: PersonalizationRegion, view: StudioView): ArtworkPosition {
   return {
-    x: view === 'back' ? 100 - region.x - region.width : region.x,
+    x: region.x,
     y: region.y,
   }
 }
@@ -1161,6 +1166,64 @@ function readDesignDraft(): SavedDesignDraft | null {
   }
 }
 
+type CustomizerViewImage = ProductPersonalization['viewImages'][CustomizerView]
+
+function StudioBaseImage({
+  image,
+  alt,
+  managed,
+}: {
+  image: CustomizerViewImage
+  alt: string
+  managed: boolean
+}) {
+  const cropId = `studio-base-crop-${useId().replace(/:/g, '')}`
+  if (image.crop && !managed) {
+    const crop = image.crop
+    return (
+      <svg
+        className="studio-preview__base"
+        data-custom-base="true"
+        data-custom-base-src={image.src}
+        data-preview-source="catalog-crop"
+        role="img"
+        aria-label={alt}
+        viewBox={`${crop.x} ${crop.y} ${crop.width} ${crop.height}`}
+        preserveAspectRatio="xMidYMid meet"
+        overflow="hidden"
+      >
+        <title>{alt}</title>
+        <defs>
+          <clipPath id={cropId}>
+            <rect x={crop.x} y={crop.y} width={crop.width} height={crop.height} />
+          </clipPath>
+        </defs>
+        <image
+          href={image.src}
+          x="0"
+          y="0"
+          width={crop.sourceWidth}
+          height={crop.sourceHeight}
+          clipPath={`url(#${cropId})`}
+        />
+      </svg>
+    )
+  }
+
+  return (
+    <img
+      className="studio-preview__base"
+      data-custom-base="true"
+      data-custom-base-src={image.src}
+      data-preview-source={managed ? 'backend' : 'catalog'}
+      src={image.src}
+      alt={alt}
+      width="1600"
+      height="1600"
+    />
+  )
+}
+
 export function CustomPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const draft = useMemo(readDesignDraft, [])
@@ -1200,6 +1263,7 @@ export function CustomPage() {
     rightSleeve: '',
   })
   const [artworkPositions, setArtworkPositions] = useState<ArtworkPositions>(draft?.artworkPositions ?? {})
+  const [managedPreviewImages, setManagedPreviewImages] = useState<ManagedCustomizerImages>({})
   const [color, setColor] = useState(colors.find((item) => item.name === draftColorName) ?? colors[0]!)
   const [size, setSize] = useState<ApparelSize>(
     isApparelSize(searchParams.get('size'))
@@ -1223,7 +1287,17 @@ export function CustomPage() {
   const selectedProduct = getProduct(selectedProductSlug) ?? personalizableProducts[0]!
   const templateSeries = getSeries(selectedProduct.series) ?? series[0]!
   const personalization = selectedProduct.personalization
-  const templateImage = personalization?.cleanImage ?? selectedProduct.image
+  const managedPreviewImage = managedPreviewImages[view]
+  const catalogPreviewImage = personalization?.viewImages[view]
+  const previewImage: CustomizerViewImage = managedPreviewImage
+    ? {
+        src: withUploadVersion(managedPreviewImage),
+        alt: `${selectedProduct.name} ${studioViewLabels[view]} view uploaded through the preview admin`,
+      }
+    : catalogPreviewImage ?? { src: selectedProduct.image, alt: `${selectedProduct.name} preview` }
+  const templateImage = managedPreviewImages.front
+    ? withUploadVersion(managedPreviewImages.front)
+    : personalization?.viewImages.front.src ?? personalization?.cleanImage ?? selectedProduct.image
   const proofVersion = `P${String(proofRevision).padStart(2, '0')}`
   const next = () => setStep((current) => Math.min(steps.length - 1, current + 1))
   const previous = () => setStep((current) => Math.max(0, current - 1))
@@ -1239,6 +1313,29 @@ export function CustomPage() {
     if (searchParams.get('style') === selectedProductSlug && searchParams.get('size') === size) return
     syncQuery(selectedProductSlug, size)
   }, [searchParams, selectedProductSlug, size])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setManagedPreviewImages({})
+    if (!personalization) return () => controller.abort()
+
+    fetch(`/api/customizer-images?product=${encodeURIComponent(selectedProduct.slug)}`, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    })
+      .then(async (response) => {
+        if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) return null
+        return response.json() as Promise<CustomizerImagesResponse>
+      })
+      .then((payload) => {
+        if (payload?.productSlug === selectedProduct.slug) setManagedPreviewImages(payload.images)
+      })
+      .catch((error: unknown) => {
+        if (!(error instanceof DOMException && error.name === 'AbortError')) setManagedPreviewImages({})
+      })
+
+    return () => controller.abort()
+  }, [personalization, selectedProduct.slug])
 
   useEffect(() => {
     const saveTimer = window.setTimeout(() => {
@@ -1383,6 +1480,7 @@ export function CustomPage() {
           <p className="studio-preview__label">
             Interactive sample / {studioViewLabels[view]}
             {personalization ? <span><CheckCircle size={14} weight="fill" /> Original artwork matched</span> : null}
+            {managedPreviewImage ? <span data-managed-preview="true"><CheckCircle size={14} weight="fill" /> Admin image</span> : null}
           </p>
           {personalization ? (
             <div className="studio-preview__position-help">
@@ -1394,12 +1492,10 @@ export function CustomPage() {
             className={`studio-preview__canvas studio-preview__canvas--${view}`}
             style={{ '--studio-color': color.value } as CSSProperties}
           >
-            <img
-              data-custom-base={personalization ? 'true' : undefined}
-              src={templateImage}
-              alt={`${selectedProduct.name} ${studioViewLabels[view]} preview${view === 'front' ? ` with city ${city} and number ${number}` : view === 'back' ? ` with player name ${name} and number ${number}` : ''}`}
-              width="941"
-              height="941"
+            <StudioBaseImage
+              image={previewImage}
+              managed={Boolean(managedPreviewImage)}
+              alt={`${previewImage.alt}${view === 'front' ? ` with city ${city} and number ${number}` : view === 'back' ? ` with player name ${name} and number ${number}` : ''}`}
             />
             {personalization ? (
               <PersonalizationArtwork

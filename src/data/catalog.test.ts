@@ -41,6 +41,10 @@ describe('catalog helpers', () => {
   it('maps White Pulse source artwork to a clean replacement template', () => {
     const personalization = getProduct('white-pulse-game-jersey')?.personalization
     expect(personalization?.cleanImage).toBe('/images/white-pulse-game-jersey-custom-base.webp')
+    expect(Object.keys(personalization?.viewImages ?? {})).toEqual(['front', 'back', 'left', 'right'])
+    expect(personalization?.viewImages.front.crop?.x).toBe(0)
+    expect(personalization?.viewImages.back.crop?.x).toBe(654)
+    expect(personalization?.viewImages.left.crop).not.toEqual(personalization?.viewImages.right.crop)
     expect(personalization?.regions.map((region) => region.id)).toEqual([
       'front-city',
       'front-number',
@@ -51,6 +55,7 @@ describe('catalog helpers', () => {
       'right-sleeve-logo',
     ])
     expect(personalization?.regions.every((region) => region.width > 0 && region.height > 0)).toBe(true)
+    expect(personalization?.regions.every((region) => region.x + region.width <= 100 && region.y + region.height <= 100)).toBe(true)
     expect(personalization?.regions.filter((region) => region.kind === 'logo').map((region) => region.logoSlot)).toEqual([
       'front',
       'leftSleeve',

@@ -60,6 +60,40 @@ try {
   await page.setViewport({ width: 1440, height: 1000 })
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
+  const managedPreviewPaths = {
+    front: '/images/white-pulse-game-jersey-02-collar-detail.webp',
+    back: '/images/white-pulse-game-jersey-03-pattern-detail.webp',
+    left: '/images/white-pulse-game-jersey-04-seam-detail.webp',
+    right: '/images/white-pulse-game-jersey-05-on-model.webp',
+  }
+  let serveManagedPreviewImages = true
+  await page.setRequestInterception(true)
+  page.on('request', async (request) => {
+    const url = new URL(request.url())
+    if (url.pathname !== '/api/customizer-images') {
+      await request.continue()
+      return
+    }
+    if (request.method() === 'GET') {
+      await request.respond({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          productSlug: url.searchParams.get('product'),
+          storageConfigured: true,
+          complete: serveManagedPreviewImages,
+          images: serveManagedPreviewImages
+            ? Object.fromEntries(Object.entries(managedPreviewPaths).map(([view, imageUrl]) => [
+                view,
+                { url: imageUrl, uploadedAt: `2026-08-13T18:30:0${Object.keys(managedPreviewPaths).indexOf(view)}.000Z` },
+              ]))
+            : {},
+        }),
+      })
+      return
+    }
+    await request.respond({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
+  })
 
   await page.goto(baseUrl, { waitUntil: 'networkidle0' })
   const createNavigationPath = await page.$eval(
@@ -231,20 +265,68 @@ try {
   assert(await page.$eval('body', (body) => body.innerText.includes('PRICE TBD')), 'Cart must preserve the TBD price state.')
   await assertNoUnverifiedAmount(page, 'Cart')
 
+  await page.goto(`${baseUrl}/admin/customizer`, { waitUntil: 'networkidle0' })
+  assert(await page.$$eval('.customizer-upload-card', (cards) => cards.length === 4), 'Customizer admin must expose exactly four preview-image slots.')
+  assert(await page.$$eval('.customizer-upload-card input[type="file"]', (inputs) => inputs.length === 4), 'Customizer admin must expose exactly four file inputs.')
+  assert(
+    await page.$$eval('.customizer-upload-card__preview img', (images) => images.length === 4 && images.every((image) => image.complete && image.naturalWidth > 0)),
+    'Customizer admin must load all four published preview images.',
+  )
+  assert(await page.$eval('.customizer-admin__notice', (notice) => /one garment only/i.test(notice.textContent ?? '')), 'Customizer admin must state the one-garment image rule.')
+  const adminFrontInput = await page.$('input[name="front-preview-image"]')
+  if (!adminFrontInput) throw new Error('Customizer admin front-image input is missing.')
+  await adminFrontInput.uploadFile(path.join(process.cwd(), 'public', 'images', 'white-pulse-game-jersey-02-collar-detail.webp'))
+  await page.waitForFunction(() => (
+    document.querySelector('[data-admin-view="front"] .customizer-upload-card__preview img')?.getAttribute('src')?.startsWith('blob:')
+      && /Ready:/.test(document.querySelector('[data-admin-view="front"] > p')?.textContent ?? '')
+  ))
+
   await page.goto(`${baseUrl}/custom?style=white-pulse-game-jersey&size=M`, { waitUntil: 'networkidle0' })
   const personalizationPreview = await page.$eval('.studio-preview__canvas', (canvas) => ({
-    cleanBase: canvas.querySelector('[data-custom-base="true"]')?.getAttribute('src'),
+    cleanBase: canvas.querySelector('[data-custom-base="true"]')?.getAttribute('data-custom-base-src'),
+    source: canvas.querySelector('[data-custom-base="true"]')?.getAttribute('data-preview-source'),
+    objectFit: getComputedStyle(canvas.querySelector('[data-custom-base="true"]')).objectFit,
+    transform: getComputedStyle(canvas.querySelector('[data-custom-base="true"]')).transform,
     legacyOverlayCount: canvas.querySelectorAll('.studio-preview__mark').length,
     frontCity: canvas.querySelector('[data-personalization-region="front-city"]')?.textContent,
     frontNumber: canvas.querySelector('[data-personalization-region="front-number"] .studio-number__ink')?.textContent,
   }))
   assert(
-    personalizationPreview.cleanBase === '/images/white-pulse-game-jersey-custom-base.webp',
-    'Customizer must start from the clean product base instead of covering the source number.',
+    personalizationPreview.cleanBase?.startsWith(`${managedPreviewPaths.front}?v=`),
+    'Customizer must load the backend-managed front image.',
   )
+  assert(personalizationPreview.source === 'backend', 'Customizer must identify the backend-managed base image.')
+  assert(personalizationPreview.objectFit === 'contain' && personalizationPreview.transform === 'none', 'Preview images must remain contained and untransformed.')
   assert(personalizationPreview.legacyOverlayCount === 0, 'Legacy WE / 01 overlay must be removed.')
   assert(personalizationPreview.frontCity === 'SACRAMENTO', 'Front city personalization must render in its mapped region.')
   assert(personalizationPreview.frontNumber === '17', 'Detected front number region must inherit the initial number.')
+  for (const [studioView, expectedPath] of Object.entries(managedPreviewPaths)) {
+    await page.click(`[data-studio-view="${studioView}"]`)
+    await page.waitForFunction((path) => (
+      document.querySelector('[data-custom-base="true"]')?.getAttribute('data-custom-base-src')?.startsWith(`${path}?v=`)
+    ), {}, expectedPath)
+    const renderedBase = await page.$eval('[data-custom-base="true"]', (image) => ({
+      objectFit: getComputedStyle(image).objectFit,
+      transform: getComputedStyle(image).transform,
+    }))
+    assert(renderedBase.objectFit === 'contain' && renderedBase.transform === 'none', `${studioView} preview must not be cropped, flipped, or stretched.`)
+  }
+  serveManagedPreviewImages = false
+  await page.reload({ waitUntil: 'networkidle0' })
+  await page.waitForFunction(() => document.querySelector('[data-preview-source="catalog-crop"]'))
+  const fallbackPreview = await page.$eval('[data-preview-source="catalog-crop"]', (base) => ({
+    tagName: base.tagName.toLowerCase(),
+    viewBox: base.getAttribute('viewBox'),
+    clipRect: base.querySelector('clipPath rect')?.getAttribute('width'),
+    clippedImage: base.querySelector('image')?.getAttribute('clip-path'),
+  }))
+  assert(
+    fallbackPreview.tagName === 'svg'
+      && fallbackPreview.viewBox === '0 145 600 920'
+      && fallbackPreview.clipRect === '600'
+      && fallbackPreview.clippedImage?.startsWith('url(#studio-base-crop-'),
+    'Catalog fallback must crop and clip the combined source to one front garment.',
+  )
   await page.evaluate(() => {
     const button = [...document.querySelectorAll('.studio-nav button')]
       .find((item) => item.textContent?.includes('PERSONALIZE'))
@@ -319,7 +401,7 @@ try {
   const notice = await page.$eval('.create-disclaimer p:last-child', (paragraph) => paragraph.textContent?.trim())
   assert(notice === 'WE UNION CREATE products are built on original garment designs and customer-led personalization. WE UNION does not reproduce or accept official league, team, athlete, or third-party brand names, logos, wordmarks, signatures, or confusingly similar variations. Customer-submitted artwork must be original or properly authorized and is subject to intellectual property review.', 'CREATE notice must be an exact DOM match.')
   assert(errors.length === 0, `Browser errors: ${errors.join('; ')}`)
-  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, movable city/name/number/logo artwork, independent sleeve uploads, source-artwork replacement, exact CREATE notice, and browser health.')
+  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, four-slot preview admin, backend-managed untransformed view images, movable city/name/number/logo artwork, independent sleeve uploads, source-artwork replacement, exact CREATE notice, and browser health.')
 } finally {
   await browser.close()
   await server.close()

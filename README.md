@@ -19,6 +19,17 @@ npm install
 npm run dev
 ```
 
+## Customizer preview administration
+
+The protected `/admin/customizer` page publishes four independent, single-garment preview images: front, back, left sleeve, and right sleeve. Source PNG, JPG, or WEBP files are normalized in the browser to centered 1600 × 1600 WEBP images before upload.
+
+Create a Vercel Blob store for the project, then configure these server-side environment variables for Preview and Production:
+
+- `BLOB_READ_WRITE_TOKEN` — supplied by the connected Vercel Blob store.
+- `CUSTOMIZER_ADMIN_PASSWORD` — the password required by the upload API.
+
+The public customizer reads the uploaded view images without authentication. Uploads remain password-protected, and neither server secret is included in the client bundle. If Blob is not configured, the customizer safely uses the catalog's separate per-view crops.
+
 ## Quality gates
 
 ```bash
@@ -33,7 +44,7 @@ npm run preview:verify
 npm run verify
 ```
 
-The source audit covers image dimensions and alternatives, semantic control types, form names, motion anti-patterns, zoom safety, and the required visual-direction contract. The route smoke test server-renders 29 representative routes and verifies one `h1` plus a main landmark on every surface. Browser E2E checks the approved three-series gateway, compatibility redirects, HONOR/BELONG publication gates, non-numeric `PRICE TBD` states, city discovery, and the exact CREATE intellectual-property notice. Preview verification checks all 31 expected desktop and mobile route reports, document landmarks, browser errors, viewports, and WebP file integrity without relying on environment-specific byte-for-byte raster output.
+The source audit covers image dimensions and alternatives, semantic control types, form names, motion anti-patterns, zoom safety, and the required visual-direction contract. The route smoke test server-renders 30 representative routes and verifies one `h1` plus a main landmark on every surface. Browser E2E checks the approved three-series gateway, compatibility redirects, HONOR/BELONG publication gates, non-numeric `PRICE TBD` states, city discovery, and the exact CREATE intellectual-property notice. Preview verification checks all expected desktop and mobile route reports, document landmarks, browser errors, viewports, and WebP file integrity without relying on environment-specific byte-for-byte raster output.
 
 ## Integration boundaries
 
