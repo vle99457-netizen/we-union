@@ -10,6 +10,7 @@ function routeMetadata(pathname: string): [string, string] {
   if (pathname === '/custom/team') return ['Team Orders — WE', 'Plan an original WE group system through a structured, non-transactional team brief.']
   if (pathname.startsWith('/custom/saved/')) return ['Create Yours — WE', 'Return to a locally saved WE personalization draft.']
   if (pathname === '/custom') return ['Create Yours — WE', 'Personalize a WE original through Choose, Personalize, Review, and Order & Track.']
+  if (pathname === '/admin/customizer') return ['Customizer Preview Admin — WE', 'Manage the four single-garment images used by the WE customizer preview.']
   if (pathname === '/search') return ['Search — WE', 'Find WE originals, series, stories, and support.']
 
   const parts = pathname.split('/').filter(Boolean)
