@@ -49,8 +49,15 @@ async function isAuthorized(request: Request): Promise<boolean> {
 
 async function getImages(productSlug: string): Promise<CustomizerImagesResponse> {
   const token = runtimeEnvironment.BLOB_READ_WRITE_TOKEN
+  const adminConfigured = Boolean(runtimeEnvironment.CUSTOMIZER_ADMIN_PASSWORD)
   if (!token) {
-    return { productSlug, storageConfigured: false, complete: false, images: {} }
+    return {
+      productSlug,
+      storageConfigured: false,
+      adminConfigured,
+      complete: false,
+      images: {},
+    }
   }
 
   const prefix = `customizer/${productSlug}/`
@@ -72,6 +79,7 @@ async function getImages(productSlug: string): Promise<CustomizerImagesResponse>
   return {
     productSlug,
     storageConfigured: true,
+    adminConfigured,
     complete: customizerViews.every((view) => Boolean(images[view])),
     images,
   }
