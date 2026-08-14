@@ -69,8 +69,14 @@ async function getImages(productSlug: string): Promise<CustomizerImagesResponse>
   }
 }
 
+export function parseRequestUrl(requestUrl: string): URL {
+  // Vercel's web handler adapter can provide a path-only request URL.
+  // The fallback origin is only used to parse its query string.
+  return new URL(requestUrl, 'https://customizer.internal')
+}
+
 export default async function handler(request: Request): Promise<Response> {
-  const url = new URL(request.url)
+  const url = parseRequestUrl(request.url)
   const productSlug = url.searchParams.get('product')
   if (!productSlug || !PRODUCT_SLUG_PATTERN.test(productSlug)) {
     return jsonResponse({ error: 'A valid product slug is required.' }, 400)
