@@ -9,5 +9,11 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["api", "src/data/customizerImages.ts"]
+  "include": [
+    "api",
+    "src/data/catalog.ts",
+    "src/data/customizerImages.ts",
+    "src/data/siteConfig.ts",
+    "src/server/adminAuth.ts"
+  ]
 }

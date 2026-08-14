@@ -449,26 +449,29 @@ export function formatPrice(price: Price) {
   }).format(price.amount)
 }
 
-export function searchCatalog(query: string) {
+export function searchCatalog(
+  query: string,
+  source: { products: Product[]; stories: Story[]; series: Series[] } = { products, stories, series },
+) {
   const needle = query.trim().toLowerCase()
   if (!needle) return []
 
   return [
-    ...products.map((item) => ({
+    ...source.products.map((item) => ({
       type: 'Product',
       title: item.name,
       description: `${item.color} · ${formatPrice(item.price)}`,
       href: `/products/${item.slug}`,
       image: item.image,
     })),
-    ...stories.map((item) => ({
+    ...source.stories.map((item) => ({
       type: 'Story',
       title: item.title,
       description: item.excerpt,
       href: `/stories/${item.slug}`,
       image: item.image,
     })),
-    ...series.map((item) => ({
+    ...source.series.map((item) => ({
       type: 'Series',
       title: item.name,
       description: item.description,

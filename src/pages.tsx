@@ -34,19 +34,15 @@ import { ProductCard } from './components/ProductCard'
 import { SectionHeading } from './components/SectionHeading'
 import {
   formatPrice,
-  getProduct,
-  getSeries,
   honorConcepts,
-  products,
   prototypeNotice,
   searchCatalog,
-  series,
-  stories,
-  worlds,
   type PersonalizationRegion,
   type ProductPersonalization,
   type WorldSlug,
 } from './data/catalog'
+import { useSiteConfig } from './context/SiteConfigContext'
+import { pageSetting } from './data/siteConfig'
 import {
   customizerViewLabels,
   isCustomizerView,
@@ -64,60 +60,15 @@ import {
 } from './customizerArtwork'
 import { useCart, type CartItem } from './store/CartContext'
 
-const promiseItems = [
-  {
-    title: 'Original design',
-    copy: 'Every piece begins with an original from WE.',
-    icon: Sparkle,
-  },
-  {
-    title: 'Personalized production',
-    copy: 'Your approved details are built into a production-ready proof.',
-    icon: CirclesThreePlus,
-  },
-  {
-    title: 'Strict quality inspection',
-    copy: 'Verified inspection milestones connect before public release.',
-    icon: ShieldCheck,
-  },
-  {
-    title: 'Tracked delivery',
-    copy: 'Verified production and carrier events will connect here.',
-    icon: Package,
-  },
-]
-
-const customSteps = [
-  {
-    label: 'CHOOSE',
-    copy: 'Start with a WE original visual system.',
-    kicker: 'Original / Selected',
-    status: 'White Pulse 01',
-  },
-  {
-    label: 'PERSONALIZE',
-    copy: 'Set the city, name, number, logo, and approved details.',
-    kicker: 'Identity / Applied',
-    status: 'Sacramento · 17',
-  },
-  {
-    label: 'REVIEW',
-    copy: 'Confirm the front, back, and both sleeve proofs.',
-    kicker: 'Proof / 04 views',
-    status: 'Ready to review',
-  },
-  {
-    label: 'ORDER & TRACK',
-    copy: 'Approve the proof, then follow production and delivery.',
-    kicker: 'Status / Live',
-    status: 'Production ready',
-  },
-] as const
+const promiseIcons = [Sparkle, CirclesThreePlus, ShieldCheck, Package] as const
 
 export function HomePage() {
+  const { config, worlds, stories } = useSiteConfig()
+  const { home } = config
+  const customSteps = home.custom.steps
   const [activeStep, setActiveStep] = useState(0)
   const [isProcessPlaying, setIsProcessPlaying] = useState(true)
-  const activeCustomStep = customSteps[activeStep] ?? customSteps[0]
+  const activeCustomStep = customSteps[activeStep] ?? customSteps[0] ?? { label: '', copy: '', kicker: '', status: '' }
 
   useEffect(() => {
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -142,10 +93,10 @@ export function HomePage() {
 
   return (
     <>
-      <section className="home-hero" aria-labelledby="home-title">
+      {home.hero.enabled ? <section className="home-hero" aria-labelledby="home-title">
         <img
           className="home-hero__image"
-          src="/images/hero-stadium.webp"
+          src={home.hero.image}
           alt="An athlete wearing an original black and gold WE jersey in a stadium tunnel"
           fetchPriority="high"
           decoding="async"
@@ -154,30 +105,30 @@ export function HomePage() {
         />
         <div className="home-hero__veil" />
         <div className="home-hero__content shell">
-          <p className="eyebrow eyebrow--gold">Sports heritage meets personal identity</p>
-          <h1 id="home-title">Gear made<br />personal.</h1>
-          <p className="hero-copy">A uniform can identify you. A WE original can tell your story.</p>
+          <p className="eyebrow eyebrow--gold">{home.hero.eyebrow}</p>
+          <h1 id="home-title">{home.hero.titleLine1}<br />{home.hero.titleLine2}</h1>
+          <p className="hero-copy">{home.hero.copy}</p>
           <div className="button-row">
-            <Link className="button button--gold" to="/collections">
-              Explore originals <ArrowRight size={18} weight="bold" />
+            <Link className="button button--gold" to={home.hero.primaryHref}>
+              {home.hero.primaryLabel} <ArrowRight size={18} weight="bold" />
             </Link>
-            <Link className="button button--ghost-light" to="/custom">
-              Create yours
+            <Link className="button button--ghost-light" to={home.hero.secondaryHref}>
+              {home.hero.secondaryLabel}
             </Link>
           </div>
         </div>
         <a className="hero-scroll" href="#worlds">
-          Discover the worlds <ArrowDown size={18} />
+          {home.hero.scrollLabel} <ArrowDown size={18} />
         </a>
         <p className="hero-index" aria-hidden="true">WE / 01—03</p>
-      </section>
+      </section> : null}
 
-      <section className="worlds-section section-pad shell" id="worlds" aria-labelledby="worlds-title">
+      {home.worlds.enabled ? <section className="worlds-section section-pad shell" id="worlds" aria-labelledby="worlds-title">
         <SectionHeading
           id="worlds-title"
-          eyebrow="Three ways into WE"
-          title="Choose what the piece should carry."
-          copy="Each world starts with a different intention. All three end in something personal."
+          eyebrow={home.worlds.eyebrow}
+          title={home.worlds.title}
+          copy={home.worlds.copy}
         />
         <div className="world-grid">
           {worlds.map((world) => (
@@ -199,25 +150,25 @@ export function HomePage() {
             </div>
           ))}
         </div>
-      </section>
+      </section> : null}
 
-      <section className="series-spotlight section-pad" aria-labelledby="series-title">
+      {home.featured.enabled ? <section className="series-spotlight section-pad" aria-labelledby="series-title">
         <div className="shell">
           <SectionHeading
             id="series-title"
-            eyebrow="New & featured / Series 01"
-            title="White Pulse"
-            copy="Continuous waves and flowing paths translate personal rhythm into an original visual language."
+            eyebrow={home.featured.eyebrow}
+            title={home.featured.title}
+            copy={home.featured.copy}
             action={
-              <Link className="text-link" to="/collections/white-pulse">
-                View the series <ArrowRight size={17} weight="bold" />
+              <Link className="text-link" to={home.featured.ctaHref}>
+                {home.featured.ctaLabel} <ArrowRight size={17} weight="bold" />
               </Link>
             }
           />
         </div>
         <AnimatedContent className="series-banner">
           <img
-            src="/images/water-ripple.webp"
+            src={home.featured.image}
             alt="White Pulse original concept displayed above a flowing surface"
             loading="lazy"
             decoding="async"
@@ -225,23 +176,23 @@ export function HomePage() {
             height="941"
           />
           <div className="series-banner__copy">
-            <p>WE / WP–01</p>
-            <h3>Feel the motion.<br />Make it yours.</h3>
+            <p>{home.featured.bannerKicker}</p>
+            <h3>{home.featured.bannerTitleLine1}<br />{home.featured.bannerTitleLine2}</h3>
           </div>
         </AnimatedContent>
-      </section>
+      </section> : null}
 
-      <section
+      {home.custom.enabled ? <section
         className={`custom-story section-pad ${isProcessPlaying ? 'is-playing' : 'is-paused'}`}
         aria-labelledby="custom-title"
       >
         <div className="shell custom-story__grid">
           <div className="custom-story__intro">
-            <p className="eyebrow eyebrow--gold">Create yours</p>
-            <h2 id="custom-title">Your meaning.<br />Built in.</h2>
-            <p>Personalization is part of the object, not an afterthought placed on top.</p>
-            <Link className="button button--light" to="/custom">
-              Open the studio <ArrowRight size={18} weight="bold" />
+            <p className="eyebrow eyebrow--gold">{home.custom.eyebrow}</p>
+            <h2 id="custom-title">{home.custom.titleLine1}<br />{home.custom.titleLine2}</h2>
+            <p>{home.custom.copy}</p>
+            <Link className="button button--light" to={home.custom.ctaHref}>
+              {home.custom.ctaLabel} <ArrowRight size={18} weight="bold" />
             </Link>
           </div>
           <div
@@ -257,7 +208,7 @@ export function HomePage() {
               <div className="process-card__product">
                 <img
                   className="process-card__jersey"
-                  src="/images/white-pulse-process-jersey.webp"
+                  src={home.custom.image}
                   alt="Original white WE jersey changing through choose, personalize, review, and order stages"
                   loading="lazy"
                   decoding="async"
@@ -350,12 +301,12 @@ export function HomePage() {
             ))}
           </ol>
         </div>
-      </section>
+      </section> : null}
 
-      <section className="craft-story section-pad" aria-labelledby="craft-title">
+      {home.craftsmanship.enabled ? <section className="craft-story section-pad" aria-labelledby="craft-title">
         <div className="craft-story__image">
           <img
-            src="/images/craft-embroidery.webp"
+            src={home.craftsmanship.image}
             alt="A craftsperson inspecting embroidery on a black garment concept"
             loading="lazy"
             decoding="async"
@@ -364,11 +315,11 @@ export function HomePage() {
           />
         </div>
         <div className="craft-story__panel">
-          <p className="eyebrow">Made visible</p>
-          <h2 id="craft-title">The last five percent is where trust lives.</h2>
-          <p>Color alignment, stitch tension, placement, and finish are reviewed before a piece moves forward.</p>
-          <Link className="text-link" to="/craftsmanship">
-            See how WE makes it <ArrowRight size={17} weight="bold" />
+          <p className="eyebrow">{home.craftsmanship.eyebrow}</p>
+          <h2 id="craft-title">{home.craftsmanship.title}</h2>
+          <p>{home.craftsmanship.copy}</p>
+          <Link className="text-link" to={home.craftsmanship.ctaHref}>
+            {home.craftsmanship.ctaLabel} <ArrowRight size={17} weight="bold" />
           </Link>
           <dl className="craft-metrics">
             <div><dt>01</dt><dd>Material selection</dd></div>
@@ -376,12 +327,14 @@ export function HomePage() {
             <div><dt>03</dt><dd>Final inspection</dd></div>
           </dl>
         </div>
-      </section>
+      </section> : null}
 
-      <section className="promise-section section-pad shell" aria-labelledby="promise-title">
-        <SectionHeading id="promise-title" title="Four promises. No fine print." />
+      {home.promises.enabled ? <section className="promise-section section-pad shell" aria-labelledby="promise-title">
+        <SectionHeading id="promise-title" title={home.promises.title} />
         <div className="promise-grid">
-          {promiseItems.map(({ title, copy, icon: Icon }, index) => (
+          {home.promises.items.map(({ title, copy }, index) => {
+            const Icon = promiseIcons[index] ?? Sparkle
+            return (
             <article key={title}>
               <div className="promise-grid__top">
                 <Icon size={25} weight="light" />
@@ -390,18 +343,19 @@ export function HomePage() {
               <h3>{title}</h3>
               <p>{copy}</p>
             </article>
-          ))}
+            )
+          })}
         </div>
-      </section>
+      </section> : null}
 
-      <section className="stories-section section-pad shell" aria-labelledby="stories-title">
+      {home.stories.enabled ? <section className="stories-section section-pad shell" aria-labelledby="stories-title">
         <SectionHeading
           id="stories-title"
-          eyebrow="Stories"
-          title="The meaning behind the material."
+          eyebrow={home.stories.eyebrow}
+          title={home.stories.title}
           action={
             <Link className="text-link" to="/stories">
-              Read all stories <ArrowRight size={17} weight="bold" />
+              {home.stories.ctaLabel} <ArrowRight size={17} weight="bold" />
             </Link>
           }
         />
@@ -420,31 +374,34 @@ export function HomePage() {
             </article>
           ))}
         </div>
-      </section>
+      </section> : null}
 
-      <section className="community-banner" aria-labelledby="community-title">
-        <img src="/images/hero-stadium.webp" alt="An athlete walking toward the field in a personalized jersey" loading="lazy" decoding="async" width="1672" height="941" />
+      {home.community.enabled ? <section className="community-banner" aria-labelledby="community-title">
+        <img src={home.community.image} alt="An athlete walking toward the field in a personalized jersey" loading="lazy" decoding="async" width="1672" height="941" />
         <div className="community-banner__veil" />
         <div className="community-banner__content">
-          <p className="eyebrow eyebrow--gold">Worn your way</p>
-          <h2 id="community-title">The piece is finished when you live in it.</h2>
-          <p>See how individuals and teams make every WE original their own.</p>
-          <Link className="button button--ghost-light" to="/community">
-            Enter the community <ArrowRight size={18} weight="bold" />
+          <p className="eyebrow eyebrow--gold">{home.community.eyebrow}</p>
+          <h2 id="community-title">{home.community.title}</h2>
+          <p>{home.community.copy}</p>
+          <Link className="button button--ghost-light" to={home.community.ctaHref}>
+            {home.community.ctaLabel} <ArrowRight size={18} weight="bold" />
           </Link>
         </div>
-      </section>
+      </section> : null}
     </>
   )
 }
 
 export function CollectionsPage() {
+  const { config, series } = useSiteConfig()
+  const page = pageSetting(config, 'collections')
+  if (!page.enabled) return <NotFoundPage />
   return (
     <>
       <PageIntro
-        index="01 / Originals"
-        title="Every series starts with an idea."
-        copy="Explore WE originals as complete visual worlds, then choose the piece that makes the idea yours."
+        index={page.eyebrow}
+        title={page.title}
+        copy={page.description}
       />
       <div className="collection-gateway">
         {series.map((item, index) => (
@@ -474,7 +431,8 @@ export function CollectionsPage() {
 
 export function SeriesPage() {
   const { slug } = useParams()
-  const current = getSeries(slug)
+  const { config, products, series } = useSiteConfig()
+  const current = series.find((item) => item.slug === slug)
   const [controls, setControls] = useSearchParams()
   const sort = ['featured', 'name-asc', 'name-desc'].includes(controls.get('sort') ?? '')
     ? controls.get('sort')!
@@ -559,7 +517,10 @@ export function SeriesPage() {
 }
 
 export function WorldPage({ world }: { world: WorldSlug }) {
+  const { config, worlds, series } = useSiteConfig()
   const current = worlds.find((item) => item.slug === world)
+  const page = pageSetting(config, world)
+  if (!page.enabled) return <NotFoundPage />
   if (!current) return <NotFoundPage />
   const supporting = {
     create: ['Original systems', 'Personal details', 'Rights-confirmed content'],
@@ -570,12 +531,12 @@ export function WorldPage({ world }: { world: WorldSlug }) {
   return (
     <>
       <section className={`world-hero world-hero--${world}`}>
-        <img src={current.image} alt="" fetchPriority="high" width="1672" height="941" />
+        <img src={page.image || current.image} alt="" fetchPriority="high" width="1672" height="941" />
         <div className="world-hero__shade" />
         <div className="world-hero__content shell">
-          <p className="eyebrow eyebrow--gold">World {current.index} / {current.statusLabel}</p>
-          <h1>{current.title}</h1>
-          <p>{current.copy}</p>
+          <p className="eyebrow eyebrow--gold">{page.eyebrow} / {current.statusLabel}</p>
+          <h1>{page.title}</h1>
+          <p>{page.description}</p>
           {world === 'create' ? (
             <Link className="button button--light" to="/collections">Explore originals <ArrowRight size={18} /></Link>
           ) : world === 'belong' ? (
@@ -631,7 +592,8 @@ export function WorldPage({ world }: { world: WorldSlug }) {
 
 export function ProductPage() {
   const { slug } = useParams()
-  const product = getProduct(slug)
+  const { config, products, series } = useSiteConfig()
+  const product = products.find((item) => item.slug === slug)
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0)
   const [size, setSize] = useState<ApparelSize | ''>('')
   const [added, setAdded] = useState(false)
@@ -657,7 +619,7 @@ export function ProductPage() {
   const galleryItems = hasProductGallery ? product.gallery! : [fallbackGalleryItem]
   const galleryIndex = Math.min(activeGalleryIndex, galleryItems.length - 1)
   const activeGalleryItem = galleryItems[galleryIndex]!
-  const currentSeries = getSeries(product.series)
+  const currentSeries = series.find((item) => item.slug === product.series)
   const relatedProducts = products
     .filter((item) => item.series === product.series && item.slug !== product.slug)
     .slice(0, 3)
@@ -853,7 +815,7 @@ export function ProductPage() {
         </aside>
         <p className="eyebrow">{currentSeries?.name} / Concept preview</p>
         <h1>{product.name}</h1>
-        <p className="product-info__price">{formatPrice(product.price)}</p>
+        {config.commerce.displayPrices ? <p className="product-info__price">{formatPrice(product.price)}</p> : null}
         <p className="product-info__description">{product.story}</p>
         <dl className="product-facts">
           <div><dt>Color</dt><dd>{product.color}</dd></div>
@@ -880,7 +842,7 @@ export function ProductPage() {
           <button className="button button--dark" type="button" onClick={add} disabled={!size}>
             {added ? <><Check size={18} /> Added to selection</> : size ? <>Add to selection <ArrowRight size={18} /></> : <>Choose a size</>}
           </button>
-          {product.personalizable ? (
+          {product.personalizable && config.customizer.enabled ? (
             size ? (
               <Link className="button button--outline" to={`/custom?style=${product.slug}&size=${size}`}>
                 Personalize this
@@ -901,7 +863,7 @@ export function ProductPage() {
       </div>
     </section>
     <div className="mobile-purchase-bar" aria-label="Product action">
-      <span>{formatPrice(product.price)}</span>
+      {config.commerce.displayPrices ? <span>{formatPrice(product.price)}</span> : <span>{product.name}</span>}
       <button type="button" onClick={add} disabled={!size}>{added ? 'Added to selection' : size ? 'Add to selection' : 'Select size'}</button>
     </div>
     <div className="product-detail-stack shell">
@@ -989,8 +951,6 @@ const cityChoices = [
     productSlugs: ['black-rift-game-jersey', 'identity-fusion-game-jersey'],
   },
 ] as const
-
-const personalizableProducts = products.filter((product) => product.personalizable)
 
 function isApparelSize(value: string | null | undefined): value is ApparelSize {
   return apparelSizes.includes(value as ApparelSize)
@@ -1434,18 +1394,23 @@ function StudioBaseImage({
 }
 
 export function CustomPage() {
+  const { config, products, series } = useSiteConfig()
+  const personalizableProducts = useMemo(() => products.filter((product) => product.personalizable), [products])
+  const fallbackProduct = personalizableProducts[0] ?? config.catalog.products.find((product) => product.personalizable)!
+  const findProduct = (slug?: string | null) => slug ? products.find((product) => product.slug === slug) : undefined
+  const findSeries = (slug?: string | null) => slug ? series.find((item) => item.slug === slug) : undefined
   const [searchParams, setSearchParams] = useSearchParams()
   const draft = useMemo(readDesignDraft, [])
-  const requestedProduct = getProduct(searchParams.get('style') ?? undefined)
-  const draftProduct = getProduct(draft?.productSlug)
+  const requestedProduct = findProduct(searchParams.get('style'))
+  const draftProduct = findProduct(draft?.productSlug)
   const legacyDraftProduct = personalizableProducts.find(
-    (product) => getSeries(product.series)?.name === draft?.template,
+    (product) => findSeries(product.series)?.name === draft?.template,
   )
   const initialProduct = requestedProduct?.personalizable
     ? requestedProduct
     : draftProduct?.personalizable
       ? draftProduct
-      : legacyDraftProduct ?? personalizableProducts[0]!
+      : legacyDraftProduct ?? fallbackProduct
   const draftColorName = draft?.colorName ?? draft?.color?.name
   const [step, setStep] = useState(0)
   const [selectedProductSlug, setSelectedProductSlug] = useState(initialProduct.slug)
@@ -1493,9 +1458,16 @@ export function CustomPage() {
   const navigate = useNavigate()
 
   const steps = ['CHOOSE', 'PERSONALIZE', 'REVIEW', 'ORDER & TRACK']
-  const selectedProduct = getProduct(selectedProductSlug) ?? personalizableProducts[0]!
-  const templateSeries = getSeries(selectedProduct.series) ?? series[0]!
+  const selectedProduct = findProduct(selectedProductSlug) ?? fallbackProduct
+  const templateSeries = findSeries(selectedProduct.series) ?? series[0] ?? config.catalog.series[0]!
   const personalization = selectedProduct.personalization
+  const enabledRegions = personalization?.regions.filter((region) => {
+    if (region.kind === 'city') return config.customizer.cityEnabled
+    if (region.kind === 'name') return config.customizer.playerNameEnabled
+    if (region.kind === 'number') return config.customizer.numberEnabled
+    if (region.logoSlot === 'front') return config.customizer.frontLogoEnabled
+    return config.customizer.sleeveLogosEnabled
+  }) ?? []
   const managedPreviewImage = managedPreviewImages[view]
   const catalogPreviewImage = personalization?.viewImages[view]
   const previewImage: CustomizerViewImage = managedPreviewImage
@@ -1618,8 +1590,8 @@ export function CustomPage() {
       setSlotError('Use a PNG, JPG, or WEBP logo file.')
       return
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setSlotError('Keep the logo file under 2 MB for this browser proof.')
+    if (file.size > config.customizer.maxLogoSizeMb * 1024 * 1024) {
+      setSlotError(`Keep the logo file under ${config.customizer.maxLogoSizeMb} MB for this browser proof.`)
       return
     }
 
@@ -1667,6 +1639,8 @@ export function CustomPage() {
     setOrdered(true)
   }
 
+  if (!config.customizer.enabled) return <NotFoundPage />
+
   return (
     <section className="studio-page">
       <div className="studio-top shell">
@@ -1708,7 +1682,7 @@ export function CustomPage() {
             />
             {personalization ? (
               <PersonalizationArtwork
-                regions={personalization.regions}
+                regions={enabledRegions}
                 view={view}
                 city={city}
                 name={name}
@@ -1756,7 +1730,7 @@ export function CustomPage() {
                     }}
                   >
                     <img src={item.image} alt="" width="1672" height="941" />
-                    <span><strong>{item.name}</strong><small>{getSeries(item.series)?.name}</small></span>
+                    <span><strong>{item.name}</strong><small>{findSeries(item.series)?.name}</small></span>
                     {selectedProduct.slug === item.slug ? <CheckCircle size={22} weight="fill" /> : null}
                   </button>
                 ))}
@@ -1768,9 +1742,9 @@ export function CustomPage() {
               <p className="eyebrow">Step 02</p>
               <h2>Make it personal.</h2>
               <div className="field-grid">
-                <label>City name <input name="city-name" autoComplete="off" value={city} maxLength={18} onChange={(event) => setCity(event.target.value.toUpperCase())} /></label>
-                <label>Player name <input name="player-name" autoComplete="off" value={name} maxLength={14} onChange={(event) => setName(event.target.value.toUpperCase())} /></label>
-                <label>Number <input name="jersey-number" autoComplete="off" inputMode="numeric" pattern="[0-9]{0,2}" maxLength={2} value={number} onChange={(event) => setNumber(event.target.value.replace(/\D/g, ''))} /></label>
+                {config.customizer.cityEnabled ? <label>City name <input name="city-name" autoComplete="off" value={city} maxLength={18} onChange={(event) => setCity(event.target.value.toUpperCase())} /></label> : null}
+                {config.customizer.playerNameEnabled ? <label>Player name <input name="player-name" autoComplete="off" value={name} maxLength={14} onChange={(event) => setName(event.target.value.toUpperCase())} /></label> : null}
+                {config.customizer.numberEnabled ? <label>Number <input name="jersey-number" autoComplete="off" inputMode="numeric" pattern="[0-9]{0,2}" maxLength={2} value={number} onChange={(event) => setNumber(event.target.value.replace(/\D/g, ''))} /></label> : null}
                 <label>Size
                   <select
                     name="size"
@@ -1799,17 +1773,17 @@ export function CustomPage() {
               <fieldset className="logo-placements">
                 <legend>Logo placements</legend>
                 <p>Upload each location independently. A sleeve upload opens that sleeve preview automatically.</p>
-                <LogoUploadField
+                {config.customizer.frontLogoEnabled ? <LogoUploadField
                   inputId="custom-logo"
                   inputName="custom-logo"
                   label="Front logo"
-                  help="Transparent PNG recommended. JPG or WEBP also accepted, up to 2 MB."
+                  help={`Transparent PNG recommended. JPG or WEBP also accepted, up to ${config.customizer.maxLogoSizeMb} MB.`}
                   asset={logos.front}
                   error={logoErrors.front}
                   onUpload={(file) => handleLogoUpload('front', file)}
                   onRemove={() => removeLogo('front')}
-                />
-                <LogoUploadField
+                /> : null}
+                {config.customizer.sleeveLogosEnabled ? <LogoUploadField
                   inputId="left-sleeve-logo"
                   inputName="left-sleeve-logo"
                   label="Left sleeve logo"
@@ -1818,8 +1792,8 @@ export function CustomPage() {
                   error={logoErrors.leftSleeve}
                   onUpload={(file) => handleLogoUpload('leftSleeve', file)}
                   onRemove={() => removeLogo('leftSleeve')}
-                />
-                <LogoUploadField
+                /> : null}
+                {config.customizer.sleeveLogosEnabled ? <LogoUploadField
                   inputId="right-sleeve-logo"
                   inputName="right-sleeve-logo"
                   label="Right sleeve logo"
@@ -1828,7 +1802,7 @@ export function CustomPage() {
                   error={logoErrors.rightSleeve}
                   onUpload={(file) => handleLogoUpload('rightSleeve', file)}
                   onRemove={() => removeLogo('rightSleeve')}
-                />
+                /> : null}
               </fieldset>
               <fieldset className="color-picker">
                 <legend>Accent color</legend>
@@ -1864,7 +1838,7 @@ export function CustomPage() {
                 <div><dt>Size</dt><dd>{size}</dd></div>
                 <div><dt>Design ID</dt><dd>{designId}</dd></div>
                 <div><dt>Proof Version</dt><dd>{proofVersion}</dd></div>
-                <div><dt>Price</dt><dd>{formatPrice(selectedProduct.price)}</dd></div>
+                {config.commerce.displayPrices ? <div><dt>Price</dt><dd>{formatPrice(selectedProduct.price)}</dd></div> : null}
               </dl>
               <button className="text-link text-link--button" type="button" onClick={save}>
                 {saved ? <><Check size={17} /> Design saved locally</> : <>Save this design <ArrowRight size={17} /></>}
@@ -1909,17 +1883,20 @@ export function CustomPage() {
         </div>
       </div>
       <aside className="create-disclaimer shell" aria-labelledby="create-disclaimer-title">
-        <p className="eyebrow" id="create-disclaimer-title">Personalization &amp; intellectual property</p>
-        <p>WE UNION CREATE products are built on original garment designs and customer-led personalization. WE UNION does not reproduce or accept official league, team, athlete, or third-party brand names, logos, wordmarks, signatures, or confusingly similar variations. Customer-submitted artwork must be original or properly authorized and is subject to intellectual property review.</p>
+        <p className="eyebrow" id="create-disclaimer-title">{config.customizer.disclaimerTitle}</p>
+        <p>{config.customizer.disclaimer}</p>
       </aside>
     </section>
   )
 }
 
 export function StoriesPage() {
+  const { config, stories } = useSiteConfig()
+  const page = pageSetting(config, 'stories')
+  if (!page.enabled) return <NotFoundPage />
   return (
     <>
-      <PageIntro index="WE Journal" title="The story is part of the object." copy="Ideas, people, and craft from inside the world of WE." />
+      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} />
       <section className="journal-grid section-pad shell">
         {stories.map((story, index) => (
           <article className={index === 0 ? 'journal-card journal-card--feature' : 'journal-card'} key={story.slug}>
@@ -1938,6 +1915,7 @@ export function StoriesPage() {
 
 export function StoryPage() {
   const { slug } = useParams()
+  const { stories } = useSiteConfig()
   const story = stories.find((item) => item.slug === slug)
   if (!story) return <NotFoundPage />
 
@@ -1964,17 +1942,20 @@ export function StoryPage() {
 }
 
 export function CraftsmanshipPage() {
+  const { config } = useSiteConfig()
+  const page = pageSetting(config, 'craftsmanship')
   const stages = [
     ['01', 'Concept', 'Each piece begins as a WE visual system, not a blank template.'],
     ['02', 'Specification', 'Materials and construction become public only after evidence is approved.'],
     ['03', 'Personalization', 'Names, numbers, and marks are placed inside the original composition.'],
     ['04', 'Inspection', 'Verified checks can record alignment, color, construction, and finish before release.'],
   ]
+  if (!page.enabled) return <NotFoundPage />
   return (
     <>
       <section className="craft-hero">
-        <img src="/images/craft-embroidery.webp" alt="A craftsperson inspecting gold embroidery" fetchPriority="high" width="1672" height="941" />
-        <div className="craft-hero__content shell"><p className="eyebrow eyebrow--gold">Craftsmanship</p><h1>Evidence<br />in every detail.</h1></div>
+        <img src={page.image || '/images/craft-embroidery.webp'} alt="A craftsperson inspecting gold embroidery" fetchPriority="high" width="1672" height="941" />
+        <div className="craft-hero__content shell"><p className="eyebrow eyebrow--gold">{page.eyebrow}</p><h1>{page.title}</h1><p>{page.description}</p></div>
       </section>
       <section className="process-section section-pad shell">
         <SectionHeading eyebrow="The build" title="From original idea to inspected piece." copy="A visible, understandable process gives every personalized decision a place to belong." />
@@ -1993,11 +1974,14 @@ export function CraftsmanshipPage() {
 }
 
 export function CommunityPage() {
+  const { config } = useSiteConfig()
+  const page = pageSetting(config, 'community')
+  if (!page.enabled) return <NotFoundPage />
   return (
     <>
       <section className="community-hero">
-        <img src="/images/hero-stadium.webp" alt="An athlete wearing a personalized WE jersey" fetchPriority="high" width="1672" height="941" />
-        <div className="community-hero__content shell"><p className="eyebrow eyebrow--gold">Worn your way</p><h1>One original.<br />Countless meanings.</h1><p>A community preview showing how WE can hold individual and shared stories.</p></div>
+        <img src={page.image || '/images/hero-stadium.webp'} alt="An athlete wearing a personalized WE jersey" fetchPriority="high" width="1672" height="941" />
+        <div className="community-hero__content shell"><p className="eyebrow eyebrow--gold">{page.eyebrow}</p><h1>{page.title}</h1><p>{page.description}</p></div>
       </section>
       <section className="community-grid section-pad shell">
         <article className="community-grid__quote"><p>Verified wearer stories will live here.</p><span>Consent, moderation, attribution, and withdrawal controls required before publication</span></article>
@@ -2010,9 +1994,12 @@ export function CommunityPage() {
 }
 
 export function AboutPage() {
+  const { config } = useSiteConfig()
+  const page = pageSetting(config, 'about')
+  if (!page.enabled) return <NotFoundPage />
   return (
     <>
-      <PageIntro index="About WE" title="A uniform is never just a uniform." copy="WE brings sports heritage, personal identity, original design, and documented craft into one connected experience." />
+      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} />
       <section className="about-statement section-pad shell"><p>WE exists between two ideas that are usually separated:</p><h2>I am part of this.<br /><span>And this is still mine.</span></h2></section>
       <section className="about-pillars section-pad shell">
         <article><Cube size={30} /><p className="eyebrow">Original</p><h3>Begin with a point of view.</h3><p>Every WE series is designed as a complete visual world before personalization begins.</p></article>
@@ -2024,10 +2011,13 @@ export function AboutPage() {
 }
 
 export function TeamPage() {
+  const { config } = useSiteConfig()
+  const page = pageSetting(config, 'team')
   const [submitted, setSubmitted] = useState(false)
+  if (!page.enabled || !config.commerce.teamBriefEnabled) return <NotFoundPage />
   return (
     <>
-      <PageIntro index="WE for teams" title="One system. Every player." copy="A structured team-order path for clubs, schools, organizations, and creative communities." />
+      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} />
       <section className="team-page section-pad shell">
         <div className="team-process">
           {['Share the brief', 'Build the visual system', 'Approve player details', 'Produce and track'].map((item, index) => <div key={item}><span>0{index + 1}</span><h2>{item}</h2></div>)}
@@ -2053,6 +2043,7 @@ export function TeamPage() {
 }
 
 export function CartPage() {
+  const { config } = useSiteConfig()
   const { items, subtotal, hasPendingPricing, removeItem, restoreItem, updateQuantity } = useCart()
   const [removed, setRemoved] = useState<CartItem | null>(null)
   const remove = (item: CartItem) => {
@@ -2073,10 +2064,10 @@ export function CartPage() {
             <img src={item.image} alt="" width="941" height="941" />
             <div><h2>{item.name}</h2><p>{item.detail}</p>{item.designId ? <p>Design ID {item.designId} · Proof {item.proofVersion}</p> : null}<button type="button" onClick={() => remove(item)}>Remove</button></div>
             <label>Quantity <select name={`quantity-${item.id}`} value={item.quantity} onChange={(event) => updateQuantity(item.id, Number(event.target.value))}>{[1,2,3,4].map((value) => <option key={value}>{value}</option>)}</select></label>
-            <p>{formatPrice(item.price.status === 'confirmed' ? { ...item.price, amount: item.price.amount * item.quantity } : item.price)}</p>
+            {config.commerce.displayPrices ? <p>{formatPrice(item.price.status === 'confirmed' ? { ...item.price, amount: item.price.amount * item.quantity } : item.price)}</p> : null}
           </article>)}
         </div>
-        <aside className="order-summary"><p className="eyebrow">Order review</p><div><span>Subtotal</span><strong>{subtotal === null ? 'PRICE TBD' : formatPrice({ status: 'confirmed', amount: subtotal, currency: 'USD' })}</strong></div><div><span>Shipping</span><span>TBD</span></div><div><span>Tax</span><span>TBD</span></div><Link className="button button--dark" to="/checkout">Continue to order review <ArrowRight size={18} /></Link><p className="prototype-note">{hasPendingPricing ? 'One or more prices remain unverified. This flow cannot collect payment or create a production order.' : 'No charge will be made in this concept build.'}</p></aside>
+        <aside className="order-summary"><p className="eyebrow">Order review</p>{config.commerce.displayPrices ? <div><span>Subtotal</span><strong>{subtotal === null ? 'PRICE TBD' : formatPrice({ status: 'confirmed', amount: subtotal, currency: 'USD' })}</strong></div> : null}<div><span>Shipping</span><span>{config.commerce.shippingLabel}</span></div><div><span>Tax</span><span>{config.commerce.taxLabel}</span></div>{config.commerce.checkoutEnabled ? <Link className="button button--dark" to="/checkout">Continue to order review <ArrowRight size={18} /></Link> : <p className="prototype-note">Checkout is currently unavailable.</p>}<p className="prototype-note">{hasPendingPricing ? 'One or more prices remain unverified. This flow cannot collect payment or create a production order.' : 'No charge will be made in this concept build.'}</p></aside>
       </div> : <div className="empty-state empty-state--large"><BagIcon /><h2>Your cart is open space.</h2><p>Choose a WE original or begin a personalized piece.</p><Link className="button button--dark" to="/collections">Explore originals <ArrowRight size={18} /></Link></div>}
       {removed ? <div className="undo-toast" role="status"><span>{removed.name} removed.</span><button type="button" onClick={undoRemove}>Undo</button><button type="button" aria-label="Dismiss removed item message" onClick={() => setRemoved(null)}>×</button></div> : null}
     </section>
@@ -2086,8 +2077,10 @@ export function CartPage() {
 function BagIcon() { return <Package size={42} weight="light" /> }
 
 export function CheckoutPage() {
+  const { config } = useSiteConfig()
   const { items, subtotal, hasPendingPricing, clearCart } = useCart()
   const [complete, setComplete] = useState(false)
+  if (!config.commerce.checkoutEnabled) return <Navigate to="/cart" replace />
   if (!items.length && !complete) return <Navigate to="/cart" replace />
 
   return (
@@ -2118,11 +2111,14 @@ export function CheckoutPage() {
 }
 
 export function AccountPage() {
+  const { config } = useSiteConfig()
+  const page = pageSetting(config, 'account')
   const [mode, setMode] = useState<'signin' | 'create'>('signin')
   const [submitted, setSubmitted] = useState(false)
+  if (!page.enabled) return <NotFoundPage />
   return (
     <section className="account-page shell">
-      <div className="account-page__art"><img src="/images/hero-stadium.webp" alt="" width="1672" height="941" /><div><p className="eyebrow eyebrow--gold">Your WE</p><h1>Designs, orders,<br />and the story so far.</h1></div></div>
+      <div className="account-page__art"><img src={page.image || '/images/hero-stadium.webp'} alt="" width="1672" height="941" /><div><p className="eyebrow eyebrow--gold">{page.eyebrow}</p><h1>{page.title}</h1><p>{page.description}</p></div></div>
       <form className="account-form" onSubmit={(event) => { event.preventDefault(); setSubmitted(true) }}>
         <div className="account-tabs"><button type="button" className={mode === 'signin' ? 'is-active' : ''} onClick={() => setMode('signin')}>Sign in</button><button type="button" className={mode === 'create' ? 'is-active' : ''} onClick={() => setMode('create')}>Create account</button></div>
         {submitted ? <div className="order-confirmation" role="status"><CheckCircle size={42} weight="fill" /><h2>Prototype form complete.</h2><p>Authentication is not connected in this concept build.</p></div> : <><p className="eyebrow">{mode === 'signin' ? 'Welcome back' : 'Start your WE'}</p><h2>{mode === 'signin' ? 'Your story continues.' : 'Keep every detail together.'}</h2>{mode === 'create' ? <label>Name <input name="name" maxLength={80} required autoComplete="name" /></label> : null}<label>Email <input name="email" type="email" maxLength={120} required autoComplete="email" spellCheck={false} /></label><label>Password <input name="password" type="password" minLength={8} maxLength={128} required autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} /></label><button className="button button--dark" type="submit">{mode === 'signin' ? 'Sign in' : 'Create prototype account'} <ArrowRight size={18} /></button></>}
@@ -2132,25 +2128,29 @@ export function AccountPage() {
 }
 
 export function TrackPage() {
+  const { config } = useSiteConfig()
+  const page = pageSetting(config, 'track')
   const [submitted, setSubmitted] = useState(false)
+  if (!page.enabled || !config.commerce.orderTrackingEnabled) return <NotFoundPage />
   return (
     <section className="track-page shell">
-      <div><p className="eyebrow">Order & track</p><h1>Follow the piece.</h1><p>From personalized production through final inspection and delivery.</p></div>
+      <div><p className="eyebrow">{page.eyebrow}</p><h1>{page.title}</h1><p>{page.description}</p></div>
       <form onSubmit={(event) => { event.preventDefault(); setSubmitted(true) }}><label>Order number <input name="order-number" autoComplete="off" spellCheck={false} placeholder="e.g., WE-000000…" pattern="WE-[0-9]{6}" maxLength={9} title="Use the format WE-000000" required /></label><label>Email address <input name="email" type="email" maxLength={120} autoComplete="email" spellCheck={false} required /></label><button className="button button--light" type="submit">Find prototype order <ArrowRight size={18} /></button>{submitted ? <p className="form-success" role="status">Tracking is not connected in this prototype. Add the fulfillment API here before launch.</p> : null}</form>
     </section>
   )
 }
 
 export function SearchPage() {
+  const { products, series, stories } = useSiteConfig()
   const [params, setParams] = useSearchParams()
   const initial = params.get('q') ?? ''
   const citySlug = params.get('city') ?? ''
   const city = cityChoices.find((item) => item.slug === citySlug)
   const unknownCity = Boolean(citySlug && !city)
   const [query, setQuery] = useState(initial)
-  const results = useMemo(() => searchCatalog(initial), [initial])
+  const results = useMemo(() => searchCatalog(initial, { products, series, stories }), [initial, products, series, stories])
   const cityProducts = city
-    ? city.productSlugs.map((slug) => getProduct(slug)).filter((product): product is NonNullable<typeof product> => Boolean(product))
+    ? city.productSlugs.map((slug) => products.find((product) => product.slug === slug)).filter((product): product is NonNullable<typeof product> => Boolean(product))
     : []
   const submit = (event: React.FormEvent<HTMLFormElement>) => { event.preventDefault(); setParams(query.trim() ? { q: query.trim() } : {}) }
   return (
@@ -2193,9 +2193,12 @@ const supportTopics = [
 ] as const
 
 export function SupportPage() {
+  const { config } = useSiteConfig()
+  const page = pageSetting(config, 'support')
+  if (!page.enabled) return <NotFoundPage />
   return (
     <>
-      <PageIntro index="Help & support" title="Start with the right path." copy="Clear routes for product questions, personalized production, orders, and team programs." />
+      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} />
       <section className="support-grid section-pad shell">{supportTopics.map(([title, copy, href], index) => <Link to={href} key={title}><span>0{index + 1}</span><div><h2>{title}</h2><p>{copy}</p></div><ArrowUpRight size={23} /></Link>)}</section>
       <section className="faq-section section-pad shell"><SectionHeading eyebrow="FAQ" title="A few useful answers." /><div>{[
         ['Can I personalize every WE piece?', 'Personalization availability is defined per product. Eligible sample items are clearly labeled in the prototype.'],
@@ -2206,19 +2209,12 @@ export function SupportPage() {
   )
 }
 
-const legalContent: Record<string, { title: string; intro: string; sections: [string, string][] }> = {
-  privacy: { title: 'Privacy framework', intro: 'A launch-ready privacy policy must be reviewed by counsel and connected to the actual data practices.', sections: [['Prototype data', 'Forms in this prototype do not send information to a server. Local cart and saved-design data remain in this browser.'], ['Before launch', 'Document processors, retention, consent, deletion, and regional rights based on the production architecture.']] },
-  terms: { title: 'Terms framework', intro: 'These are product-language placeholders, not legal terms.', sections: [['Orders', 'Define acceptance, production approval, changes, cancellations, and remedies using the final operating model.'], ['Intellectual property', 'Document rights for customer-supplied names, numbers, and marks alongside WE original designs.']] },
-  accessibility: { title: 'Accessibility', intro: 'WE is designed toward WCAG 2.2 AA across navigation, content, customization, and purchase flows.', sections: [['Current build', 'Keyboard navigation, visible focus, semantic controls, text alternatives, and reduced-motion preferences are supported.'], ['Feedback', 'A monitored accessibility contact channel must be added before launch.']] },
-  shipping: { title: 'Shipping & returns framework', intro: 'Operational timelines and policies connect only when verified services and rules are ready.', sections: [['Personalized pieces', 'Define approval, production, change, and return rules in plain language before the buyer commits.'], ['Tracking', 'Expose carrier events and production milestones from the verified fulfillment source.']] },
-  'size-guide': { title: 'Size guide framework', intro: 'Final garment measurements and fit guidance require approved product specifications.', sections: [['Measurements', 'Publish measurements by verified product and variant rather than applying a generic chart.'], ['Before launch', 'Document measurement method, tolerance, fit terminology, and support escalation before recommending a size.']] },
-}
-
 export function PolicyPage() {
   const { slug } = useParams()
-  const page = legalContent[slug ?? '']
+  const { config } = useSiteConfig()
+  const page = config.policies.find((item) => item.slug === slug && item.enabled)
   if (!page) return <NotFoundPage />
-  return <article className="policy-page shell"><p className="eyebrow">WE / Legal & policy</p><h1>{page.title}</h1><p className="policy-page__intro">{page.intro}</p>{page.sections.map(([title, copy]) => <section key={title}><h2>{title}</h2><p>{copy}</p></section>)}<p className="prototype-note">Prototype content requires operational and legal approval before publication.</p></article>
+  return <article className="policy-page shell"><p className="eyebrow">WE / Legal & policy</p><h1>{page.title}</h1><p className="policy-page__intro">{page.intro}</p>{page.sections.map(({ title, copy }) => <section key={title}><h2>{title}</h2><p>{copy}</p></section>)}<p className="prototype-note">Prototype content requires operational and legal approval before publication.</p></article>
 }
 
 export function NotFoundPage() {

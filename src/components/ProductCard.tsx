@@ -1,8 +1,10 @@
 import { ArrowUpRight } from '@phosphor-icons/react'
 import { Link } from 'react-router-dom'
+import { useSiteConfig } from '../context/SiteConfigContext'
 import { formatPrice, type Product } from '../data/catalog'
 
 export function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
+  const { config } = useSiteConfig()
   return (
     <article className="product-card">
       <Link
@@ -30,7 +32,7 @@ export function ProductCard({ product, priority = false }: { product: Product; p
           </h3>
           <p>{product.color}</p>
         </div>
-        <p className="product-card__price">{formatPrice(product.price)}</p>
+        {config.commerce.displayPrices ? <p className="product-card__price">{formatPrice(product.price)}</p> : null}
       </div>
     </article>
   )

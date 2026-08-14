@@ -19,16 +19,30 @@ npm install
 npm run dev
 ```
 
-## Customizer preview administration
+## Bilingual site administration
 
-The protected `/admin/customizer` page publishes four independent, single-garment preview images: front, back, left sleeve, and right sleeve. Source PNG, JPG, or WEBP files are normalized in the browser to centered 1600 × 1600 WEBP images before upload.
+The protected `/admin` workspace provides Chinese and English interfaces for all configuration-driven parts of the current website:
+
+- dashboard and publishing status;
+- brand identity, announcement, navigation, contact details, and footer;
+- every homepage section;
+- worlds, series, products, stories, pricing visibility, and publication state;
+- page introductions, policy content, and page availability;
+- customizer controls and four independent garment preview views;
+- shared media library;
+- commerce feature switches and integration status; and
+- SEO defaults, indexing, and maintenance mode.
+
+Changes remain an unpublished browser draft until **Publish** is selected. Published configuration is stored as JSON in Vercel Blob and consumed by the public site. The admin language preference is the only admin value stored in the browser.
+
+The customizer module publishes four independent, single-garment preview images: front, back, left sleeve, and right sleeve. Source PNG, JPG, or WEBP files are normalized in the browser to centered 1600 × 1600 WEBP images before upload.
 
 Create a Vercel Blob store for the project, then configure these server-side environment variables for Preview and Production:
 
 - `BLOB_READ_WRITE_TOKEN` — supplied by the connected Vercel Blob store.
-- `CUSTOMIZER_ADMIN_PASSWORD` — the password required by the upload API.
+- `CUSTOMIZER_ADMIN_PASSWORD` — the password for the complete admin workspace and all protected upload APIs. `SITE_ADMIN_PASSWORD` is also supported as an optional future replacement.
 
-The public customizer reads the uploaded view images without authentication. Uploads remain password-protected, and neither server secret is included in the client bundle. If Blob is not configured, the customizer safely uses the catalog's separate per-view crops.
+The admin establishes an eight-hour, HTTP-only secure session. The public customizer reads published view images without authentication. Configuration writes and uploads remain password-protected, and neither server secret is included in the client bundle. If Blob is not configured, public pages safely use repository defaults and the customizer uses the catalog's separate per-view crops.
 
 ## Quality gates
 
