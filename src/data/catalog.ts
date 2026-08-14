@@ -29,6 +29,14 @@ export type Series = {
   craftDirection: string
 }
 
+export type ProductGalleryItem = {
+  src: string
+  label: string
+  alt: string
+  width: number
+  height: number
+}
+
 export type Product = {
   slug: string
   name: string
@@ -37,6 +45,7 @@ export type Product = {
   price: Price
   color: string
   image: string
+  gallery?: readonly ProductGalleryItem[]
   badge?: string
   personalizable?: boolean
   catalogState: 'concept-preview'
@@ -148,7 +157,44 @@ export const products: Product[] = [
     world: 'create',
     price: priceTbd(),
     color: 'WE WHITE / Pulse Green',
-    image: '/images/product-water.webp',
+    image: '/images/white-pulse-game-jersey-01-front-back.webp',
+    gallery: [
+      {
+        src: '/images/white-pulse-game-jersey-01-front-back.webp',
+        label: 'Overall front and back view',
+        alt: 'White Pulse Game Jersey front and back views',
+        width: 1254,
+        height: 1254,
+      },
+      {
+        src: '/images/white-pulse-game-jersey-02-collar-detail.webp',
+        label: 'Collar detail',
+        alt: 'White Pulse Game Jersey collar detail',
+        width: 1254,
+        height: 1254,
+      },
+      {
+        src: '/images/white-pulse-game-jersey-03-pattern-detail.webp',
+        label: 'Pattern close-up',
+        alt: 'White Pulse Game Jersey motion-curve pattern detail',
+        width: 1254,
+        height: 1254,
+      },
+      {
+        src: '/images/white-pulse-game-jersey-04-seam-detail.webp',
+        label: 'Seam detail',
+        alt: 'White Pulse Game Jersey visible seam detail',
+        width: 1254,
+        height: 1254,
+      },
+      {
+        src: '/images/white-pulse-game-jersey-05-on-model.webp',
+        label: 'On-body view',
+        alt: 'Adult model wearing the White Pulse Game Jersey',
+        width: 1254,
+        height: 1254,
+      },
+    ],
     badge: 'Concept preview',
     personalizable: true,
     catalogState: 'concept-preview',

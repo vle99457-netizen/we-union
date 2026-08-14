@@ -1813,6 +1813,162 @@ summary:focus-visible {
   object-fit: cover;
 }
 
+.product-gallery--carousel {
+  align-content: start;
+}
+
+.product-gallery__stage {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  isolation: isolate;
+  background: #ebe9e2;
+}
+
+.product-gallery__stage > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: product-gallery-image-in 280ms ease-out;
+}
+
+@keyframes product-gallery-image-in {
+  from {
+    opacity: 0.65;
+    transform: scale(1.006);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.product-gallery__arrow {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  place-items: center;
+  color: var(--obsidian);
+  border: 1px solid rgb(10 10 10 / 18%);
+  border-radius: 50%;
+  background: rgb(247 244 237 / 90%);
+  box-shadow: 0 8px 24px rgb(10 10 10 / 10%);
+  transform: translateY(-50%);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.product-gallery__arrow:hover {
+  color: var(--ivory);
+  background: var(--obsidian);
+}
+
+.product-gallery__arrow--previous {
+  left: 18px;
+}
+
+.product-gallery__arrow--next {
+  right: 18px;
+}
+
+.product-gallery__count {
+  position: absolute;
+  z-index: 2;
+  right: 16px;
+  bottom: 16px;
+  padding: 7px 10px 6px;
+  color: var(--ivory);
+  background: rgb(10 10 10 / 72%);
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 0.84rem;
+  letter-spacing: 0.12em;
+  line-height: 1;
+}
+
+.product-gallery__dots {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.product-gallery__dots span {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--steel);
+  border-radius: 999px;
+  background: transparent;
+  transition: width 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.product-gallery__dots span.is-active {
+  width: 25px;
+  border-color: var(--obsidian);
+  background: var(--obsidian);
+}
+
+.product-gallery__thumbs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.product-gallery__thumbs button {
+  position: relative;
+  min-width: 0;
+  min-height: 54px;
+  padding: 0;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  background: #ebe9e2;
+  cursor: pointer;
+}
+
+.product-gallery__thumbs button::after {
+  position: absolute;
+  right: 8px;
+  bottom: 7px;
+  left: 8px;
+  height: 3px;
+  background: var(--obsidian);
+  content: '';
+  opacity: 0;
+  transform: scaleX(0.45);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.product-gallery__thumbs button:hover {
+  border-color: var(--steel);
+}
+
+.product-gallery__thumbs button.is-active {
+  border: 2px solid var(--obsidian);
+}
+
+.product-gallery__thumbs button.is-active::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.product-gallery__thumbs img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 180ms ease;
+}
+
+.product-gallery__thumbs button:hover img {
+  transform: scale(1.035);
+}
+
 .product-info {
   position: sticky;
   top: calc(var(--header-h) + 32px);
@@ -3691,6 +3847,11 @@ summary:focus-visible {
     display: contents;
   }
 
+  .product-gallery--carousel {
+    display: grid;
+    order: 1;
+  }
+
   .product-gallery__main {
     order: 1;
   }
@@ -4156,6 +4317,11 @@ summary:focus-visible {
     display: contents;
   }
 
+  .product-gallery--carousel {
+    display: grid;
+    order: 1;
+  }
+
   .product-gallery__main {
     order: 1;
   }
@@ -4168,6 +4334,28 @@ summary:focus-visible {
 
   .product-gallery__detail {
     order: 3;
+  }
+
+  .product-gallery__dots,
+  .product-gallery__thumbs {
+    margin-inline: 16px;
+  }
+
+  .product-gallery__thumbs {
+    gap: 6px;
+  }
+
+  .product-gallery__arrow {
+    width: 44px;
+    height: 44px;
+  }
+
+  .product-gallery__arrow--previous {
+    left: 12px;
+  }
+
+  .product-gallery__arrow--next {
+    right: 12px;
   }
 
   .product-info h1 {
@@ -4442,6 +4630,11 @@ summary:focus-visible {
   .view-switcher button,
   .size-picker button,
   .color-picker button {
+    border: 1px solid ButtonText;
+  }
+
+  .product-gallery__arrow,
+  .product-gallery__thumbs button {
     border: 1px solid ButtonText;
   }
 

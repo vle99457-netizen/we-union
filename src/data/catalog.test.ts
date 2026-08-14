@@ -25,6 +25,19 @@ describe('catalog helpers', () => {
     expect(formatPrice({ status: 'tbd' })).toBe('PRICE TBD')
   })
 
+  it('exposes the five required White Pulse gallery views in order', () => {
+    const gallery = getProduct('white-pulse-game-jersey')?.gallery
+    expect(gallery).toHaveLength(5)
+    expect(gallery?.map((item) => item.label)).toEqual([
+      'Overall front and back view',
+      'Collar detail',
+      'Pattern close-up',
+      'Seam detail',
+      'On-body view',
+    ])
+    expect(new Set(gallery?.map((item) => item.src)).size).toBe(5)
+  })
+
   it('searches products, series, and stories without case sensitivity', () => {
     const results = searchCatalog('IDENTITY')
     expect(results.length).toBeGreaterThanOrEqual(3)
