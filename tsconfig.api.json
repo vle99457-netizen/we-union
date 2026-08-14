@@ -3,11 +3,17 @@
     "composite": true,
     "target": "ES2022",
     "lib": ["ES2022", "DOM"],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["api", "src/data/customizerImages.ts"]
+  "include": [
+    "api",
+    "src/data/catalog.ts",
+    "src/data/customizerImages.ts",
+    "src/data/siteConfig.ts",
+    "src/server/adminAuth.ts"
+  ]
 }

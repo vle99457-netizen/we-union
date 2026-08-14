@@ -1,7 +1,8 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { SiteChrome } from './components/SiteChrome'
 import { RouteMetadata } from './components/RouteMetadata'
-import { CustomizerAdminPage } from './admin/CustomizerAdminPage'
+import { useSiteConfig } from './context/SiteConfigContext'
 import {
   AboutPage,
   AccountPage,
@@ -25,7 +26,9 @@ import {
   WorldPage,
 } from './pages'
 
-export default function App() {
+const AdminPage = lazy(() => import('./admin/AdminPage').then((module) => ({ default: module.AdminPage })))
+
+function PublicRoutes() {
   return (
     <SiteChrome>
       <RouteMetadata />
@@ -48,7 +51,6 @@ export default function App() {
         <Route path="/custom" element={<CustomPage />} />
         <Route path="/custom/team" element={<TeamPage />} />
         <Route path="/custom/saved/:id" element={<CustomPage />} />
-        <Route path="/admin/customizer" element={<CustomizerAdminPage />} />
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/stories/:slug" element={<StoryPage />} />
         <Route path="/community" element={<CommunityPage />} />
@@ -70,4 +72,38 @@ export default function App() {
       </Routes>
     </SiteChrome>
   )
+}
+
+function MaintenanceScreen() {
+  const { config } = useSiteConfig()
+  return (
+    <main className="maintenance-screen">
+      <img src={config.global.logoUrl} alt={config.global.siteName} width="307" height="195" />
+      <p className="eyebrow">WE / STUDIO</p>
+      <h1>{config.system.maintenanceTitle}</h1>
+      <p>{config.system.maintenanceMessage}</p>
+    </main>
+  )
+}
+
+export default function App() {
+  const location = useLocation()
+  const { config } = useSiteConfig()
+  const isAdminRoute = location.pathname === '/admin' || location.pathname.startsWith('/admin/')
+
+  if (isAdminRoute) {
+    return (
+      <>
+        <RouteMetadata />
+        <Routes>
+          <Route path="/admin" element={<Suspense fallback={<main className="admin-route-loading">Loading administration…</main>}><AdminPage /></Suspense>} />
+          <Route path="/admin/customizer" element={<Navigate to="/admin?section=customizer" replace />} />
+          <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
+        </Routes>
+      </>
+    )
+  }
+
+  if (config.system.maintenanceMode) return <MaintenanceScreen />
+  return <PublicRoutes />
 }

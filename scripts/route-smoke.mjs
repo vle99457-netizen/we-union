@@ -17,7 +17,6 @@ const routes = [
   '/products/identity-fusion-game-jersey',
   '/custom?style=black-rift-game-jersey',
   '/custom/saved/demo',
-  '/admin/customizer',
   '/stories',
   '/stories/from-buyer-to-creator',
   '/community',
@@ -43,9 +42,10 @@ const server = await createServer({
 })
 
 try {
-  const [{ default: App }, { CartProvider }] = await Promise.all([
+  const [{ default: App }, { CartProvider }, { SiteConfigProvider }] = await Promise.all([
     server.ssrLoadModule('/src/App.tsx'),
     server.ssrLoadModule('/src/store/CartContext.tsx'),
+    server.ssrLoadModule('/src/context/SiteConfigContext.tsx'),
   ])
 
   for (const route of routes) {
@@ -53,7 +53,7 @@ try {
       createElement(
         MemoryRouter,
         { initialEntries: [route] },
-        createElement(CartProvider, null, createElement(App)),
+        createElement(SiteConfigProvider, null, createElement(CartProvider, null, createElement(App))),
       ),
     )
     const h1Count = (markup.match(/<h1/g) ?? []).length
