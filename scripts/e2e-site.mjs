@@ -102,8 +102,110 @@ try {
   assert(await page.$$eval('.product-grid', (grids) => grids.length === 0), 'BELONG must not render a product grid before launch.')
 
   await page.goto(`${baseUrl}/products/white-pulse-game-jersey`, { waitUntil: 'networkidle0' })
+  await page.waitForFunction(() => (
+    [...document.querySelectorAll('[data-gallery-thumbnail] img')]
+      .every((image) => image.complete && image.naturalWidth > 0)
+  ))
+  const expectedGalleryLabels = [
+    'Show overall front and back view',
+    'Show collar detail',
+    'Show pattern close-up',
+    'Show seam detail',
+    'Show on-body view',
+  ]
+  const initialGallery = await page.$eval('[data-product-gallery]', (gallery) => {
+    const thumbnails = [...gallery.querySelectorAll('[data-gallery-thumbnail]')]
+    const dots = [...gallery.querySelectorAll('[data-gallery-dot]')]
+    const mainImage = gallery.querySelector('[data-gallery-main-image]')
+    return {
+      roleDescription: gallery.getAttribute('aria-roledescription'),
+      labels: thumbnails.map((thumbnail) => thumbnail.getAttribute('aria-label')),
+      selected: thumbnails.map((thumbnail) => thumbnail.getAttribute('aria-selected')),
+      thumbnailSources: thumbnails.map((thumbnail) => thumbnail.querySelector('img')?.currentSrc),
+      thumbnailsLoaded: thumbnails.every((thumbnail) => {
+        const image = thumbnail.querySelector('img')
+        return Boolean(image?.complete && image.naturalWidth > 0)
+      }),
+      dotCount: dots.length,
+      activeDots: dots.filter((dot) => dot.dataset.active === 'true').length,
+      mainSource: mainImage?.currentSrc,
+      mainAlt: mainImage?.getAttribute('alt'),
+      mainLoaded: Boolean(mainImage?.complete && mainImage.naturalWidth > 0),
+    }
+  })
+  assert(initialGallery.roleDescription === 'carousel', 'PDP gallery must expose carousel semantics.')
+  assert(
+    JSON.stringify(initialGallery.labels) === JSON.stringify(expectedGalleryLabels),
+    'PDP thumbnails must expose the required five views in order.',
+  )
+  assert(
+    new Set(initialGallery.thumbnailSources).size === 5 && initialGallery.thumbnailsLoaded,
+    'All five unique PDP thumbnails must load.',
+  )
+  assert(
+    JSON.stringify(initialGallery.selected) === JSON.stringify(['true', 'false', 'false', 'false', 'false']),
+    'The overall front and back view must be selected initially.',
+  )
+  assert(initialGallery.dotCount === 5 && initialGallery.activeDots === 1, 'PDP gallery must expose five dots and one active dot.')
+  assert(
+    /front and back/i.test(initialGallery.mainAlt ?? '') && initialGallery.mainLoaded,
+    'The initial PDP hero must be the loaded front and back view.',
+  )
+
+  await page.click('.product-gallery__arrow--previous')
+  await page.waitForFunction(() => {
+    const thumbnails = document.querySelectorAll('[data-gallery-thumbnail]')
+    const dots = document.querySelectorAll('[data-gallery-dot]')
+    const main = document.querySelector('[data-gallery-main-image]')
+    return thumbnails[4]?.getAttribute('aria-selected') === 'true'
+      && dots[4]?.dataset.active === 'true'
+      && /model/i.test(main?.getAttribute('alt') ?? '')
+  })
+  await page.click('.product-gallery__arrow--next')
+  await page.waitForFunction(() => {
+    const thumbnails = document.querySelectorAll('[data-gallery-thumbnail]')
+    const dots = document.querySelectorAll('[data-gallery-dot]')
+    return thumbnails[0]?.getAttribute('aria-selected') === 'true' && dots[0]?.dataset.active === 'true'
+  })
+
+  await page.click('[data-gallery-thumbnail]:nth-child(3)')
+  await page.waitForFunction(() => {
+    const thumbnails = document.querySelectorAll('[data-gallery-thumbnail]')
+    const main = document.querySelector('[data-gallery-main-image]')
+    return thumbnails[2]?.getAttribute('aria-selected') === 'true' && /pattern/i.test(main?.getAttribute('alt') ?? '')
+  })
+  await page.focus('[data-gallery-thumbnail]:nth-child(3)')
+  await page.keyboard.press('ArrowRight')
+  await page.waitForFunction(() => {
+    const thumbnails = document.querySelectorAll('[data-gallery-thumbnail]')
+    return document.activeElement === thumbnails[3] && thumbnails[3]?.getAttribute('aria-selected') === 'true'
+  })
+  await page.keyboard.press('End')
+  await page.waitForFunction(() => {
+    const thumbnails = document.querySelectorAll('[data-gallery-thumbnail]')
+    return document.activeElement === thumbnails[4] && thumbnails[4]?.getAttribute('aria-selected') === 'true'
+  })
+  await page.keyboard.press('Home')
+  await page.waitForFunction(() => {
+    const thumbnails = document.querySelectorAll('[data-gallery-thumbnail]')
+    return document.activeElement === thumbnails[0] && thumbnails[0]?.getAttribute('aria-selected') === 'true'
+  })
+  await page.focus('[data-gallery-thumbnail]:nth-child(2)')
+  await page.keyboard.press('Enter')
+  await page.waitForFunction(() => (
+    document.querySelectorAll('[data-gallery-thumbnail]')[1]?.getAttribute('aria-selected') === 'true'
+      && /collar detail, image 2 of 5/i.test(document.querySelector('[data-product-gallery] [role="status"]')?.textContent ?? '')
+  ))
+
   assert(await page.$eval('body', (body) => body.innerText.includes('PRICE TBD')), 'PDP must disclose PRICE TBD.')
   await assertNoUnverifiedAmount(page, 'PDP')
+
+  await page.goto(`${baseUrl}/products/black-rift-game-jersey`, { waitUntil: 'networkidle0' })
+  assert(await page.$$eval('[data-product-gallery]', (galleries) => galleries.length === 0), 'Non-target PDPs must not opt into the White Pulse carousel.')
+  assert(await page.$$eval('.product-gallery__main', (images) => images.length === 1), 'Non-target PDPs must retain their primary product visual.')
+  assert(await page.$$eval('.product-gallery__detail', (images) => images.length === 1), 'Non-target PDPs must retain their secondary detail visual.')
+
+  await page.goto(`${baseUrl}/products/white-pulse-game-jersey`, { waitUntil: 'networkidle0' })
   await page.type('#product-city-search', 'Chicago')
   await page.click('.city-discovery button[type="submit"]')
   await page.waitForFunction(() => window.location.search.includes('city=chicago'))
@@ -133,7 +235,7 @@ try {
   const notice = await page.$eval('.create-disclaimer p:last-child', (paragraph) => paragraph.textContent?.trim())
   assert(notice === 'WE UNION CREATE products are built on original garment designs and customer-led personalization. WE UNION does not reproduce or accept official league, team, athlete, or third-party brand names, logos, wordmarks, signatures, or confusingly similar variations. Customer-submitted artwork must be original or properly authorized and is subject to intellectual property review.', 'CREATE notice must be an exact DOM match.')
   assert(errors.length === 0, `Browser errors: ${errors.join('; ')}`)
-  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, PRICE TBD, city discovery, exact CREATE notice, and browser health.')
+  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, exact CREATE notice, and browser health.')
 } finally {
   await browser.close()
   await server.close()

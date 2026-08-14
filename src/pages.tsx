@@ -15,7 +15,7 @@ import {
   Sparkle,
   UsersThree,
 } from '@phosphor-icons/react'
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { AnimatedContent } from './components/AnimatedContent'
 import { ProductCard } from './components/ProductCard'
@@ -475,18 +475,56 @@ export function WorldPage({ world }: { world: WorldSlug }) {
 export function ProductPage() {
   const { slug } = useParams()
   const product = getProduct(slug)
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState(0)
   const [size, setSize] = useState<ApparelSize | ''>('')
   const [added, setAdded] = useState(false)
   const [cityQuery, setCityQuery] = useState('')
   const [cityMessage, setCityMessage] = useState('')
   const { addItem } = useCart()
   const navigate = useNavigate()
+  const galleryThumbs = useRef<Array<HTMLButtonElement | null>>([])
+
+  useEffect(() => {
+    setActiveGalleryIndex(0)
+  }, [slug])
 
   if (!product) return <NotFoundPage />
+  const fallbackGalleryItem = {
+    src: product.image,
+    label: 'Overall view',
+    alt: product.name,
+    width: 941,
+    height: 941,
+  }
+  const hasProductGallery = Boolean(product.gallery?.length)
+  const galleryItems = hasProductGallery ? product.gallery! : [fallbackGalleryItem]
+  const galleryIndex = Math.min(activeGalleryIndex, galleryItems.length - 1)
+  const activeGalleryItem = galleryItems[galleryIndex]!
   const currentSeries = getSeries(product.series)
   const relatedProducts = products
     .filter((item) => item.series === product.series && item.slug !== product.slug)
     .slice(0, 3)
+
+  const showGalleryItem = (index: number, moveFocus = false) => {
+    setActiveGalleryIndex(index)
+    if (moveFocus) galleryThumbs.current[index]?.focus()
+  }
+
+  const moveGallery = (direction: -1 | 1) => {
+    const next = (galleryIndex + direction + galleryItems.length) % galleryItems.length
+    showGalleryItem(next)
+  }
+
+  const handleGalleryKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let nextIndex: number | undefined
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % galleryItems.length
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + galleryItems.length) % galleryItems.length
+    if (event.key === 'Home') nextIndex = 0
+    if (event.key === 'End') nextIndex = galleryItems.length - 1
+    if (nextIndex === undefined) return
+    event.preventDefault()
+    showGalleryItem(nextIndex, true)
+  }
 
   const findCity = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -530,10 +568,100 @@ export function ProductPage() {
   return (
     <>
     <section className="product-page shell" aria-label={`${product.name} product information`}>
-      <div className="product-gallery">
-        <div className="product-gallery__main"><img src={product.image} alt={product.name} fetchPriority="high" width="941" height="941" /></div>
-        <div className="product-gallery__detail"><img src="/images/craft-embroidery.webp" alt="Embroidery construction concept detail" loading="lazy" width="1672" height="941" /></div>
+      {hasProductGallery ? (
+      <div
+        className="product-gallery product-gallery--carousel"
+        data-product-gallery
+        role="region"
+        aria-label={`${product.name} product images`}
+        aria-roledescription="carousel"
+      >
+        <div
+          className="product-gallery__stage"
+          id="product-gallery-panel"
+          role="tabpanel"
+          aria-labelledby={`product-gallery-tab-${galleryIndex}`}
+        >
+          <img
+            key={activeGalleryItem.src}
+            data-gallery-main-image
+            src={activeGalleryItem.src}
+            alt={activeGalleryItem.alt}
+            fetchPriority={galleryIndex === 0 ? 'high' : 'auto'}
+            loading={galleryIndex === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            width={activeGalleryItem.width}
+            height={activeGalleryItem.height}
+          />
+          {galleryItems.length > 1 ? (
+            <>
+              <button
+                className="product-gallery__arrow product-gallery__arrow--previous"
+                type="button"
+                aria-label="Previous product image"
+                onClick={() => moveGallery(-1)}
+              >
+                <ArrowLeft size={20} aria-hidden="true" />
+              </button>
+              <button
+                className="product-gallery__arrow product-gallery__arrow--next"
+                type="button"
+                aria-label="Next product image"
+                onClick={() => moveGallery(1)}
+              >
+                <ArrowRight size={20} aria-hidden="true" />
+              </button>
+              <span className="product-gallery__count" aria-hidden="true">
+                {String(galleryIndex + 1).padStart(2, '0')} / {String(galleryItems.length).padStart(2, '0')}
+              </span>
+            </>
+          ) : null}
+        </div>
+        {galleryItems.length > 1 ? (
+          <>
+            <div className="product-gallery__dots" aria-hidden="true">
+              {galleryItems.map((item, index) => (
+                <span
+                  key={item.src}
+                  className={index === galleryIndex ? 'is-active' : ''}
+                  data-gallery-dot
+                  data-active={index === galleryIndex}
+                />
+              ))}
+            </div>
+            <div className="product-gallery__thumbs" role="tablist" aria-label="Product image views">
+              {galleryItems.map((item, index) => (
+                <button
+                  key={item.src}
+                  ref={(element) => { galleryThumbs.current[index] = element }}
+                  className={index === galleryIndex ? 'is-active' : ''}
+                  id={`product-gallery-tab-${index}`}
+                  data-gallery-thumbnail
+                  type="button"
+                  role="tab"
+                  aria-label={`Show ${item.label.toLowerCase()}`}
+                  aria-controls="product-gallery-panel"
+                  aria-selected={index === galleryIndex}
+                  tabIndex={index === galleryIndex ? 0 : -1}
+                  onClick={() => showGalleryItem(index)}
+                  onKeyDown={(event) => handleGalleryKeyDown(event, index)}
+                >
+                  <img src={item.src} alt="" loading="lazy" decoding="async" width={item.width} height={item.height} />
+                </button>
+              ))}
+            </div>
+          </>
+        ) : null}
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {activeGalleryItem.label}, image {galleryIndex + 1} of {galleryItems.length}
+        </p>
       </div>
+      ) : (
+        <div className="product-gallery">
+          <div className="product-gallery__main"><img src={product.image} alt={product.name} fetchPriority="high" width="941" height="941" /></div>
+          <div className="product-gallery__detail"><img src="/images/craft-embroidery.webp" alt="Embroidery construction concept detail" loading="lazy" width="1672" height="941" /></div>
+        </div>
+      )}
       <div className="product-info">
         <aside className="city-discovery" aria-labelledby="find-city-title">
           <div className="city-discovery__header">
