@@ -61,6 +61,15 @@ try {
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
 
+  await page.goto(baseUrl, { waitUntil: 'networkidle0' })
+  const createNavigationPath = await page.$eval(
+    'nav[aria-label="Primary navigation"] a',
+    (link) => new URL(link.href).pathname,
+  )
+  assert(createNavigationPath === '/collections', 'Primary CREATE navigation must link directly to /collections.')
+  await page.click('nav[aria-label="Primary navigation"] a')
+  await page.waitForFunction(() => window.location.pathname === '/collections')
+
   await page.goto(`${baseUrl}/collections`, { waitUntil: 'networkidle0' })
   assert(await page.$$eval('a.collection-row', (rows) => rows.length === 3), 'Collection Gateway must expose one full-width link per series.')
   assert(await page.$$eval('.product-grid', (grids) => grids.length === 0), 'Gateway must not expose a product grid.')
@@ -124,7 +133,7 @@ try {
   const notice = await page.$eval('.create-disclaimer p:last-child', (paragraph) => paragraph.textContent?.trim())
   assert(notice === 'WE UNION CREATE products are built on original garment designs and customer-led personalization. WE UNION does not reproduce or accept official league, team, athlete, or third-party brand names, logos, wordmarks, signatures, or confusingly similar variations. Customer-submitted artwork must be original or properly authorized and is subject to intellectual property review.', 'CREATE notice must be an exact DOM match.')
   assert(errors.length === 0, `Browser errors: ${errors.join('; ')}`)
-  console.log('E2E site passed: approved series, compatibility redirects, HONOR/BELONG gates, PRICE TBD, city discovery, exact CREATE notice, and browser health.')
+  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, PRICE TBD, city discovery, exact CREATE notice, and browser health.')
 } finally {
   await browser.close()
   await server.close()
