@@ -62,7 +62,15 @@ try {
       return
     }
     if (url.pathname === '/api/admin-media') {
-      await request.respond({ status: 200, contentType: 'application/json', body: JSON.stringify({ media: [] }) })
+      if (request.method() === 'POST') {
+        await request.respond({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ image: { pathname: 'cms/media/smoke.webp', url: '/images/water-ripple.webp', size: 1024, uploadedAt: new Date().toISOString() } }),
+        })
+      } else {
+        await request.respond({ status: 200, contentType: 'application/json', body: JSON.stringify({ media: [] }) })
+      }
       return
     }
     if (url.pathname === '/api/customizer-images') {
@@ -91,10 +99,23 @@ try {
   await page.click('.admin-sidebar nav button:nth-child(3)')
   await page.waitForFunction(() => document.querySelector('.admin-topbar h1')?.textContent === 'Homepage')
   assert(await page.$$eval('.admin-editor-group', (groups) => groups.length === 8), 'Homepage editor must expose all eight sections.')
+  assert(await page.$$eval('.admin-image-field', (fields) => fields.length >= 5), 'Homepage image settings must expose direct local-image controls.')
+  assert(await page.$$eval('.admin-image-field__preview img', (images) => images.length >= 5), 'Homepage image settings must show previews.')
+
+  const homepageUpload = await page.$('.admin-image-field input[type="file"]')
+  if (!homepageUpload) throw new Error('Homepage image upload input was not found.')
+  await homepageUpload.uploadFile(path.resolve('public/images/water-ripple.webp'))
+  await page.waitForFunction(() => document.querySelector('.admin-image-field__message.is-success')?.textContent?.includes('Image uploaded'))
+  assert(await page.$eval('.admin-publish-bar', (bar) => bar.dataset.dirty === 'true'), 'A completed image upload must mark the configuration as unpublished.')
   await page.screenshot({ path: '/tmp/we-admin-homepage-en.png', type: 'png', fullPage: true })
 
+  await page.click('.admin-sidebar nav button:nth-child(4)')
+  await page.waitForFunction(() => document.querySelector('.admin-topbar h1')?.textContent === 'Catalog')
+  assert(await page.$$eval('.admin-product-gallery', (galleries) => galleries.length === 1), 'Product editing must expose the gallery manager.')
+  assert(await page.$$eval('.admin-product-gallery__grid .admin-image-field__preview img', (images) => images.length >= 1), 'Product gallery images must show previews.')
+
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 })
-  await page.reload({ waitUntil: 'networkidle0' })
+  await page.waitForFunction(() => window.innerWidth === 390)
   await page.waitForSelector('.admin-app')
   assert(await page.$eval('.admin-sidebar', (sidebar) => getComputedStyle(sidebar).position === 'fixed'), 'Mobile admin navigation must remain fixed.')
   assert(await page.$eval('body', (body) => body.scrollWidth <= window.innerWidth), 'Mobile admin must not overflow horizontally.')
@@ -102,7 +123,7 @@ try {
 
   assert(consoleErrors.length === 0, `Console errors: ${consoleErrors.join('; ')}`)
   assert(pageErrors.length === 0, `Page errors: ${pageErrors.join('; ')}`)
-  console.log('Admin browser smoke passed: bilingual desktop, eight-section homepage editor, nine-module navigation, mobile layout, and browser health.')
+  console.log('Admin browser smoke passed: bilingual editing, local image uploads with previews, product gallery management, mobile layout, and browser health.')
   console.log('/tmp/we-admin-desktop.png')
   console.log('/tmp/we-admin-homepage-en.png')
   console.log('/tmp/we-admin-mobile.png')
