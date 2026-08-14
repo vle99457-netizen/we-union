@@ -42,6 +42,7 @@ await server.listen()
 const address = server.httpServer?.address()
 if (!address || typeof address === 'string') throw new Error('E2E server did not expose a port.')
 const baseUrl = `http://127.0.0.1:${address.port}`
+const { defaultSiteConfig } = await server.ssrLoadModule('/src/data/siteConfig.ts')
 const browser = await puppeteer.launch({
   executablePath: await browserExecutable(),
   headless: 'shell',
@@ -70,6 +71,23 @@ try {
   await page.setRequestInterception(true)
   page.on('request', async (request) => {
     const url = new URL(request.url())
+    if (url.pathname === '/api/site-config') {
+      await request.respond({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          config: defaultSiteConfig,
+          authenticated: url.searchParams.get('admin') === '1' ? true : undefined,
+          adminConfigured: true,
+          storageConfigured: true,
+        }),
+      })
+      return
+    }
+    if (url.pathname === '/api/admin-media') {
+      await request.respond({ status: 200, contentType: 'application/json', body: JSON.stringify({ media: [] }) })
+      return
+    }
     if (url.pathname !== '/api/customizer-images') {
       await request.continue()
       return
@@ -265,6 +283,8 @@ try {
   assert(await page.$eval('body', (body) => body.innerText.includes('PRICE TBD')), 'Cart must preserve the TBD price state.')
   await assertNoUnverifiedAmount(page, 'Cart')
 
+  await page.goto(baseUrl, { waitUntil: 'networkidle0' })
+  await page.evaluate(() => localStorage.setItem('we-admin-language', 'en'))
   await page.goto(`${baseUrl}/admin/customizer`, { waitUntil: 'networkidle0' })
   assert(await page.$$eval('.customizer-upload-card', (cards) => cards.length === 4), 'Customizer admin must expose exactly four preview-image slots.')
   assert(await page.$$eval('.customizer-upload-card input[type="file"]', (inputs) => inputs.length === 4), 'Customizer admin must expose exactly four file inputs.')
@@ -399,7 +419,7 @@ try {
       && document.querySelector('[data-personalization-region="back-name"]')?.textContent === 'MORGAN'
   ))
   const notice = await page.$eval('.create-disclaimer p:last-child', (paragraph) => paragraph.textContent?.trim())
-  assert(notice === 'WE UNION CREATE products are built on original garment designs and customer-led personalization. WE UNION does not reproduce or accept official league, team, athlete, or third-party brand names, logos, wordmarks, signatures, or confusingly similar variations. Customer-submitted artwork must be original or properly authorized and is subject to intellectual property review.', 'CREATE notice must be an exact DOM match.')
+  assert(notice === defaultSiteConfig.customizer.disclaimer, 'CREATE notice must match the published site configuration.')
   assert(errors.length === 0, `Browser errors: ${errors.join('; ')}`)
   console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, four-slot preview admin, backend-managed untransformed view images, movable city/name/number/logo artwork, independent sleeve uploads, source-artwork replacement, exact CREATE notice, and browser health.')
 } finally {

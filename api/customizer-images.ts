@@ -5,6 +5,7 @@ import {
   type CustomizerImagesResponse,
   type ManagedCustomizerImages,
 } from '../src/data/customizerImages.js'
+import { isAdminAuthorized, isAdminConfigured } from '../src/server/adminAuth.js'
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024
 const BLOB_LIST_TIMEOUT_MS = 5_000
@@ -38,31 +39,9 @@ function jsonResponse(body: unknown, status = 200, headers?: HeadersInit): Respo
   })
 }
 
-async function secureEqual(first: string, second: string): Promise<boolean> {
-  const encoder = new TextEncoder()
-  const [firstHash, secondHash] = await Promise.all([
-    crypto.subtle.digest('SHA-256', encoder.encode(first)),
-    crypto.subtle.digest('SHA-256', encoder.encode(second)),
-  ])
-  const firstBytes = new Uint8Array(firstHash)
-  const secondBytes = new Uint8Array(secondHash)
-  let difference = 0
-  for (let index = 0; index < firstBytes.length; index += 1) {
-    difference |= firstBytes[index]! ^ secondBytes[index]!
-  }
-  return difference === 0
-}
-
-async function isAuthorized(request: Request): Promise<boolean> {
-  const expectedPassword = runtimeEnvironment.CUSTOMIZER_ADMIN_PASSWORD
-  const authorization = request.headers.get('authorization')
-  if (!expectedPassword || !authorization?.startsWith('Bearer ')) return false
-  return secureEqual(authorization.slice('Bearer '.length), expectedPassword)
-}
-
 async function getImages(productSlug: string): Promise<CustomizerImagesResponse> {
   const token = runtimeEnvironment.BLOB_READ_WRITE_TOKEN
-  const adminConfigured = Boolean(runtimeEnvironment.CUSTOMIZER_ADMIN_PASSWORD)
+  const adminConfigured = isAdminConfigured()
   if (!token) {
     return {
       productSlug,
@@ -125,7 +104,7 @@ async function handleRequest(request: Request): Promise<Response> {
         productSlug,
         storageConfigured: Boolean(runtimeEnvironment.BLOB_READ_WRITE_TOKEN),
         storageAvailable: false,
-        adminConfigured: Boolean(runtimeEnvironment.CUSTOMIZER_ADMIN_PASSWORD),
+        adminConfigured: isAdminConfigured(),
         complete: false,
         images: {},
       })
@@ -138,7 +117,7 @@ async function handleRequest(request: Request): Promise<Response> {
   if (!runtimeEnvironment.BLOB_READ_WRITE_TOKEN) {
     return jsonResponse({ error: 'Vercel Blob is not configured for this project.' }, 503)
   }
-  if (!(await isAuthorized(request))) {
+  if (!(await isAdminAuthorized(request))) {
     return jsonResponse({ error: 'The admin password is incorrect.' }, 401)
   }
 

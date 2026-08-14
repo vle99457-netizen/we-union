@@ -8,16 +8,8 @@ import {
 } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { useSiteConfig } from '../context/SiteConfigContext'
 import { useCart } from '../store/CartContext'
-
-const primaryLinks = [
-  { to: '/collections', label: 'Create' },
-  { to: '/honor', label: 'Honor' },
-  { to: '/belong', label: 'Belong' },
-  { to: '/custom', label: 'Create Yours' },
-  { to: '/stories', label: 'Stories' },
-  { to: '/about', label: 'About' },
-]
 
 export function SiteChrome({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -31,6 +23,8 @@ export function SiteChrome({ children }: { children: ReactNode }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { count } = useCart()
+  const { config } = useSiteConfig()
+  const primaryLinks = config.global.navigation.filter((link) => link.enabled)
 
   useEffect(() => {
     setMenuOpen(false)
@@ -103,8 +97,8 @@ export function SiteChrome({ children }: { children: ReactNode }) {
           Skip to content
         </a>
         <div className="utility-bar">
-          <p>Sports heritage meets personal identity.</p>
-          <Link to="/collections">All series <ArrowRight size={14} weight="bold" /></Link>
+          <p>{config.global.utilityText}</p>
+          <Link to={config.global.utilityLinkHref}>{config.global.utilityLinkLabel} <ArrowRight size={14} weight="bold" /></Link>
         </div>
         <header className="site-header">
           <button
@@ -118,12 +112,12 @@ export function SiteChrome({ children }: { children: ReactNode }) {
           >
             <List size={23} />
           </button>
-          <Link className="brand-mark" to="/" aria-label="WE home">
-            <img src="/images/we-wordmark.png" alt="WE" width="72" height="38" />
+          <Link className="brand-mark" to="/" aria-label={`${config.global.siteName} home`}>
+            <img src={config.global.logoUrl} alt={config.global.siteName} width="72" height="38" />
           </Link>
           <nav className="desktop-nav" aria-label="Primary navigation">
             {primaryLinks.map((link) => (
-              <NavLink key={link.to} to={link.to}>
+              <NavLink key={link.id} to={link.href}>
                 {link.label}
               </NavLink>
             ))}
@@ -176,14 +170,14 @@ export function SiteChrome({ children }: { children: ReactNode }) {
       {menuOpen ? (
         <div id="site-menu" ref={menuDialog} className="mobile-menu" role="dialog" aria-modal="true" aria-label="Site menu">
           <div className="mobile-menu__top">
-            <img src="/images/we-wordmark.png" alt="WE" width="72" height="38" />
+            <img src={config.global.logoUrl} alt={config.global.siteName} width="72" height="38" />
             <button className="icon-button" type="button" aria-label="Close menu" onClick={() => setMenuOpen(false)}>
               <X size={25} />
             </button>
           </div>
           <nav aria-label="Mobile navigation">
             {primaryLinks.map((link, index) => (
-              <Link key={link.to} to={link.to}>
+              <Link key={link.id} to={link.href}>
                 <span>0{index + 1}</span>
                 {link.label}
                 <ArrowRight size={21} />
@@ -207,6 +201,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
 function Footer() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const { config } = useSiteConfig()
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -217,11 +212,11 @@ function Footer() {
     <footer className="site-footer">
       <div className="footer-top">
         <div className="footer-manifesto">
-          <p className="eyebrow">Stay in the story</p>
-          <h2>New originals.<br />No noise.</h2>
-          {submitted ? (
+          <p className="eyebrow">{config.global.footerEyebrow}</p>
+          <h2>{config.global.footerTitle.split('\n').map((line, index) => <span key={`${line}-${index}`}>{index ? <br /> : null}{line}</span>)}</h2>
+          {config.global.newsletterEnabled && submitted ? (
             <p className="form-success" role="status">You’re on the WE list. Thank you.</p>
-          ) : (
+          ) : config.global.newsletterEnabled ? (
             <form className="newsletter-form" onSubmit={submit}>
               <label htmlFor="footer-email">Email address</label>
               <input
@@ -237,7 +232,7 @@ function Footer() {
               />
               <button type="submit" aria-label="Join the email list"><ArrowRight size={21} /></button>
             </form>
-          )}
+          ) : null}
         </div>
         <div className="footer-links">
           <div>
@@ -264,11 +259,11 @@ function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
-        <Link className="brand-mark brand-mark--footer" to="/" aria-label="WE home">
-          <img src="/images/we-wordmark.png" alt="WE" width="120" height="64" />
+        <Link className="brand-mark brand-mark--footer" to="/" aria-label={`${config.global.siteName} home`}>
+          <img src={config.global.logoUrl} alt={config.global.siteName} width="120" height="64" />
         </Link>
-        <p>© {new Date().getFullYear()} WE.</p>
-        <p>Original sportswear. Made personal.</p>
+        <p>© {new Date().getFullYear()} {config.global.siteName}.</p>
+        <p>{config.global.footerTagline}</p>
       </div>
     </footer>
   )
