@@ -11,6 +11,8 @@ import {
   MagnifyingGlass,
   Needle,
   Package,
+  Pause,
+  Play,
   ShieldCheck,
   Sparkle,
   UsersThree,
@@ -85,14 +87,58 @@ const promiseItems = [
   },
 ]
 
+const customSteps = [
+  {
+    label: 'CHOOSE',
+    copy: 'Start with a WE original visual system.',
+    kicker: 'Original / Selected',
+    status: 'White Pulse 01',
+  },
+  {
+    label: 'PERSONALIZE',
+    copy: 'Set the city, name, number, logo, and approved details.',
+    kicker: 'Identity / Applied',
+    status: 'Sacramento · 17',
+  },
+  {
+    label: 'REVIEW',
+    copy: 'Confirm the front, back, and both sleeve proofs.',
+    kicker: 'Proof / 04 views',
+    status: 'Ready to review',
+  },
+  {
+    label: 'ORDER & TRACK',
+    copy: 'Approve the proof, then follow production and delivery.',
+    kicker: 'Status / Live',
+    status: 'Production ready',
+  },
+] as const
+
 export function HomePage() {
   const [activeStep, setActiveStep] = useState(0)
-  const customSteps = [
-    ['CHOOSE', 'Start with a WE original visual system.'],
-    ['PERSONALIZE', 'Set the color, name, number, and approved details.'],
-    ['REVIEW', 'Confirm the four-view proof and content rights.'],
-    ['ORDER & TRACK', 'Freeze the proof before an order review begins.'],
-  ] as const
+  const [isProcessPlaying, setIsProcessPlaying] = useState(true)
+  const activeCustomStep = customSteps[activeStep] ?? customSteps[0]
+
+  useEffect(() => {
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const syncMotionPreference = () => {
+      if (motionPreference.matches) setIsProcessPlaying(false)
+    }
+
+    syncMotionPreference()
+    motionPreference.addEventListener('change', syncMotionPreference)
+    return () => motionPreference.removeEventListener('change', syncMotionPreference)
+  }, [])
+
+  useEffect(() => {
+    if (!isProcessPlaying) return
+
+    const timer = window.setTimeout(() => {
+      setActiveStep((current) => (current + 1) % customSteps.length)
+    }, 5200)
+
+    return () => window.clearTimeout(timer)
+  }, [activeStep, isProcessPlaying])
 
   return (
     <>
@@ -185,7 +231,10 @@ export function HomePage() {
         </AnimatedContent>
       </section>
 
-      <section className="custom-story section-pad" aria-labelledby="custom-title">
+      <section
+        className={`custom-story section-pad ${isProcessPlaying ? 'is-playing' : 'is-paused'}`}
+        aria-labelledby="custom-title"
+      >
         <div className="shell custom-story__grid">
           <div className="custom-story__intro">
             <p className="eyebrow eyebrow--gold">Create yours</p>
@@ -195,17 +244,98 @@ export function HomePage() {
               Open the studio <ArrowRight size={18} weight="bold" />
             </Link>
           </div>
-          <div className="custom-story__visual" aria-live="polite">
-            <img src="/images/product-water.webp" alt="White Pulse personalization concept preview" loading="lazy" width="941" height="941" />
-            <div className="jersey-mark">
-              <span>{activeStep === 1 ? 'MORGAN' : 'WE'}</span>
-              <strong>{activeStep >= 1 ? '17' : '01'}</strong>
+          <div
+            className="custom-story__visual"
+            data-step={activeStep + 1}
+            role="group"
+            aria-roledescription="carousel"
+            aria-label="Create yours four-step preview"
+          >
+            <div className="process-card">
+              <div className="process-card__grid" aria-hidden="true" />
+              <div className="process-card__orbit" aria-hidden="true" />
+              <div className="process-card__product">
+                <img
+                  className="process-card__jersey"
+                  src="/images/white-pulse-process-jersey.webp"
+                  alt="Original white WE jersey changing through choose, personalize, review, and order stages"
+                  loading="lazy"
+                  decoding="async"
+                  width="1145"
+                  height="1373"
+                />
+
+                <div className="process-card__artwork" aria-hidden="true">
+                  <span className="process-card__logo">WE</span>
+                  <span className="process-card__city">
+                    {activeStep === 0 ? 'ORIGINAL' : 'SACRAMENTO'}
+                  </span>
+                  <strong>{activeStep === 0 ? '01' : '17'}</strong>
+                </div>
+              </div>
+
+              <div className="process-card__selection" aria-hidden="true">
+                <i /><i /><i /><i />
+              </div>
+              <div className="process-card__scan" aria-hidden="true" />
+              <div className="process-card__hotspots" aria-hidden="true">
+                <span className="process-hotspot process-hotspot--city"><i />CITY / SACRAMENTO</span>
+                <span className="process-hotspot process-hotspot--number"><i />NUMBER / 17</span>
+                <span className="process-hotspot process-hotspot--logo"><i />LOGO / WE</span>
+              </div>
+
+              <div className="process-card__proof" aria-hidden="true">
+                <span>Proof set</span>
+                <ul>
+                  {['Front', 'Back', 'Left sleeve', 'Right sleeve'].map((view) => (
+                    <li key={view}><Check size={12} weight="bold" />{view}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="process-card__tracking" aria-hidden="true">
+                <div>
+                  <span>WE–2410–017</span>
+                  <strong>TRACKING ACTIVE</strong>
+                </div>
+                <ol>
+                  <li className="is-complete">Proof</li>
+                  <li className="is-active">Production</li>
+                  <li>Quality</li>
+                  <li>Delivery</li>
+                </ol>
+              </div>
+
+              <div className="process-card__index" aria-hidden="true">
+                <span>WE</span>
+                <strong>0{activeStep + 1}</strong>
+              </div>
+              <div className="process-card__status" aria-hidden="true">
+                <span>{activeCustomStep.kicker}</span>
+                <strong>{activeCustomStep.status}</strong>
+              </div>
             </div>
-            <p>{customSteps[activeStep]?.[1] ?? customSteps[0][1]}</p>
+
+            <div className="process-card__caption">
+              <p aria-live={isProcessPlaying ? 'off' : 'polite'}>
+                <span>0{activeStep + 1}</span>
+                {activeCustomStep.copy}
+              </p>
+              <button
+                type="button"
+                className="process-card__playback"
+                aria-label={isProcessPlaying ? 'Pause four-step animation' : 'Play four-step animation'}
+                aria-pressed={isProcessPlaying}
+                onClick={() => setIsProcessPlaying((current) => !current)}
+              >
+                {isProcessPlaying ? <Pause size={14} weight="fill" /> : <Play size={14} weight="fill" />}
+                <span>{isProcessPlaying ? 'Pause' : 'Play'}</span>
+              </button>
+            </div>
           </div>
           <ol className="custom-steps">
-            {customSteps.map(([label], index) => (
-              <li key={label}>
+            {customSteps.map((step, index) => (
+              <li key={step.label}>
                 <button
                   type="button"
                   className={activeStep === index ? 'is-active' : ''}
@@ -213,7 +343,7 @@ export function HomePage() {
                   onClick={() => setActiveStep(index)}
                 >
                   <span>0{index + 1}</span>
-                  {label}
+                  {step.label}
                   <ArrowRight size={18} />
                 </button>
               </li>
