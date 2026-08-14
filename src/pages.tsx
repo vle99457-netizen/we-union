@@ -15,7 +15,16 @@ import {
   Sparkle,
   UsersThree,
 } from '@phosphor-icons/react'
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react'
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { AnimatedContent } from './components/AnimatedContent'
 import { ProductCard } from './components/ProductCard'
@@ -841,6 +850,17 @@ function isApparelSize(value: string | null | undefined): value is ApparelSize {
 }
 
 type StudioView = 'front' | 'back' | 'left' | 'right'
+const studioViewLabels: Record<StudioView, string> = {
+  front: 'Front',
+  back: 'Back',
+  left: 'Left sleeve',
+  right: 'Right sleeve',
+}
+type LogoSlot = 'front' | 'leftSleeve' | 'rightSleeve'
+type LogoAsset = { dataUrl: string; name: string }
+type StudioLogos = Record<LogoSlot, LogoAsset>
+type ArtworkPosition = { x: number; y: number }
+type ArtworkPositions = Partial<Record<PersonalizationRegion['id'], ArtworkPosition>>
 
 function isStudioView(value: string | undefined): value is StudioView {
   return value === 'front' || value === 'back' || value === 'left' || value === 'right'
@@ -849,105 +869,286 @@ function isStudioView(value: string | undefined): value is StudioView {
 type SavedDesignDraft = {
   productSlug?: string
   template?: string
+  city?: string
   name?: string
   number?: string
   logoDataUrl?: string
   logoName?: string
+  logos?: Partial<Record<LogoSlot, Partial<LogoAsset>>>
+  artworkPositions?: ArtworkPositions
   color?: { name?: string }
   colorName?: string
   size?: string
   view?: StudioView
 }
 
-function getArtworkRegionStyle(region: PersonalizationRegion, view: StudioView): CSSProperties {
-  const left = view === 'back' ? 100 - region.x - region.width : region.x
+function getArtworkRegionPosition(region: PersonalizationRegion, view: StudioView): ArtworkPosition {
   return {
-    left: `${left}%`,
-    top: `${region.y}%`,
-    width: `${region.width}%`,
-    height: `${region.height}%`,
-    transform: region.rotate ? `rotate(${region.rotate}deg)` : undefined,
+    x: view === 'back' ? 100 - region.x - region.width : region.x,
+    y: region.y,
   }
+}
+
+function clampArtworkPosition(region: PersonalizationRegion, position: ArtworkPosition): ArtworkPosition {
+  return {
+    x: Math.min(100 - region.width, Math.max(0, position.x)),
+    y: Math.min(100 - region.height, Math.max(0, position.y)),
+  }
+}
+
+function MovableArtwork({
+  region,
+  view,
+  position,
+  label,
+  className,
+  onPositionChange,
+  children,
+}: {
+  region: PersonalizationRegion
+  view: StudioView
+  position?: ArtworkPosition
+  label: string
+  className: string
+  onPositionChange: (id: PersonalizationRegion['id'], position: ArtworkPosition) => void
+  children: ReactNode
+}) {
+  const [dragging, setDragging] = useState(false)
+  const dragState = useRef<{
+    pointerId: number
+    startClientX: number
+    startClientY: number
+    startPosition: ArtworkPosition
+    canvasWidth: number
+    canvasHeight: number
+  } | null>(null)
+  const currentPosition = position ?? getArtworkRegionPosition(region, view)
+
+  const updatePosition = (nextPosition: ArtworkPosition) => {
+    onPositionChange(region.id, clampArtworkPosition(region, nextPosition))
+  }
+
+  const startDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    const canvas = event.currentTarget.closest('.studio-preview__canvas')
+    if (!canvas) return
+    const bounds = canvas.getBoundingClientRect()
+    dragState.current = {
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startPosition: currentPosition,
+      canvasWidth: bounds.width,
+      canvasHeight: bounds.height,
+    }
+    event.currentTarget.setPointerCapture(event.pointerId)
+    setDragging(true)
+    event.preventDefault()
+  }
+
+  const moveDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const activeDrag = dragState.current
+    if (!activeDrag || activeDrag.pointerId !== event.pointerId) return
+    updatePosition({
+      x: activeDrag.startPosition.x + ((event.clientX - activeDrag.startClientX) / activeDrag.canvasWidth) * 100,
+      y: activeDrag.startPosition.y + ((event.clientY - activeDrag.startClientY) / activeDrag.canvasHeight) * 100,
+    })
+    event.preventDefault()
+  }
+
+  const finishDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (dragState.current?.pointerId !== event.pointerId) return
+    dragState.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    setDragging(false)
+  }
+
+  const moveWithKeyboard = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    const distance = event.shiftKey ? 2 : 0.5
+    const movement: Partial<ArtworkPosition> = {}
+    if (event.key === 'ArrowLeft') movement.x = -distance
+    if (event.key === 'ArrowRight') movement.x = distance
+    if (event.key === 'ArrowUp') movement.y = -distance
+    if (event.key === 'ArrowDown') movement.y = distance
+    if (movement.x === undefined && movement.y === undefined) return
+    updatePosition({
+      x: currentPosition.x + (movement.x ?? 0),
+      y: currentPosition.y + (movement.y ?? 0),
+    })
+    event.preventDefault()
+  }
+
+  return (
+    <button
+      aria-label={`Move ${label}. Drag it, or use the arrow keys for precise placement.`}
+      className={`studio-artwork ${className}`}
+      data-dragging={dragging ? 'true' : undefined}
+      data-personalization-region={region.id}
+      data-position-x={currentPosition.x.toFixed(2)}
+      data-position-y={currentPosition.y.toFixed(2)}
+      onKeyDown={moveWithKeyboard}
+      onLostPointerCapture={() => {
+        dragState.current = null
+        setDragging(false)
+      }}
+      onPointerCancel={finishDrag}
+      onPointerDown={startDrag}
+      onPointerMove={moveDrag}
+      onPointerUp={finishDrag}
+      style={{
+        left: `${currentPosition.x}%`,
+        top: `${currentPosition.y}%`,
+        width: `${region.width}%`,
+        height: `${region.height}%`,
+        transform: region.rotate ? `rotate(${region.rotate}deg)` : undefined,
+      }}
+      title={`Drag to move ${label}`}
+      type="button"
+    >
+      {children}
+    </button>
+  )
 }
 
 function PersonalizationArtwork({
   regions,
   view,
+  city,
   name,
   number,
-  logoDataUrl,
+  logos,
+  positions,
+  onPositionChange,
   ink,
   outline,
 }: {
   regions: readonly PersonalizationRegion[]
   view: StudioView
+  city: string
   name: string
   number: string
-  logoDataUrl: string
+  logos: StudioLogos
+  positions: ArtworkPositions
+  onPositionChange: (id: PersonalizationRegion['id'], position: ArtworkPosition) => void
   ink: string
   outline: string
 }) {
-  if (view !== 'front' && view !== 'back') return null
-
   return regions
     .filter((region) => region.side === view)
     .map((region) => {
-      const style = getArtworkRegionStyle(region, view)
-
       if (region.kind === 'number') {
         if (!number) return null
         return (
-          <svg
-            aria-hidden="true"
-            className="studio-artwork studio-artwork--number"
-            data-personalization-region={region.id}
+          <MovableArtwork
+            className="studio-artwork--number"
             key={region.id}
-            preserveAspectRatio="none"
-            style={style}
-            viewBox="0 0 100 100"
+            label={region.side === 'front' ? 'front number' : 'back number'}
+            onPositionChange={onPositionChange}
+            position={positions[region.id]}
+            region={region}
+            view={view}
           >
-            <text className="studio-number__outline" fill={ink} stroke={outline} x="50" y="84">{number}</text>
-            <text className="studio-number__ink" fill={ink} stroke={ink} x="50" y="84">{number}</text>
-          </svg>
+            <svg aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <text className="studio-number__outline" fill={ink} stroke={outline} x="50" y="84">{number}</text>
+              <text className="studio-number__ink" fill={ink} stroke={ink} x="50" y="84">{number}</text>
+            </svg>
+          </MovableArtwork>
         )
       }
 
-      if (region.kind === 'name') {
-        if (!name) return null
+      if (region.kind === 'city' || region.kind === 'name') {
+        const value = region.kind === 'city' ? city : name
+        if (!value) return null
+        const longText = value.length > (region.kind === 'city' ? 11 : 8)
         return (
-          <svg
-            aria-hidden="true"
-            className="studio-artwork studio-artwork--name"
-            data-personalization-region={region.id}
+          <MovableArtwork
+            className={region.kind === 'city' ? 'studio-artwork--city' : 'studio-artwork--name'}
             key={region.id}
-            preserveAspectRatio="none"
-            style={style}
-            viewBox="0 0 100 24"
+            label={region.kind === 'city' ? 'front city name' : 'player name'}
+            onPositionChange={onPositionChange}
+            position={positions[region.id]}
+            region={region}
+            view={view}
           >
-            <text
-              fill={ink}
-              textLength={name.length > 8 ? 90 : undefined}
-              lengthAdjust={name.length > 8 ? 'spacingAndGlyphs' : undefined}
-              x="50"
-              y="18"
-            >{name}</text>
-          </svg>
+            <svg aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 100 24">
+              <text
+                fill={ink}
+                textLength={longText ? 90 : undefined}
+                lengthAdjust={longText ? 'spacingAndGlyphs' : undefined}
+                x="50"
+                y="18"
+              >{value}</text>
+            </svg>
+          </MovableArtwork>
         )
       }
 
-      if (!logoDataUrl) return null
+      const logo = logos[region.logoSlot ?? 'front']
+      if (!logo.dataUrl) return null
+      const placementLabel = region.logoSlot === 'leftSleeve'
+        ? 'left sleeve logo'
+        : region.logoSlot === 'rightSleeve' ? 'right sleeve logo' : 'front logo'
       return (
-        <div
-          aria-hidden="true"
-          className="studio-artwork studio-artwork--logo"
-          data-personalization-region={region.id}
+        <MovableArtwork
+          className="studio-artwork--logo"
           key={region.id}
-          style={style}
+          label={placementLabel}
+          onPositionChange={onPositionChange}
+          position={positions[region.id]}
+          region={region}
+          view={view}
         >
-          <img src={logoDataUrl} alt="" width="128" height="128" />
-        </div>
+          <img aria-hidden="true" src={logo.dataUrl} alt="" width="128" height="128" />
+        </MovableArtwork>
       )
     })
+}
+
+function LogoUploadField({
+  inputId,
+  inputName,
+  label,
+  help,
+  asset,
+  error,
+  onUpload,
+  onRemove,
+}: {
+  inputId: string
+  inputName: string
+  label: string
+  help: string
+  asset: LogoAsset
+  error: string
+  onUpload: (file: File | undefined) => void
+  onRemove: () => void
+}) {
+  const helpId = `${inputId}-help`
+  return (
+    <div className="logo-upload">
+      <div>
+        <span className="logo-upload__label">{label}</span>
+        <small id={helpId}>{help}</small>
+      </div>
+      <div className="logo-upload__actions">
+        {asset.dataUrl ? <img src={asset.dataUrl} alt={`${label} upload preview`} width="48" height="48" /> : null}
+        <label className="logo-upload__button" htmlFor={inputId}>{asset.dataUrl ? 'Replace logo' : 'Upload logo'}</label>
+        <input
+          accept="image/png,image/jpeg,image/webp"
+          aria-describedby={helpId}
+          id={inputId}
+          name={inputName}
+          type="file"
+          onChange={(event) => onUpload(event.target.files?.[0])}
+        />
+        {asset.dataUrl ? <button type="button" onClick={onRemove}>Remove</button> : null}
+      </div>
+      {asset.name ? <p className="logo-upload__filename">{asset.name}</p> : null}
+      {error ? <p className="logo-upload__error" role="alert">{error}</p> : null}
+    </div>
+  )
 }
 
 function readDesignDraft(): SavedDesignDraft | null {
@@ -976,11 +1177,29 @@ export function CustomPage() {
   const draftColorName = draft?.colorName ?? draft?.color?.name
   const [step, setStep] = useState(0)
   const [selectedProductSlug, setSelectedProductSlug] = useState(initialProduct.slug)
+  const [city, setCity] = useState(draft?.city ?? 'SACRAMENTO')
   const [name, setName] = useState(draft?.name ?? 'MORGAN')
   const [number, setNumber] = useState(draft?.number ?? '17')
-  const [logoDataUrl, setLogoDataUrl] = useState(draft?.logoDataUrl ?? '')
-  const [logoName, setLogoName] = useState(draft?.logoName ?? '')
-  const [logoError, setLogoError] = useState('')
+  const [logos, setLogos] = useState<StudioLogos>(() => ({
+    front: {
+      dataUrl: draft?.logos?.front?.dataUrl ?? draft?.logoDataUrl ?? '',
+      name: draft?.logos?.front?.name ?? draft?.logoName ?? '',
+    },
+    leftSleeve: {
+      dataUrl: draft?.logos?.leftSleeve?.dataUrl ?? '',
+      name: draft?.logos?.leftSleeve?.name ?? '',
+    },
+    rightSleeve: {
+      dataUrl: draft?.logos?.rightSleeve?.dataUrl ?? '',
+      name: draft?.logos?.rightSleeve?.name ?? '',
+    },
+  }))
+  const [logoErrors, setLogoErrors] = useState<Record<LogoSlot, string>>({
+    front: '',
+    leftSleeve: '',
+    rightSleeve: '',
+  })
+  const [artworkPositions, setArtworkPositions] = useState<ArtworkPositions>(draft?.artworkPositions ?? {})
   const [color, setColor] = useState(colors.find((item) => item.name === draftColorName) ?? colors[0]!)
   const [size, setSize] = useState<ApparelSize>(
     isApparelSize(searchParams.get('size'))
@@ -1022,16 +1241,32 @@ export function CustomPage() {
   }, [searchParams, selectedProductSlug, size])
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        'we-saved-design',
-        JSON.stringify({ productSlug: selectedProduct.slug, template: templateSeries.name, name, number, logoDataUrl, logoName, colorName: color.name, size, view }),
-      )
-      setSaveError(false)
-    } catch {
-      setSaveError(true)
-    }
-  }, [color.name, logoDataUrl, logoName, name, number, selectedProduct.slug, size, templateSeries.name, view])
+    const saveTimer = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(
+          'we-saved-design',
+          JSON.stringify({
+            productSlug: selectedProduct.slug,
+            template: templateSeries.name,
+            city,
+            name,
+            number,
+            logoDataUrl: logos.front.dataUrl,
+            logoName: logos.front.name,
+            logos,
+            artworkPositions,
+            colorName: color.name,
+            size,
+            view,
+          }),
+        )
+        setSaveError(false)
+      } catch {
+        setSaveError(true)
+      }
+    }, 150)
+    return () => window.clearTimeout(saveTimer)
+  }, [artworkPositions, city, color.name, logos, name, number, selectedProduct.slug, size, templateSeries.name, view])
 
   useEffect(() => {
     if (!proofCreated || ordered) return
@@ -1039,13 +1274,26 @@ export function CustomPage() {
     setProofCreated(false)
     setSaved(false)
     setRightsConfirmed(false)
-  }, [color.name, logoDataUrl, name, number, ordered, selectedProduct.slug, size])
+  }, [artworkPositions, city, color.name, logos, name, number, ordered, selectedProduct.slug, size])
 
   const save = () => {
     try {
       window.localStorage.setItem(
         'we-saved-design',
-        JSON.stringify({ productSlug: selectedProduct.slug, template: templateSeries.name, name, number, logoDataUrl, logoName, colorName: color.name, size, view }),
+        JSON.stringify({
+          productSlug: selectedProduct.slug,
+          template: templateSeries.name,
+          city,
+          name,
+          number,
+          logoDataUrl: logos.front.dataUrl,
+          logoName: logos.front.name,
+          logos,
+          artworkPositions,
+          colorName: color.name,
+          size,
+          view,
+        }),
       )
       setSaved(true)
       setProofCreated(true)
@@ -1055,38 +1303,56 @@ export function CustomPage() {
       setSaveError(true)
     }
   }
-  const handleLogoUpload = (file: File | undefined) => {
+  const handleLogoUpload = (slot: LogoSlot, file: File | undefined) => {
     if (!file) return
+    const setSlotError = (message: string) => {
+      setLogoErrors((current) => ({ ...current, [slot]: message }))
+    }
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
-      setLogoError('Use a PNG, JPG, or WEBP logo file.')
+      setSlotError('Use a PNG, JPG, or WEBP logo file.')
       return
     }
     if (file.size > 2 * 1024 * 1024) {
-      setLogoError('Keep the logo file under 2 MB for this browser proof.')
+      setSlotError('Keep the logo file under 2 MB for this browser proof.')
       return
     }
 
     const reader = new FileReader()
     reader.onload = () => {
       if (typeof reader.result !== 'string') {
-        setLogoError('This logo could not be read. Try another file.')
+        setSlotError('This logo could not be read. Try another file.')
         return
       }
-      setLogoDataUrl(reader.result)
-      setLogoName(file.name)
-      setLogoError('')
+      setLogos((current) => ({ ...current, [slot]: { dataUrl: reader.result as string, name: file.name } }))
+      setSlotError('')
+      setView(slot === 'front' ? 'front' : slot === 'leftSleeve' ? 'left' : 'right')
       setOrdered(false)
     }
-    reader.onerror = () => setLogoError('This logo could not be read. Try another file.')
+    reader.onerror = () => setSlotError('This logo could not be read. Try another file.')
     reader.readAsDataURL(file)
   }
+
+  const removeLogo = (slot: LogoSlot) => {
+    setLogos((current) => ({ ...current, [slot]: { dataUrl: '', name: '' } }))
+    setLogoErrors((current) => ({ ...current, [slot]: '' }))
+    setOrdered(false)
+  }
+
+  const updateArtworkPosition = (id: PersonalizationRegion['id'], position: ArtworkPosition) => {
+    setArtworkPositions((current) => ({ ...current, [id]: position }))
+    setOrdered(false)
+  }
+
   const addDesign = () => {
     if (!rightsConfirmed) return
+    const logoSummary = [logos.front.name, logos.leftSleeve.name, logos.rightSleeve.name]
+      .filter(Boolean)
+      .join(' / ')
     addItem({
-      id: `custom-${selectedProduct.slug}-${name}-${number}-${size}-${color.name}`,
+      id: `custom-${selectedProduct.slug}-${city}-${name}-${number}-${size}-${color.name}`,
       productSlug: selectedProduct.slug,
       name: `${selectedProduct.name} / Personalized`,
-      detail: `${name || 'No name'} · ${number || 'No number'} · ${logoName || 'No custom logo'} · ${size} · ${color.name}`,
+      detail: `${city || 'No city'} · ${name || 'No player name'} · ${number || 'No number'} · ${logoSummary || 'No custom logos'} · ${size} · ${color.name}`,
       price: selectedProduct.price,
       image: templateImage,
       designId,
@@ -1115,9 +1381,15 @@ export function CustomPage() {
       <div className="studio-workspace shell">
         <div className="studio-preview">
           <p className="studio-preview__label">
-            Interactive sample / {view} view
+            Interactive sample / {studioViewLabels[view]}
             {personalization ? <span><CheckCircle size={14} weight="fill" /> Original artwork matched</span> : null}
           </p>
+          {personalization ? (
+            <div className="studio-preview__position-help">
+              <p>Drag each city, name, number, or logo to position it. Focus an item and use the arrow keys for precise moves.</p>
+              <button type="button" disabled={!Object.keys(artworkPositions).length} onClick={() => setArtworkPositions({})}>Reset positions</button>
+            </div>
+          ) : null}
           <div
             className={`studio-preview__canvas studio-preview__canvas--${view}`}
             style={{ '--studio-color': color.value } as CSSProperties}
@@ -1125,7 +1397,7 @@ export function CustomPage() {
             <img
               data-custom-base={personalization ? 'true' : undefined}
               src={templateImage}
-              alt={`${selectedProduct.name} ${view} preview${view === 'back' ? ` with name ${name} and number ${number}` : ''}`}
+              alt={`${selectedProduct.name} ${studioViewLabels[view]} preview${view === 'front' ? ` with city ${city} and number ${number}` : view === 'back' ? ` with player name ${name} and number ${number}` : ''}`}
               width="941"
               height="941"
             />
@@ -1133,9 +1405,12 @@ export function CustomPage() {
               <PersonalizationArtwork
                 regions={personalization.regions}
                 view={view}
+                city={city}
                 name={name}
                 number={number}
-                logoDataUrl={logoDataUrl}
+                logos={logos}
+                positions={artworkPositions}
+                onPositionChange={updateArtworkPosition}
                 ink={color.value}
                 outline={personalization.sourceOutline}
               />
@@ -1147,10 +1422,11 @@ export function CustomPage() {
                 className={view === option ? 'is-active' : ''}
                 type="button"
                 aria-pressed={view === option}
+                data-studio-view={option}
                 key={option}
                 onClick={() => setView(option)}
               >
-                {option}
+                {studioViewLabels[option]}
               </button>
             ))}
           </div>
@@ -1187,7 +1463,8 @@ export function CustomPage() {
               <p className="eyebrow">Step 02</p>
               <h2>Make it personal.</h2>
               <div className="field-grid">
-                <label>Name <input name="player-name" autoComplete="off" value={name} maxLength={14} onChange={(event) => setName(event.target.value.toUpperCase())} /></label>
+                <label>City name <input name="city-name" autoComplete="off" value={city} maxLength={18} onChange={(event) => setCity(event.target.value.toUpperCase())} /></label>
+                <label>Player name <input name="player-name" autoComplete="off" value={name} maxLength={14} onChange={(event) => setName(event.target.value.toUpperCase())} /></label>
                 <label>Number <input name="jersey-number" autoComplete="off" inputMode="numeric" pattern="[0-9]{0,2}" maxLength={2} value={number} onChange={(event) => setNumber(event.target.value.replace(/\D/g, ''))} /></label>
                 <label>Size
                   <select
@@ -1210,41 +1487,44 @@ export function CustomPage() {
                   <div>
                     <strong>Original artwork mapped</strong>
                     <p>{personalization.detectedSourceElements.join(' · ')}</p>
-                    <small>The source marks are removed first; new artwork inherits the detected position, scale, outline, and view.</small>
+                    <small>The source marks are removed first; each replacement starts in the mapped area and can then be moved in the preview.</small>
                   </div>
                 </div>
               ) : null}
-              <div className="logo-upload">
-                <div>
-                  <span className="logo-upload__label">Logo</span>
-                  <small id="logo-upload-help">Transparent PNG recommended. JPG or WEBP also accepted, up to 2 MB.</small>
-                </div>
-                <div className="logo-upload__actions">
-                  {logoDataUrl ? <img src={logoDataUrl} alt="Uploaded logo preview" width="48" height="48" /> : null}
-                  <label className="logo-upload__button" htmlFor="custom-logo">{logoDataUrl ? 'Replace logo' : 'Upload logo'}</label>
-                  <input
-                    accept="image/png,image/jpeg,image/webp"
-                    aria-describedby="logo-upload-help"
-                    id="custom-logo"
-                    name="custom-logo"
-                    type="file"
-                    onChange={(event) => handleLogoUpload(event.target.files?.[0])}
-                  />
-                  {logoDataUrl ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLogoDataUrl('')
-                        setLogoName('')
-                        setLogoError('')
-                        setOrdered(false)
-                      }}
-                    >Remove</button>
-                  ) : null}
-                </div>
-                {logoName ? <p className="logo-upload__filename">{logoName}</p> : null}
-                {logoError ? <p className="logo-upload__error" role="alert">{logoError}</p> : null}
-              </div>
+              <fieldset className="logo-placements">
+                <legend>Logo placements</legend>
+                <p>Upload each location independently. A sleeve upload opens that sleeve preview automatically.</p>
+                <LogoUploadField
+                  inputId="custom-logo"
+                  inputName="custom-logo"
+                  label="Front logo"
+                  help="Transparent PNG recommended. JPG or WEBP also accepted, up to 2 MB."
+                  asset={logos.front}
+                  error={logoErrors.front}
+                  onUpload={(file) => handleLogoUpload('front', file)}
+                  onRemove={() => removeLogo('front')}
+                />
+                <LogoUploadField
+                  inputId="left-sleeve-logo"
+                  inputName="left-sleeve-logo"
+                  label="Left sleeve logo"
+                  help="Independent artwork for the left sleeve preview."
+                  asset={logos.leftSleeve}
+                  error={logoErrors.leftSleeve}
+                  onUpload={(file) => handleLogoUpload('leftSleeve', file)}
+                  onRemove={() => removeLogo('leftSleeve')}
+                />
+                <LogoUploadField
+                  inputId="right-sleeve-logo"
+                  inputName="right-sleeve-logo"
+                  label="Right sleeve logo"
+                  help="Independent artwork for the right sleeve preview."
+                  asset={logos.rightSleeve}
+                  error={logoErrors.rightSleeve}
+                  onUpload={(file) => handleLogoUpload('rightSleeve', file)}
+                  onRemove={() => removeLogo('rightSleeve')}
+                />
+              </fieldset>
               <fieldset className="color-picker">
                 <legend>Accent color</legend>
                 <div>
@@ -1270,8 +1550,11 @@ export function CustomPage() {
               <dl>
                 <div><dt>Original</dt><dd>{selectedProduct.name}</dd></div>
                 <div><dt>Series</dt><dd>{templateSeries.name}</dd></div>
-                <div><dt>Name / number</dt><dd>{name || 'None'} / {number || 'None'}</dd></div>
-                <div><dt>Custom logo</dt><dd>{logoName || 'None'}</dd></div>
+                <div><dt>City</dt><dd>{city || 'None'}</dd></div>
+                <div><dt>Player / number</dt><dd>{name || 'None'} / {number || 'None'}</dd></div>
+                <div><dt>Front logo</dt><dd>{logos.front.name || 'None'}</dd></div>
+                <div><dt>Left sleeve logo</dt><dd>{logos.leftSleeve.name || 'None'}</dd></div>
+                <div><dt>Right sleeve logo</dt><dd>{logos.rightSleeve.name || 'None'}</dd></div>
                 <div><dt>Accent</dt><dd>{color.name}</dd></div>
                 <div><dt>Size</dt><dd>{size}</dd></div>
                 <div><dt>Design ID</dt><dd>{designId}</dd></div>
@@ -1284,7 +1567,7 @@ export function CustomPage() {
               <p className="draft-status" role="status">{saveError ? 'Browser storage is unavailable. Keep this page open to preserve the draft.' : 'Draft changes are kept in this browser.'}</p>
               <label className="rights-confirmation">
                 <input name="rights-confirmation" type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} />
-                I confirm the submitted name, number, handwriting, and artwork are mine to use and may be reviewed before production.
+                I confirm the submitted city, player name, number, and artwork are mine to use and may be reviewed before production.
               </label>
             </div>
           ) : null}
