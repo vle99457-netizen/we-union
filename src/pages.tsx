@@ -31,6 +31,7 @@ import {
   series,
   stories,
   worlds,
+  type PersonalizationRegion,
   type WorldSlug,
 } from './data/catalog'
 import { useCart, type CartItem } from './store/CartContext'
@@ -796,6 +797,7 @@ export function ProductPage() {
 }
 
 const colors = [
+  { name: 'SOURCE NAVY / artwork matched', value: '#132B4D' },
   { name: 'Pulse Green / visual preview', value: '#43B67A' },
   { name: 'WE BLACK / visual preview', value: '#0A0A0A' },
   { name: 'METAL SILVER / visual preview', value: '#A7ABB0' },
@@ -849,10 +851,103 @@ type SavedDesignDraft = {
   template?: string
   name?: string
   number?: string
+  logoDataUrl?: string
+  logoName?: string
   color?: { name?: string }
   colorName?: string
   size?: string
   view?: StudioView
+}
+
+function getArtworkRegionStyle(region: PersonalizationRegion, view: StudioView): CSSProperties {
+  const left = view === 'back' ? 100 - region.x - region.width : region.x
+  return {
+    left: `${left}%`,
+    top: `${region.y}%`,
+    width: `${region.width}%`,
+    height: `${region.height}%`,
+    transform: region.rotate ? `rotate(${region.rotate}deg)` : undefined,
+  }
+}
+
+function PersonalizationArtwork({
+  regions,
+  view,
+  name,
+  number,
+  logoDataUrl,
+  ink,
+  outline,
+}: {
+  regions: readonly PersonalizationRegion[]
+  view: StudioView
+  name: string
+  number: string
+  logoDataUrl: string
+  ink: string
+  outline: string
+}) {
+  if (view !== 'front' && view !== 'back') return null
+
+  return regions
+    .filter((region) => region.side === view)
+    .map((region) => {
+      const style = getArtworkRegionStyle(region, view)
+
+      if (region.kind === 'number') {
+        if (!number) return null
+        return (
+          <svg
+            aria-hidden="true"
+            className="studio-artwork studio-artwork--number"
+            data-personalization-region={region.id}
+            key={region.id}
+            preserveAspectRatio="none"
+            style={style}
+            viewBox="0 0 100 100"
+          >
+            <text className="studio-number__outline" fill={ink} stroke={outline} x="50" y="84">{number}</text>
+            <text className="studio-number__ink" fill={ink} stroke={ink} x="50" y="84">{number}</text>
+          </svg>
+        )
+      }
+
+      if (region.kind === 'name') {
+        if (!name) return null
+        return (
+          <svg
+            aria-hidden="true"
+            className="studio-artwork studio-artwork--name"
+            data-personalization-region={region.id}
+            key={region.id}
+            preserveAspectRatio="none"
+            style={style}
+            viewBox="0 0 100 24"
+          >
+            <text
+              fill={ink}
+              textLength={name.length > 8 ? 90 : undefined}
+              lengthAdjust={name.length > 8 ? 'spacingAndGlyphs' : undefined}
+              x="50"
+              y="18"
+            >{name}</text>
+          </svg>
+        )
+      }
+
+      if (!logoDataUrl) return null
+      return (
+        <div
+          aria-hidden="true"
+          className="studio-artwork studio-artwork--logo"
+          data-personalization-region={region.id}
+          key={region.id}
+          style={style}
+        >
+          <img src={logoDataUrl} alt="" width="128" height="128" />
+        </div>
+      )
+    })
 }
 
 function readDesignDraft(): SavedDesignDraft | null {
@@ -883,6 +978,9 @@ export function CustomPage() {
   const [selectedProductSlug, setSelectedProductSlug] = useState(initialProduct.slug)
   const [name, setName] = useState(draft?.name ?? 'MORGAN')
   const [number, setNumber] = useState(draft?.number ?? '17')
+  const [logoDataUrl, setLogoDataUrl] = useState(draft?.logoDataUrl ?? '')
+  const [logoName, setLogoName] = useState(draft?.logoName ?? '')
+  const [logoError, setLogoError] = useState('')
   const [color, setColor] = useState(colors.find((item) => item.name === draftColorName) ?? colors[0]!)
   const [size, setSize] = useState<ApparelSize>(
     isApparelSize(searchParams.get('size'))
@@ -905,7 +1003,8 @@ export function CustomPage() {
   const steps = ['CHOOSE', 'PERSONALIZE', 'REVIEW', 'ORDER & TRACK']
   const selectedProduct = getProduct(selectedProductSlug) ?? personalizableProducts[0]!
   const templateSeries = getSeries(selectedProduct.series) ?? series[0]!
-  const templateImage = selectedProduct.image
+  const personalization = selectedProduct.personalization
+  const templateImage = personalization?.cleanImage ?? selectedProduct.image
   const proofVersion = `P${String(proofRevision).padStart(2, '0')}`
   const next = () => setStep((current) => Math.min(steps.length - 1, current + 1))
   const previous = () => setStep((current) => Math.max(0, current - 1))
@@ -926,13 +1025,13 @@ export function CustomPage() {
     try {
       window.localStorage.setItem(
         'we-saved-design',
-        JSON.stringify({ productSlug: selectedProduct.slug, template: templateSeries.name, name, number, colorName: color.name, size, view }),
+        JSON.stringify({ productSlug: selectedProduct.slug, template: templateSeries.name, name, number, logoDataUrl, logoName, colorName: color.name, size, view }),
       )
       setSaveError(false)
     } catch {
       setSaveError(true)
     }
-  }, [color.name, name, number, selectedProduct.slug, size, templateSeries.name, view])
+  }, [color.name, logoDataUrl, logoName, name, number, selectedProduct.slug, size, templateSeries.name, view])
 
   useEffect(() => {
     if (!proofCreated || ordered) return
@@ -940,13 +1039,13 @@ export function CustomPage() {
     setProofCreated(false)
     setSaved(false)
     setRightsConfirmed(false)
-  }, [color.name, name, number, ordered, selectedProduct.slug, size])
+  }, [color.name, logoDataUrl, name, number, ordered, selectedProduct.slug, size])
 
   const save = () => {
     try {
       window.localStorage.setItem(
         'we-saved-design',
-        JSON.stringify({ productSlug: selectedProduct.slug, template: templateSeries.name, name, number, colorName: color.name, size, view }),
+        JSON.stringify({ productSlug: selectedProduct.slug, template: templateSeries.name, name, number, logoDataUrl, logoName, colorName: color.name, size, view }),
       )
       setSaved(true)
       setProofCreated(true)
@@ -956,13 +1055,38 @@ export function CustomPage() {
       setSaveError(true)
     }
   }
+  const handleLogoUpload = (file: File | undefined) => {
+    if (!file) return
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      setLogoError('Use a PNG, JPG, or WEBP logo file.')
+      return
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setLogoError('Keep the logo file under 2 MB for this browser proof.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') {
+        setLogoError('This logo could not be read. Try another file.')
+        return
+      }
+      setLogoDataUrl(reader.result)
+      setLogoName(file.name)
+      setLogoError('')
+      setOrdered(false)
+    }
+    reader.onerror = () => setLogoError('This logo could not be read. Try another file.')
+    reader.readAsDataURL(file)
+  }
   const addDesign = () => {
     if (!rightsConfirmed) return
     addItem({
       id: `custom-${selectedProduct.slug}-${name}-${number}-${size}-${color.name}`,
       productSlug: selectedProduct.slug,
       name: `${selectedProduct.name} / Personalized`,
-      detail: `${name || 'No name'} · ${number || 'No number'} · ${size} · ${color.name}`,
+      detail: `${name || 'No name'} · ${number || 'No number'} · ${logoName || 'No custom logo'} · ${size} · ${color.name}`,
       price: selectedProduct.price,
       image: templateImage,
       designId,
@@ -990,23 +1114,31 @@ export function CustomPage() {
       </div>
       <div className="studio-workspace shell">
         <div className="studio-preview">
-          <p className="studio-preview__label">Interactive sample / {view} view</p>
+          <p className="studio-preview__label">
+            Interactive sample / {view} view
+            {personalization ? <span><CheckCircle size={14} weight="fill" /> Original artwork matched</span> : null}
+          </p>
           <div
             className={`studio-preview__canvas studio-preview__canvas--${view}`}
             style={{ '--studio-color': color.value } as CSSProperties}
           >
             <img
+              data-custom-base={personalization ? 'true' : undefined}
               src={templateImage}
               alt={`${selectedProduct.name} ${view} preview${view === 'back' ? ` with name ${name} and number ${number}` : ''}`}
               width="941"
               height="941"
             />
-            <div className="studio-preview__tint" />
-            {view === 'front' || view === 'back' ? (
-              <div className="studio-preview__mark">
-                <span>{view === 'back' ? name || 'YOUR NAME' : 'WE'}</span>
-                <strong>{view === 'back' ? number || '00' : '01'}</strong>
-              </div>
+            {personalization ? (
+              <PersonalizationArtwork
+                regions={personalization.regions}
+                view={view}
+                name={name}
+                number={number}
+                logoDataUrl={logoDataUrl}
+                ink={color.value}
+                outline={personalization.sourceOutline}
+              />
             ) : null}
           </div>
           <div className="view-switcher" aria-label="Jersey view">
@@ -1072,6 +1204,47 @@ export function CustomPage() {
                   </select>
                 </label>
               </div>
+              {personalization ? (
+                <div className="artwork-match" role="status">
+                  <CheckCircle size={22} weight="fill" />
+                  <div>
+                    <strong>Original artwork mapped</strong>
+                    <p>{personalization.detectedSourceElements.join(' · ')}</p>
+                    <small>The source marks are removed first; new artwork inherits the detected position, scale, outline, and view.</small>
+                  </div>
+                </div>
+              ) : null}
+              <div className="logo-upload">
+                <div>
+                  <span className="logo-upload__label">Logo</span>
+                  <small id="logo-upload-help">Transparent PNG recommended. JPG or WEBP also accepted, up to 2 MB.</small>
+                </div>
+                <div className="logo-upload__actions">
+                  {logoDataUrl ? <img src={logoDataUrl} alt="Uploaded logo preview" width="48" height="48" /> : null}
+                  <label className="logo-upload__button" htmlFor="custom-logo">{logoDataUrl ? 'Replace logo' : 'Upload logo'}</label>
+                  <input
+                    accept="image/png,image/jpeg,image/webp"
+                    aria-describedby="logo-upload-help"
+                    id="custom-logo"
+                    name="custom-logo"
+                    type="file"
+                    onChange={(event) => handleLogoUpload(event.target.files?.[0])}
+                  />
+                  {logoDataUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLogoDataUrl('')
+                        setLogoName('')
+                        setLogoError('')
+                        setOrdered(false)
+                      }}
+                    >Remove</button>
+                  ) : null}
+                </div>
+                {logoName ? <p className="logo-upload__filename">{logoName}</p> : null}
+                {logoError ? <p className="logo-upload__error" role="alert">{logoError}</p> : null}
+              </div>
               <fieldset className="color-picker">
                 <legend>Accent color</legend>
                 <div>
@@ -1098,6 +1271,7 @@ export function CustomPage() {
                 <div><dt>Original</dt><dd>{selectedProduct.name}</dd></div>
                 <div><dt>Series</dt><dd>{templateSeries.name}</dd></div>
                 <div><dt>Name / number</dt><dd>{name || 'None'} / {number || 'None'}</dd></div>
+                <div><dt>Custom logo</dt><dd>{logoName || 'None'}</dd></div>
                 <div><dt>Accent</dt><dd>{color.name}</dd></div>
                 <div><dt>Size</dt><dd>{size}</dd></div>
                 <div><dt>Design ID</dt><dd>{designId}</dd></div>
