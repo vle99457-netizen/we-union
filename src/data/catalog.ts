@@ -1,4 +1,4 @@
-import type { CustomizerView } from './customizerImages'
+import type { CustomizerView } from './customizerImages.js'
 
 export type WorldSlug = 'create' | 'honor' | 'belong'
 
