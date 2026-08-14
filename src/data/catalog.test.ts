@@ -42,12 +42,20 @@ describe('catalog helpers', () => {
     const personalization = getProduct('white-pulse-game-jersey')?.personalization
     expect(personalization?.cleanImage).toBe('/images/white-pulse-game-jersey-custom-base.webp')
     expect(personalization?.regions.map((region) => region.id)).toEqual([
+      'front-city',
       'front-number',
       'back-number',
       'back-name',
       'front-logo',
+      'left-sleeve-logo',
+      'right-sleeve-logo',
     ])
     expect(personalization?.regions.every((region) => region.width > 0 && region.height > 0)).toBe(true)
+    expect(personalization?.regions.filter((region) => region.kind === 'logo').map((region) => region.logoSlot)).toEqual([
+      'front',
+      'leftSleeve',
+      'rightSleeve',
+    ])
   })
 
   it('searches products, series, and stories without case sensitivity', () => {

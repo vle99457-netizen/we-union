@@ -38,9 +38,17 @@ export type ProductGalleryItem = {
 }
 
 export type PersonalizationRegion = {
-  id: 'front-number' | 'back-number' | 'back-name' | 'front-logo'
-  kind: 'number' | 'name' | 'logo'
-  side: 'front' | 'back'
+  id:
+    | 'front-city'
+    | 'front-number'
+    | 'back-number'
+    | 'back-name'
+    | 'front-logo'
+    | 'left-sleeve-logo'
+    | 'right-sleeve-logo'
+  kind: 'city' | 'number' | 'name' | 'logo'
+  side: 'front' | 'back' | 'left' | 'right'
+  logoSlot?: 'front' | 'leftSleeve' | 'rightSleeve'
   x: number
   y: number
   width: number
@@ -222,16 +230,22 @@ export const products: Product[] = [
       sourceInk: '#132b4d',
       sourceOutline: '#aeb8c1',
       detectedSourceElements: [
+        'Front city name area',
         'Front number',
         'Back number',
         'Back name position',
         'Front logo position',
+        'Left sleeve logo area',
+        'Right sleeve logo area',
       ],
       regions: [
+        { id: 'front-city', kind: 'city', side: 'front', x: 17.0, y: 32.2, width: 16.0, height: 3.5 },
         { id: 'front-number', kind: 'number', side: 'front', x: 15.8, y: 36.2, width: 15.2, height: 16.8 },
         { id: 'back-number', kind: 'number', side: 'back', x: 63.0, y: 33.0, width: 18.4, height: 20.2 },
         { id: 'back-name', kind: 'name', side: 'back', x: 64.6, y: 29.3, width: 15.2, height: 4.5 },
-        { id: 'front-logo', kind: 'logo', side: 'front', x: 17.4, y: 29.6, width: 6.4, height: 5.5, rotate: -1 },
+        { id: 'front-logo', kind: 'logo', logoSlot: 'front', side: 'front', x: 17.4, y: 27.7, width: 6.4, height: 5.5, rotate: -1 },
+        { id: 'left-sleeve-logo', kind: 'logo', logoSlot: 'leftSleeve', side: 'left', x: 35.0, y: 34.2, width: 6.0, height: 5.8, rotate: 10 },
+        { id: 'right-sleeve-logo', kind: 'logo', logoSlot: 'rightSleeve', side: 'right', x: 88.0, y: 34.2, width: 6.0, height: 5.8, rotate: -10 },
       ],
     },
     catalogState: 'concept-preview',

@@ -235,6 +235,7 @@ try {
   const personalizationPreview = await page.$eval('.studio-preview__canvas', (canvas) => ({
     cleanBase: canvas.querySelector('[data-custom-base="true"]')?.getAttribute('src'),
     legacyOverlayCount: canvas.querySelectorAll('.studio-preview__mark').length,
+    frontCity: canvas.querySelector('[data-personalization-region="front-city"]')?.textContent,
     frontNumber: canvas.querySelector('[data-personalization-region="front-number"] .studio-number__ink')?.textContent,
   }))
   assert(
@@ -242,6 +243,7 @@ try {
     'Customizer must start from the clean product base instead of covering the source number.',
   )
   assert(personalizationPreview.legacyOverlayCount === 0, 'Legacy WE / 01 overlay must be removed.')
+  assert(personalizationPreview.frontCity === 'SACRAMENTO', 'Front city personalization must render in its mapped region.')
   assert(personalizationPreview.frontNumber === '17', 'Detected front number region must inherit the initial number.')
   await page.evaluate(() => {
     const button = [...document.querySelectorAll('.studio-nav button')]
@@ -253,12 +255,54 @@ try {
     await page.$eval('input[name="custom-logo"]', (input) => input.getAttribute('accept')) === 'image/png,image/jpeg,image/webp',
     'Customizer must expose a local raster logo replacement input.',
   )
+  assert(await page.$('input[name="city-name"]'), 'Customizer must expose a front city name input.')
+  assert(await page.$('input[name="left-sleeve-logo"]'), 'Customizer must expose an independent left sleeve logo input.')
+  assert(await page.$('input[name="right-sleeve-logo"]'), 'Customizer must expose an independent right sleeve logo input.')
   const logoInput = await page.$('input[name="custom-logo"]')
   if (!logoInput) throw new Error('Customizer logo input is missing.')
   await logoInput.uploadFile(path.join(process.cwd(), 'public', 'images', 'we-wordmark.png'))
   await page.waitForFunction(() => (
     document.querySelector('[data-personalization-region="front-logo"] img')?.getAttribute('src')?.startsWith('data:image/png')
   ))
+  await page.click('input[name="city-name"]')
+  await page.keyboard.down('Control')
+  await page.keyboard.press('KeyA')
+  await page.keyboard.up('Control')
+  await page.keyboard.type('OAKLAND')
+  await page.waitForFunction(() => (
+    document.querySelector('[data-personalization-region="front-city"]')?.textContent === 'OAKLAND'
+  ))
+  const cityArtwork = await page.$('[data-personalization-region="front-city"]')
+  if (!cityArtwork) throw new Error('Movable city artwork is missing.')
+  await cityArtwork.evaluate((element) => {
+    document.documentElement.style.scrollBehavior = 'auto'
+    element.scrollIntoView({ block: 'center', inline: 'center' })
+  })
+  const cityArtworkBox = await cityArtwork.boundingBox()
+  if (!cityArtworkBox) throw new Error('Movable city artwork is outside the viewport.')
+  const cityPositionBeforeDrag = await cityArtwork.evaluate((element) => element.getAttribute('data-position-x'))
+  await page.mouse.move(cityArtworkBox.x + cityArtworkBox.width / 2, cityArtworkBox.y + cityArtworkBox.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(cityArtworkBox.x + cityArtworkBox.width / 2 + 32, cityArtworkBox.y + cityArtworkBox.height / 2 + 12, { steps: 4 })
+  await page.mouse.up()
+  await page.waitForFunction((previousPosition) => (
+    document.querySelector('[data-personalization-region="front-city"]')?.getAttribute('data-position-x') !== previousPosition
+  ), {}, cityPositionBeforeDrag)
+  const leftSleeveLogoInput = await page.$('input[name="left-sleeve-logo"]')
+  if (!leftSleeveLogoInput) throw new Error('Left sleeve logo input is missing.')
+  await leftSleeveLogoInput.uploadFile(path.join(process.cwd(), 'public', 'images', 'we-wordmark.png'))
+  await page.waitForFunction(() => (
+    document.querySelector('[data-studio-view="left"]')?.getAttribute('aria-pressed') === 'true'
+      && document.querySelector('[data-personalization-region="left-sleeve-logo"] img')?.getAttribute('src')?.startsWith('data:image/png')
+  ))
+  const rightSleeveLogoInput = await page.$('input[name="right-sleeve-logo"]')
+  if (!rightSleeveLogoInput) throw new Error('Right sleeve logo input is missing.')
+  await rightSleeveLogoInput.uploadFile(path.join(process.cwd(), 'public', 'images', 'we-wordmark.png'))
+  await page.waitForFunction(() => (
+    document.querySelector('[data-studio-view="right"]')?.getAttribute('aria-pressed') === 'true'
+      && document.querySelector('[data-personalization-region="right-sleeve-logo"] img')?.getAttribute('src')?.startsWith('data:image/png')
+  ))
+  await page.click('[data-studio-view="front"]')
   await page.click('input[name="jersey-number"]')
   await page.keyboard.down('Control')
   await page.keyboard.press('KeyA')
@@ -267,7 +311,7 @@ try {
   await page.waitForFunction(() => (
     document.querySelector('[data-personalization-region="front-number"] .studio-number__ink')?.textContent === '8'
   ))
-  await page.click('.view-switcher button:nth-child(2)')
+  await page.click('[data-studio-view="back"]')
   await page.waitForFunction(() => (
     document.querySelector('[data-personalization-region="back-number"] .studio-number__ink')?.textContent === '8'
       && document.querySelector('[data-personalization-region="back-name"]')?.textContent === 'MORGAN'
@@ -275,7 +319,7 @@ try {
   const notice = await page.$eval('.create-disclaimer p:last-child', (paragraph) => paragraph.textContent?.trim())
   assert(notice === 'WE UNION CREATE products are built on original garment designs and customer-led personalization. WE UNION does not reproduce or accept official league, team, athlete, or third-party brand names, logos, wordmarks, signatures, or confusingly similar variations. Customer-submitted artwork must be original or properly authorized and is subject to intellectual property review.', 'CREATE notice must be an exact DOM match.')
   assert(errors.length === 0, `Browser errors: ${errors.join('; ')}`)
-  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, source-artwork replacement, exact CREATE notice, and browser health.')
+  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, movable city/name/number/logo artwork, independent sleeve uploads, source-artwork replacement, exact CREATE notice, and browser health.')
 } finally {
   await browser.close()
   await server.close()
