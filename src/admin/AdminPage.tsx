@@ -26,6 +26,7 @@ import {
   type ReactNode,
 } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { AdminImageField } from './AdminImageField'
 import { CustomizerAdminPage } from './CustomizerAdminPage'
 import { normalizeSiteConfig, type SiteConfig } from '../data/siteConfig'
 
@@ -322,7 +323,14 @@ function GlobalSection({ config, language, mutate }: { config: SiteConfig; langu
       <Panel title={label(language, '品牌信息', 'Brand identity')} description={label(language, '控制全站页眉、页脚和联系信息。', 'Controls global header, footer, and contact information.')}>
         <div className="admin-field-grid">
           <Field label={label(language, '网站名称', 'Site name')} value={config.global.siteName} onChange={(value) => updateGlobal('siteName', value)} />
-          <Field label={label(language, 'Logo 图片地址', 'Logo image URL')} value={config.global.logoUrl} onChange={(value) => updateGlobal('logoUrl', value)} />
+          <AdminImageField
+            language={language}
+            label={label(language, '网站 Logo', 'Website logo')}
+            value={config.global.logoUrl}
+            previewAlt="WE"
+            help={label(language, '支持从电脑上传 JPG、PNG 或 WEBP；当前 SVG 地址仍可继续使用。', 'Upload a JPG, PNG, or WEBP from your computer; the current SVG URL remains supported.')}
+            onChange={(value) => updateGlobal('logoUrl', value)}
+          />
           <Field label={label(language, '联系邮箱', 'Contact email')} type="email" value={config.global.contactEmail} onChange={(value) => updateGlobal('contactEmail', value)} />
           <Field label={label(language, '客服邮箱', 'Support email')} type="email" value={config.global.supportEmail} onChange={(value) => updateGlobal('supportEmail', value)} />
           <Field label={label(language, '顶部提示语', 'Utility message')} value={config.global.utilityText} onChange={(value) => updateGlobal('utilityText', value)} />
@@ -365,7 +373,7 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
           <Field label={label(language, '标题第一行', 'Title line 1')} value={home.hero.titleLine1} onChange={(value) => mutate((next) => { next.home.hero.titleLine1 = value })} />
           <Field label={label(language, '标题第二行', 'Title line 2')} value={home.hero.titleLine2} onChange={(value) => mutate((next) => { next.home.hero.titleLine2 = value })} />
           <Field label={label(language, '说明', 'Description')} multiline value={home.hero.copy} onChange={(value) => mutate((next) => { next.home.hero.copy = value })} />
-          <Field label={label(language, '背景图片', 'Background image')} value={home.hero.image} onChange={(value) => mutate((next) => { next.home.hero.image = value })} />
+          <AdminImageField language={language} label={label(language, '栏目背景图片', 'Section background image')} value={home.hero.image} previewAlt="" onChange={(value) => mutate((next) => { next.home.hero.image = value })} />
           <Field label={label(language, '主按钮文案', 'Primary button')} value={home.hero.primaryLabel} onChange={(value) => mutate((next) => { next.home.hero.primaryLabel = value })} />
           <Field label={label(language, '主按钮链接', 'Primary destination')} value={home.hero.primaryHref} onChange={(value) => mutate((next) => { next.home.hero.primaryHref = value })} />
           <Field label={label(language, '次按钮文案', 'Secondary button')} value={home.hero.secondaryLabel} onChange={(value) => mutate((next) => { next.home.hero.secondaryLabel = value })} />
@@ -381,6 +389,20 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
           <Field label={label(language, '标题', 'Title')} value={home.worlds.title} onChange={(value) => mutate((next) => { next.home.worlds.title = value })} />
           <Field label={label(language, '说明', 'Description')} multiline value={home.worlds.copy} onChange={(value) => mutate((next) => { next.home.worlds.copy = value })} />
         </div>
+        <div className="admin-section-image-list">
+          <h3>{label(language, '栏目卡片背景', 'Section card backgrounds')}</h3>
+          {config.catalog.worlds.map((world, worldIndex) => (
+            <AdminImageField
+              key={world.slug}
+              compact
+              language={language}
+              label={world.title}
+              value={world.image}
+              previewAlt=""
+              onChange={(value) => mutate((next) => { next.catalog.worlds[worldIndex]!.image = value })}
+            />
+          ))}
+        </div>
       </details>
 
       <details className="admin-editor-group">
@@ -389,7 +411,7 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
           <Field label={label(language, '眉题', 'Eyebrow')} value={home.featured.eyebrow} onChange={(value) => mutate((next) => { next.home.featured.eyebrow = value })} />
           <Field label={label(language, '标题', 'Title')} value={home.featured.title} onChange={(value) => mutate((next) => { next.home.featured.title = value })} />
           <Field label={label(language, '说明', 'Description')} multiline value={home.featured.copy} onChange={(value) => mutate((next) => { next.home.featured.copy = value })} />
-          <Field label={label(language, '图片', 'Image')} value={home.featured.image} onChange={(value) => mutate((next) => { next.home.featured.image = value })} />
+          <AdminImageField language={language} label={label(language, '栏目背景图片', 'Section background image')} value={home.featured.image} previewAlt="" onChange={(value) => mutate((next) => { next.home.featured.image = value })} />
           <Field label={label(language, '按钮文案', 'Button label')} value={home.featured.ctaLabel} onChange={(value) => mutate((next) => { next.home.featured.ctaLabel = value })} />
           <Field label={label(language, '按钮链接', 'Button destination')} value={home.featured.ctaHref} onChange={(value) => mutate((next) => { next.home.featured.ctaHref = value })} />
           <Field label={label(language, '视觉标记', 'Banner kicker')} value={home.featured.bannerKicker} onChange={(value) => mutate((next) => { next.home.featured.bannerKicker = value })} />
@@ -405,7 +427,7 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
           <Field label={label(language, '标题第一行', 'Title line 1')} value={home.custom.titleLine1} onChange={(value) => mutate((next) => { next.home.custom.titleLine1 = value })} />
           <Field label={label(language, '标题第二行', 'Title line 2')} value={home.custom.titleLine2} onChange={(value) => mutate((next) => { next.home.custom.titleLine2 = value })} />
           <Field label={label(language, '说明', 'Description')} multiline value={home.custom.copy} onChange={(value) => mutate((next) => { next.home.custom.copy = value })} />
-          <Field label={label(language, '球衣图片', 'Jersey image')} value={home.custom.image} onChange={(value) => mutate((next) => { next.home.custom.image = value })} />
+          <AdminImageField language={language} label={label(language, '栏目球衣图片', 'Section jersey image')} value={home.custom.image} previewAlt="" onChange={(value) => mutate((next) => { next.home.custom.image = value })} />
           <Field label={label(language, '按钮文案', 'Button label')} value={home.custom.ctaLabel} onChange={(value) => mutate((next) => { next.home.custom.ctaLabel = value })} />
           <Field label={label(language, '按钮链接', 'Button destination')} value={home.custom.ctaHref} onChange={(value) => mutate((next) => { next.home.custom.ctaHref = value })} />
         </div>
@@ -428,7 +450,7 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
           <Field label={label(language, '眉题', 'Eyebrow')} value={home.craftsmanship.eyebrow} onChange={(value) => mutate((next) => { next.home.craftsmanship.eyebrow = value })} />
           <Field label={label(language, '标题', 'Title')} value={home.craftsmanship.title} onChange={(value) => mutate((next) => { next.home.craftsmanship.title = value })} />
           <Field label={label(language, '说明', 'Description')} multiline value={home.craftsmanship.copy} onChange={(value) => mutate((next) => { next.home.craftsmanship.copy = value })} />
-          <Field label={label(language, '图片', 'Image')} value={home.craftsmanship.image} onChange={(value) => mutate((next) => { next.home.craftsmanship.image = value })} />
+          <AdminImageField language={language} label={label(language, '栏目背景图片', 'Section background image')} value={home.craftsmanship.image} previewAlt="" onChange={(value) => mutate((next) => { next.home.craftsmanship.image = value })} />
           <Field label={label(language, '按钮文案', 'Button label')} value={home.craftsmanship.ctaLabel} onChange={(value) => mutate((next) => { next.home.craftsmanship.ctaLabel = value })} />
           <Field label={label(language, '按钮链接', 'Button destination')} value={home.craftsmanship.ctaHref} onChange={(value) => mutate((next) => { next.home.craftsmanship.ctaHref = value })} />
         </div>
@@ -455,6 +477,20 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
           <Field label={label(language, '标题', 'Title')} value={home.stories.title} onChange={(value) => mutate((next) => { next.home.stories.title = value })} />
           <Field label={label(language, '链接文案', 'Link label')} value={home.stories.ctaLabel} onChange={(value) => mutate((next) => { next.home.stories.ctaLabel = value })} />
         </div>
+        <div className="admin-section-image-list">
+          <h3>{label(language, '故事图片', 'Story images')}</h3>
+          {config.catalog.stories.map((story, storyIndex) => (
+            <AdminImageField
+              key={story.slug}
+              compact
+              language={language}
+              label={story.title}
+              value={story.image}
+              previewAlt=""
+              onChange={(value) => mutate((next) => { next.catalog.stories[storyIndex]!.image = value })}
+            />
+          ))}
+        </div>
       </details>
 
       <details className="admin-editor-group">
@@ -463,7 +499,7 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
           <Field label={label(language, '眉题', 'Eyebrow')} value={home.community.eyebrow} onChange={(value) => mutate((next) => { next.home.community.eyebrow = value })} />
           <Field label={label(language, '标题', 'Title')} value={home.community.title} onChange={(value) => mutate((next) => { next.home.community.title = value })} />
           <Field label={label(language, '说明', 'Description')} multiline value={home.community.copy} onChange={(value) => mutate((next) => { next.home.community.copy = value })} />
-          <Field label={label(language, '图片', 'Image')} value={home.community.image} onChange={(value) => mutate((next) => { next.home.community.image = value })} />
+          <AdminImageField language={language} label={label(language, '栏目背景图片', 'Section background image')} value={home.community.image} previewAlt="" onChange={(value) => mutate((next) => { next.home.community.image = value })} />
           <Field label={label(language, '按钮文案', 'Button label')} value={home.community.ctaLabel} onChange={(value) => mutate((next) => { next.home.community.ctaLabel = value })} />
           <Field label={label(language, '按钮链接', 'Button destination')} value={home.community.ctaHref} onChange={(value) => mutate((next) => { next.home.community.ctaHref = value })} />
         </div>
@@ -481,6 +517,94 @@ function patchCatalogItem(mutate: MutateDraft, kind: CatalogKind, index: number,
   })
 }
 
+type ProductGalleryEntry = NonNullable<SiteConfig['catalog']['products'][number]['gallery']>[number]
+
+function ProductGalleryEditor({ product, productIndex, language, mutate }: {
+  product: SiteConfig['catalog']['products'][number]
+  productIndex: number
+  language: AdminLanguage
+  mutate: MutateDraft
+}) {
+  const gallery = [...(product.gallery ?? [])]
+
+  const updateGallery = (galleryIndex: number, patch: Partial<ProductGalleryEntry>) => {
+    mutate((next) => {
+      const current = next.catalog.products[productIndex]!
+      const items = [...(current.gallery ?? [])]
+      items[galleryIndex] = { ...items[galleryIndex]!, ...patch }
+      current.gallery = items
+    })
+  }
+
+  const addGalleryImage = (url: string) => {
+    mutate((next) => {
+      const current = next.catalog.products[productIndex]!
+      const items = [...(current.gallery ?? [])]
+      const position = items.length + 1
+      current.gallery = [...items, {
+        src: url,
+        label: `${current.name} / ${String(position).padStart(2, '0')}`,
+        alt: `${current.name} product view ${position}`,
+        width: 1600,
+        height: 1600,
+      }]
+    })
+  }
+
+  const removeGalleryImage = (galleryIndex: number) => {
+    mutate((next) => {
+      const current = next.catalog.products[productIndex]!
+      current.gallery = (current.gallery ?? []).filter((_, index) => index !== galleryIndex)
+    })
+  }
+
+  return (
+    <section className="admin-product-gallery">
+      <header>
+        <div>
+          <h3>{label(language, '商品图片与轮播', 'Product images & gallery')}</h3>
+          <p>{label(language, '从电脑上传新图片，或逐张替换商品详情页中的轮播图片。所有图片均显示即时预览。', 'Upload new images from your computer or replace each product-gallery image. Every image includes an instant preview.')}</p>
+        </div>
+        <span>{gallery.length} {label(language, '张图片', 'images')}</span>
+      </header>
+      <div className="admin-product-gallery__add">
+        <AdminImageField
+          compact
+          showUrlField={false}
+          language={language}
+          label={label(language, '添加商品轮播图片', 'Add product gallery image')}
+          value=""
+          previewAlt=""
+          help={label(language, '选择后将自动上传并加入当前商品。', 'The selected image uploads and joins this product automatically.')}
+          onChange={addGalleryImage}
+        />
+      </div>
+      {gallery.length ? (
+        <div className="admin-product-gallery__grid">
+          {gallery.map((galleryItem, galleryIndex) => (
+            <article key={galleryIndex}>
+              <AdminImageField
+                compact
+                showUrlField={false}
+                language={language}
+                label={`${label(language, '轮播图片', 'Gallery image')} ${String(galleryIndex + 1).padStart(2, '0')}`}
+                value={galleryItem.src}
+                previewAlt={galleryItem.alt}
+                onChange={(value) => updateGallery(galleryIndex, { src: value })}
+              />
+              <div className="admin-product-gallery__meta">
+                <Field label={label(language, '图片名称', 'Image label')} value={galleryItem.label} onChange={(value) => updateGallery(galleryIndex, { label: value })} />
+                <Field label={label(language, '替代文字', 'Alternative text')} value={galleryItem.alt} onChange={(value) => updateGallery(galleryIndex, { alt: value })} />
+                <button className="admin-text-button admin-text-button--danger" type="button" onClick={() => removeGalleryImage(galleryIndex)}>{label(language, '移除图片', 'Remove image')}</button>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : <p className="admin-product-gallery__empty">{label(language, '当前商品没有轮播图片，可从上方添加。', 'This product has no gallery images yet. Add one above.')}</p>}
+    </section>
+  )
+}
+
 function CatalogSection({ config, language, mutate }: { config: SiteConfig; language: AdminLanguage; mutate: MutateDraft }) {
   const [kind, setKind] = useState<CatalogKind>('products')
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -491,6 +615,24 @@ function CatalogSection({ config, language, mutate }: { config: SiteConfig; lang
     value: String(entryIndex),
     label: 'name' in entry ? entry.name : entry.title,
   }))
+  const product = kind === 'products' ? config.catalog.products[index] : null
+
+  const updateItemImage = (value: string) => {
+    if (kind !== 'products') {
+      patchCatalogItem(mutate, kind, index, { image: value })
+      return
+    }
+    mutate((next) => {
+      const current = next.catalog.products[index]!
+      const previousImage = current.image
+      current.image = value
+      if (current.gallery?.[0]?.src === previousImage) {
+        current.gallery = current.gallery.map((galleryItem, galleryIndex) => galleryIndex === 0
+          ? { ...galleryItem, src: value }
+          : galleryItem)
+      }
+    })
+  }
 
   return (
     <div className="admin-section-stack">
@@ -519,7 +661,7 @@ function CatalogSection({ config, language, mutate }: { config: SiteConfig; lang
               {'description' in item ? <Field label={label(language, '说明', 'Description')} multiline value={item.description} onChange={(value) => patchCatalogItem(mutate, kind, index, { description: value })} /> : null}
               {'copy' in item ? <Field label={label(language, '说明', 'Description')} multiline value={item.copy} onChange={(value) => patchCatalogItem(mutate, kind, index, { copy: value })} /> : null}
               {'excerpt' in item ? <Field label={label(language, '摘要', 'Excerpt')} multiline value={item.excerpt} onChange={(value) => patchCatalogItem(mutate, kind, index, { excerpt: value })} /> : null}
-              {'image' in item ? <Field label={label(language, '主图地址', 'Primary image URL')} value={item.image} onChange={(value) => patchCatalogItem(mutate, kind, index, { image: value })} /> : null}
+              {'image' in item ? <AdminImageField language={language} label={kind === 'products' ? label(language, '商品主图', 'Primary product image') : label(language, '栏目背景图片', 'Section background image')} value={item.image} previewAlt={'name' in item ? item.name : 'title' in item ? item.title : ''} onChange={updateItemImage} /> : null}
               {'category' in item ? <Field label={label(language, '分类', 'Category')} value={item.category} onChange={(value) => patchCatalogItem(mutate, kind, index, { category: value })} /> : null}
               {'readTime' in item ? <Field label={label(language, '阅读时间', 'Read time')} value={item.readTime} onChange={(value) => patchCatalogItem(mutate, kind, index, { readTime: value })} /> : null}
               {'statusLabel' in item ? <Field label={label(language, '状态文案', 'Status label')} value={item.statusLabel} onChange={(value) => patchCatalogItem(mutate, kind, index, { statusLabel: value })} /> : null}
@@ -546,19 +688,22 @@ function CatalogSection({ config, language, mutate }: { config: SiteConfig; lang
               {'connection' in item ? <Field label={label(language, '定制关联', 'Customization connection')} multiline value={item.connection} onChange={(value) => patchCatalogItem(mutate, kind, index, { connection: value })} /> : null}
             </div>
             {kind === 'products' ? (
-              <div className="admin-price-editor">
-                <SelectField label={label(language, '价格状态', 'Price status')} value={config.catalog.products[index]!.price.status} options={[
-                  { value: 'tbd', label: label(language, '待确认', 'TBD') },
-                  { value: 'confirmed', label: label(language, '已确认', 'Confirmed') },
-                ]} onChange={(value) => mutate((next) => {
-                  const product = next.catalog.products[index]!
-                  product.price = value === 'confirmed' ? { status: 'confirmed', amount: 0, currency: 'USD' } : { status: 'tbd' }
-                })} />
-                {config.catalog.products[index]!.price.status === 'confirmed' ? <Field label={label(language, '价格（USD）', 'Price (USD)')} type="number" min={0} value={config.catalog.products[index]!.price.amount} onChange={(value) => mutate((next) => {
-                  const product = next.catalog.products[index]!
-                  if (product.price.status === 'confirmed') product.price.amount = Math.max(0, Number(value) || 0)
-                })} /> : null}
-              </div>
+              <>
+                <div className="admin-price-editor">
+                  <SelectField label={label(language, '价格状态', 'Price status')} value={config.catalog.products[index]!.price.status} options={[
+                    { value: 'tbd', label: label(language, '待确认', 'TBD') },
+                    { value: 'confirmed', label: label(language, '已确认', 'Confirmed') },
+                  ]} onChange={(value) => mutate((next) => {
+                    const current = next.catalog.products[index]!
+                    current.price = value === 'confirmed' ? { status: 'confirmed', amount: 0, currency: 'USD' } : { status: 'tbd' }
+                  })} />
+                  {config.catalog.products[index]!.price.status === 'confirmed' ? <Field label={label(language, '价格（USD）', 'Price (USD)')} type="number" min={0} value={config.catalog.products[index]!.price.amount} onChange={(value) => mutate((next) => {
+                    const current = next.catalog.products[index]!
+                    if (current.price.status === 'confirmed') current.price.amount = Math.max(0, Number(value) || 0)
+                  })} /> : null}
+                </div>
+                {product ? <ProductGalleryEditor product={product} productIndex={index} language={language} mutate={mutate} /> : null}
+              </>
             ) : null}
           </>
         ) : <p>{label(language, '没有可编辑项目。', 'No items to edit.')}</p>}
@@ -585,7 +730,7 @@ function ContentSection({ config, language, mutate }: { config: SiteConfig; lang
           <Field label={label(language, '眉题', 'Eyebrow')} value={page.eyebrow} onChange={(value) => mutate((next) => { next.pages[pageIndex]!.eyebrow = value })} />
           <Field label={label(language, '标题', 'Title')} value={page.title} onChange={(value) => mutate((next) => { next.pages[pageIndex]!.title = value })} />
           <Field label={label(language, '说明', 'Description')} multiline value={page.description} onChange={(value) => mutate((next) => { next.pages[pageIndex]!.description = value })} />
-          <Field label={label(language, '主图地址', 'Hero image URL')} value={page.image} onChange={(value) => mutate((next) => { next.pages[pageIndex]!.image = value })} />
+          <AdminImageField language={language} label={label(language, '页面栏目背景', 'Page section background')} value={page.image} previewAlt="" onChange={(value) => mutate((next) => { next.pages[pageIndex]!.image = value })} />
         </div>
       </Panel>
       <Panel title={label(language, '政策与法律页面', 'Policies & legal pages')} description={label(language, '政策文本发布前仍应由运营与法律团队确认。', 'Policy copy should still be approved by operations and counsel before publishing.')}>
@@ -743,7 +888,7 @@ function SystemSection({ config, language, mutate }: { config: SiteConfig; langu
         <div className="admin-field-grid">
           <Field label={label(language, '默认页面标题', 'Default page title')} value={config.seo.defaultTitle} onChange={(value) => mutate((next) => { next.seo.defaultTitle = value })} />
           <Field label={label(language, '默认描述', 'Default description')} multiline value={config.seo.defaultDescription} onChange={(value) => mutate((next) => { next.seo.defaultDescription = value })} />
-          <Field label={label(language, '分享图片', 'Social image')} value={config.seo.ogImage} onChange={(value) => mutate((next) => { next.seo.ogImage = value })} />
+          <AdminImageField language={language} label={label(language, '分享图片', 'Social image')} value={config.seo.ogImage} previewAlt="" onChange={(value) => mutate((next) => { next.seo.ogImage = value })} />
           <ToggleField label={label(language, '允许搜索引擎收录', 'Allow search indexing')} checked={config.seo.robotsIndex} onChange={(value) => mutate((next) => { next.seo.robotsIndex = value })} />
         </div>
       </Panel>
