@@ -109,7 +109,7 @@ export function parseRequestUrl(requestUrl: string): URL {
   return new URL(requestUrl, 'https://customizer.internal')
 }
 
-export default async function handler(request: Request): Promise<Response> {
+async function handleRequest(request: Request): Promise<Response> {
   const url = parseRequestUrl(request.url)
   const productSlug = url.searchParams.get('product')
   if (!productSlug || !PRODUCT_SLUG_PATTERN.test(productSlug)) {
@@ -180,4 +180,10 @@ export default async function handler(request: Request): Promise<Response> {
     console.error('Unable to upload a customizer preview image.', error)
     return jsonResponse({ error: 'The preview image could not be uploaded.' }, 500)
   }
+}
+
+// Vercel's Web Handler API requires a named `fetch` export. A default export
+// is treated as the Node `(request, response)` signature and ignores Response returns.
+export async function fetch(request: Request): Promise<Response> {
+  return handleRequest(request)
 }

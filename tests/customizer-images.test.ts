@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseRequestUrl } from '../api/customizer-images'
+import { fetch as customizerImagesFetch, parseRequestUrl } from '../api/customizer-images'
 
 describe('customizer image API request parsing', () => {
   it('accepts the path-only URL shape used by the Vercel web handler adapter', () => {
@@ -9,5 +9,14 @@ describe('customizer image API request parsing', () => {
 
     expect(url.searchParams.get('product')).toBe('white-pulse-game-jersey')
     expect(url.searchParams.get('view')).toBe('front')
+  })
+
+  it('returns a Response through the named Vercel Web Handler export', async () => {
+    const response = await customizerImagesFetch(new Request(
+      'https://customizer.internal/api/customizer-images?product=NOT_VALID',
+    ))
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({ error: 'A valid product slug is required.' })
   })
 })
