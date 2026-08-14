@@ -7,7 +7,7 @@ import {
   type Series,
   type Story,
   type World,
-} from './catalog'
+} from './catalog.js'
 
 export type ManagedWorld = World & { visible: boolean }
 export type ManagedSeries = Series & { visible: boolean }
