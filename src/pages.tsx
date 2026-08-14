@@ -217,7 +217,9 @@ export function HomePage() {
                 />
 
                 <div className="process-card__artwork" aria-hidden="true">
-                  <span className="process-card__logo">WE</span>
+                  <span className="process-card__logo">
+                    <img src="/images/we-logo.svg" alt="" width="307" height="195" />
+                  </span>
                   <span className="process-card__city">
                     {activeStep === 0 ? 'ORIGINAL' : 'SACRAMENTO'}
                   </span>
@@ -258,7 +260,7 @@ export function HomePage() {
               </div>
 
               <div className="process-card__index" aria-hidden="true">
-                <span>WE</span>
+                <span><img src="/images/we-logo.svg" alt="" width="307" height="195" /></span>
                 <strong>0{activeStep + 1}</strong>
               </div>
               <div className="process-card__status" aria-hidden="true">

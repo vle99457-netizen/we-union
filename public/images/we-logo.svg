@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="306.95" height="194.889" viewBox="0 0 306.95 194.889">
+  <defs>
+    <clipPath id="we-logo-e">
+      <path d="M160 0h146.836v194.777H160z"/>
+    </clipPath>
+    <clipPath id="we-logo-w">
+      <path d="M.063 0H147v194.777H.063z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#we-logo-e)">
+    <path fill="#231f20" d="M160.754 0v194.777h73.043l29.215-77.91h-43.825V97.391h51.13l14.609-38.957h-65.739V38.957h73.043L306.836 0z"/>
+  </g>
+  <g clip-path="url(#we-logo-w)">
+    <path fill="#231f20" d="m146.145 0-43.766 116.867L58.547 0H.062L73.2 194.777h72.945z"/>
+  </g>
+</svg>

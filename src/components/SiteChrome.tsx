@@ -113,7 +113,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
             <List size={23} />
           </button>
           <Link className="brand-mark" to="/" aria-label={`${config.global.siteName} home`}>
-            <img src={config.global.logoUrl} alt={config.global.siteName} width="72" height="38" />
+            <img src={config.global.logoUrl} alt={config.global.siteName} width="307" height="195" />
           </Link>
           <nav className="desktop-nav" aria-label="Primary navigation">
             {primaryLinks.map((link) => (
@@ -170,7 +170,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
       {menuOpen ? (
         <div id="site-menu" ref={menuDialog} className="mobile-menu" role="dialog" aria-modal="true" aria-label="Site menu">
           <div className="mobile-menu__top">
-            <img src={config.global.logoUrl} alt={config.global.siteName} width="72" height="38" />
+            <img src={config.global.logoUrl} alt={config.global.siteName} width="307" height="195" />
             <button className="icon-button" type="button" aria-label="Close menu" onClick={() => setMenuOpen(false)}>
               <X size={25} />
             </button>
@@ -260,7 +260,7 @@ function Footer() {
       </div>
       <div className="footer-bottom">
         <Link className="brand-mark brand-mark--footer" to="/" aria-label={`${config.global.siteName} home`}>
-          <img src={config.global.logoUrl} alt={config.global.siteName} width="120" height="64" />
+          <img src={config.global.logoUrl} alt={config.global.siteName} width="307" height="195" />
         </Link>
         <p>© {new Date().getFullYear()} {config.global.siteName}.</p>
         <p>{config.global.footerTagline}</p>

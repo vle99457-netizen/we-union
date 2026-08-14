@@ -362,7 +362,7 @@ try {
   assert(await page.$('input[name="right-sleeve-logo"]'), 'Customizer must expose an independent right sleeve logo input.')
   const logoInput = await page.$('input[name="custom-logo"]')
   if (!logoInput) throw new Error('Customizer logo input is missing.')
-  await logoInput.uploadFile(path.join(process.cwd(), 'public', 'images', 'we-wordmark.png'))
+  await logoInput.uploadFile(path.join(process.cwd(), 'public', 'images', 'we-logo.png'))
   await page.waitForFunction(() => (
     document.querySelector('[data-personalization-region="front-logo"] img')?.getAttribute('src')?.startsWith('data:image/png')
   ))
@@ -392,14 +392,14 @@ try {
   ), {}, cityPositionBeforeDrag)
   const leftSleeveLogoInput = await page.$('input[name="left-sleeve-logo"]')
   if (!leftSleeveLogoInput) throw new Error('Left sleeve logo input is missing.')
-  await leftSleeveLogoInput.uploadFile(path.join(process.cwd(), 'public', 'images', 'we-wordmark.png'))
+  await leftSleeveLogoInput.uploadFile(path.join(process.cwd(), 'public', 'images', 'we-logo.png'))
   await page.waitForFunction(() => (
     document.querySelector('[data-studio-view="left"]')?.getAttribute('aria-pressed') === 'true'
       && document.querySelector('[data-personalization-region="left-sleeve-logo"] img')?.getAttribute('src')?.startsWith('data:image/png')
   ))
   const rightSleeveLogoInput = await page.$('input[name="right-sleeve-logo"]')
   if (!rightSleeveLogoInput) throw new Error('Right sleeve logo input is missing.')
-  await rightSleeveLogoInput.uploadFile(path.join(process.cwd(), 'public', 'images', 'we-wordmark.png'))
+  await rightSleeveLogoInput.uploadFile(path.join(process.cwd(), 'public', 'images', 'we-logo.png'))
   await page.waitForFunction(() => (
     document.querySelector('[data-studio-view="right"]')?.getAttribute('aria-pressed') === 'true'
       && document.querySelector('[data-personalization-region="right-sleeve-logo"] img')?.getAttribute('src')?.startsWith('data:image/png')
