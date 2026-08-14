@@ -15,10 +15,23 @@ describe('site configuration', () => {
     })
 
     expect(config.global.siteName).toBe('WE TEST')
+    expect(config.global.logoUrl).toBe('/images/we-logo.svg')
     expect(config.global.navigation).toHaveLength(defaultSiteConfig.global.navigation.length)
     expect(config.home.hero.titleLine1).toBe('New line')
     expect(config.home.hero.titleLine2).toBe(defaultSiteConfig.home.hero.titleLine2)
     expect(config.catalog.products).toHaveLength(defaultSiteConfig.catalog.products.length)
+  })
+
+  it('migrates the legacy wordmark URL to the official PDF logo', () => {
+    const config = normalizeSiteConfig({
+      ...defaultSiteConfig,
+      global: {
+        ...defaultSiteConfig.global,
+        logoUrl: '/images/we-wordmark.png',
+      },
+    })
+
+    expect(config.global.logoUrl).toBe('/images/we-logo.svg')
   })
 
   it('preserves stable catalog records while applying visibility controls', () => {

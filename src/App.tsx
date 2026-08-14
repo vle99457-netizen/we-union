@@ -78,7 +78,7 @@ function MaintenanceScreen() {
   const { config } = useSiteConfig()
   return (
     <main className="maintenance-screen">
-      <img src={config.global.logoUrl} alt={config.global.siteName} width="120" height="64" />
+      <img src={config.global.logoUrl} alt={config.global.siteName} width="307" height="195" />
       <p className="eyebrow">WE / STUDIO</p>
       <h1>{config.system.maintenanceTitle}</h1>
       <p>{config.system.maintenanceMessage}</p>

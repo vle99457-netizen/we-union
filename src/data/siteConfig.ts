@@ -175,7 +175,7 @@ export const defaultSiteConfig: SiteConfig = {
   updatedAt: nowEmpty,
   global: {
     siteName: 'WE',
-    logoUrl: '/images/we-wordmark.png',
+    logoUrl: '/images/we-logo.svg',
     utilityText: 'Sports heritage meets personal identity.',
     utilityLinkLabel: 'All series',
     utilityLinkHref: '/collections',
@@ -384,12 +384,18 @@ export function normalizeSiteConfig(input: unknown): SiteConfig {
   const incomingPolicies = Array.isArray(input.policies) ? input.policies.filter(isRecord) : []
   const policyBySlug = new Map(incomingPolicies.filter((item) => typeof item.slug === 'string').map((item) => [item.slug as string, item]))
 
+  const requestedLogoUrl = typeof global.logoUrl === 'string' ? global.logoUrl.trim() : ''
+  const normalizedLogoUrl = requestedLogoUrl && requestedLogoUrl !== '/images/we-wordmark.png'
+    ? requestedLogoUrl
+    : defaultSiteConfig.global.logoUrl
+
   return {
     version: 1,
     updatedAt: typeof input.updatedAt === 'string' ? input.updatedAt : null,
     global: {
       ...defaultSiteConfig.global,
       ...global,
+      logoUrl: normalizedLogoUrl,
       navigation: Array.isArray(global.navigation) ? global.navigation as SiteConfig['global']['navigation'] : defaultSiteConfig.global.navigation,
     },
     home: normalizedHome,

@@ -364,10 +364,10 @@ summary:focus-visible {
 }
 
 .brand-mark img {
-  width: 72px;
-  height: 38px;
+  width: 68px;
+  height: 43px;
   object-fit: contain;
-  filter: invert(1);
+  filter: brightness(0) invert(1);
 }
 
 .desktop-nav {
@@ -519,8 +519,10 @@ summary:focus-visible {
 }
 
 .mobile-menu__top img {
-  width: 72px;
-  filter: invert(1);
+  width: 68px;
+  height: 43px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .mobile-menu nav a {
@@ -1066,10 +1068,12 @@ summary:focus-visible {
   place-items: center;
   color: #f7f4ed;
   background: #163f71;
-  font-family: var(--display);
-  font-size: clamp(0.8rem, 1.35vw, 1.1rem);
-  line-height: 1;
-  letter-spacing: 0.04em;
+}
+
+.process-card__logo img {
+  width: 72%;
+  height: auto;
+  filter: brightness(0) invert(1);
 }
 
 .process-card__city {
@@ -1350,10 +1354,14 @@ summary:focus-visible {
 }
 
 .process-card__index span {
-  margin-left: 6px;
-  font-size: clamp(0.58rem, 0.8vw, 0.75rem);
-  font-weight: 800;
-  letter-spacing: 0.18em;
+  width: clamp(28px, 3.4vw, 42px);
+  margin: 0 0 8px 6px;
+}
+
+.process-card__index span img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .process-card__index strong {
@@ -1858,8 +1866,8 @@ summary:focus-visible {
 }
 
 .brand-mark--footer img {
-  width: 120px;
-  height: 64px;
+  width: 112px;
+  height: 71px;
 }
 
 .footer-bottom p {
@@ -5087,7 +5095,8 @@ summary:focus-visible {
   }
 
   .site-header .brand-mark img {
-    width: 62px;
+    width: 58px;
+    height: 37px;
   }
 
   .header-search {
@@ -5856,12 +5865,10 @@ summary:focus-visible {
   border-bottom: 1px solid #343532;
 }
 
-.admin-sidebar__brand strong {
-  font-family: var(--display);
-  font-size: 3.5rem;
-  font-weight: 400;
-  line-height: 0.72;
-  letter-spacing: -0.025em;
+.admin-sidebar__brand img {
+  width: 58px;
+  height: auto;
+  filter: brightness(0) invert(1);
 }
 
 .admin-sidebar__brand span {
@@ -6742,9 +6749,13 @@ summary:focus-visible {
 .admin-login__brand {
   justify-self: start;
   margin-bottom: 48px;
-  font-family: var(--display);
-  font-size: 4rem;
-  line-height: 0.72;
+}
+
+.admin-login__brand img {
+  display: block;
+  width: 92px;
+  height: auto;
+  filter: brightness(0) invert(1);
 }
 
 .admin-login__card > svg {
@@ -6863,7 +6874,7 @@ summary:focus-visible {
   width: 100px;
   height: auto;
   margin-bottom: 64px;
-  filter: invert(1);
+  filter: brightness(0) invert(1);
 }
 
 .maintenance-screen .eyebrow {

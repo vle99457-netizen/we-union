@@ -5,6 +5,7 @@ A documentary-luxury sportswear brand website for the US market. The experience 
 ## Experience principles
 
 - WE is the only customer-facing brand name.
+- Every interface brand mark uses the official PDF artwork exported as `/images/we-logo.svg`; the matching transparent PNG is retained for raster upload and compatibility flows.
 - CREATE, HONOR, and BELONG are the three story worlds; CREATE YOURS is the personalization studio.
 - Bebas Neue drives display typography; Helvetica Neue / Neue Haas Grotesk system fallbacks drive interface and body copy.
 - Brand colors are referenced only by their documented names: WE BLACK, WE WHITE, and METAL SILVER. Concrete screen colors are temporary preview tokens, not official brand values.
@@ -51,6 +52,7 @@ npm run check
 npm run test
 npm run audit:source
 npm run smoke:routes
+npm run smoke:logo
 npm run e2e
 npm run build
 npm run preview:verify

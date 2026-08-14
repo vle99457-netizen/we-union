@@ -241,7 +241,9 @@ function LoginScreen({
         <button type="button" className={language === 'en' ? 'is-active' : ''} onClick={() => onLanguageChange('en')}>EN</button>
       </div>
       <form className="admin-login__card" onSubmit={submit}>
-        <Link className="admin-login__brand" to="/" aria-label="WE home">WE</Link>
+        <Link className="admin-login__brand" to="/" aria-label="WE home">
+          <img src="/images/we-logo.svg" alt="WE" width="307" height="195" />
+        </Link>
         <LockKey size={34} weight="light" />
         <p className="eyebrow">WE / ADMIN</p>
         <h1>{label(language, '管理后台', 'Administration')}</h1>
@@ -929,7 +931,10 @@ export function AdminPage() {
   return (
     <div className="admin-app">
       <aside className="admin-sidebar">
-        <Link className="admin-sidebar__brand" to="/" target="_blank" rel="noreferrer"><strong>WE</strong><span>ADMIN</span></Link>
+        <Link className="admin-sidebar__brand" to="/" target="_blank" rel="noreferrer">
+          <img src="/images/we-logo.svg" alt="WE" width="307" height="195" />
+          <span>ADMIN</span>
+        </Link>
         <nav aria-label={label(language, '后台导航', 'Admin navigation')}>
           {sectionIds.map((item) => {
             const Icon = sectionIcons[item]
