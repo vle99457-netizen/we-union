@@ -7,6 +7,8 @@ import {
 } from '../src/data/customizerImages.js'
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024
+const BLOB_LIST_TIMEOUT_MS = 5_000
+const BLOB_UPLOAD_TIMEOUT_MS = 30_000
 const PRODUCT_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const runtimeEnvironment = (
   globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }
@@ -46,12 +48,18 @@ async function isAuthorized(request: Request): Promise<boolean> {
 }
 
 async function getImages(productSlug: string): Promise<CustomizerImagesResponse> {
-  if (!runtimeEnvironment.BLOB_READ_WRITE_TOKEN) {
+  const token = runtimeEnvironment.BLOB_READ_WRITE_TOKEN
+  if (!token) {
     return { productSlug, storageConfigured: false, complete: false, images: {} }
   }
 
   const prefix = `customizer/${productSlug}/`
-  const result = await list({ prefix, limit: 100 })
+  const result = await list({
+    prefix,
+    limit: 100,
+    token,
+    abortSignal: AbortSignal.timeout(BLOB_LIST_TIMEOUT_MS),
+  })
   const images: ManagedCustomizerImages = {}
 
   for (const blob of result.blobs) {
@@ -123,7 +131,9 @@ export default async function handler(request: Request): Promise<Response> {
       access: 'public',
       addRandomSuffix: false,
       allowOverwrite: true,
+      abortSignal: AbortSignal.timeout(BLOB_UPLOAD_TIMEOUT_MS),
       contentType: 'image/webp',
+      token: runtimeEnvironment.BLOB_READ_WRITE_TOKEN,
     })
     return jsonResponse({
       productSlug,
