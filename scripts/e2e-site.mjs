@@ -232,10 +232,50 @@ try {
   await assertNoUnverifiedAmount(page, 'Cart')
 
   await page.goto(`${baseUrl}/custom?style=white-pulse-game-jersey&size=M`, { waitUntil: 'networkidle0' })
+  const personalizationPreview = await page.$eval('.studio-preview__canvas', (canvas) => ({
+    cleanBase: canvas.querySelector('[data-custom-base="true"]')?.getAttribute('src'),
+    legacyOverlayCount: canvas.querySelectorAll('.studio-preview__mark').length,
+    frontNumber: canvas.querySelector('[data-personalization-region="front-number"] .studio-number__ink')?.textContent,
+  }))
+  assert(
+    personalizationPreview.cleanBase === '/images/white-pulse-game-jersey-custom-base.webp',
+    'Customizer must start from the clean product base instead of covering the source number.',
+  )
+  assert(personalizationPreview.legacyOverlayCount === 0, 'Legacy WE / 01 overlay must be removed.')
+  assert(personalizationPreview.frontNumber === '17', 'Detected front number region must inherit the initial number.')
+  await page.evaluate(() => {
+    const button = [...document.querySelectorAll('.studio-nav button')]
+      .find((item) => item.textContent?.includes('PERSONALIZE'))
+    if (!(button instanceof HTMLButtonElement)) throw new Error('PERSONALIZE button is missing.')
+    button.click()
+  })
+  assert(
+    await page.$eval('input[name="custom-logo"]', (input) => input.getAttribute('accept')) === 'image/png,image/jpeg,image/webp',
+    'Customizer must expose a local raster logo replacement input.',
+  )
+  const logoInput = await page.$('input[name="custom-logo"]')
+  if (!logoInput) throw new Error('Customizer logo input is missing.')
+  await logoInput.uploadFile(path.join(process.cwd(), 'public', 'images', 'we-wordmark.png'))
+  await page.waitForFunction(() => (
+    document.querySelector('[data-personalization-region="front-logo"] img')?.getAttribute('src')?.startsWith('data:image/png')
+  ))
+  await page.click('input[name="jersey-number"]')
+  await page.keyboard.down('Control')
+  await page.keyboard.press('KeyA')
+  await page.keyboard.up('Control')
+  await page.keyboard.type('8')
+  await page.waitForFunction(() => (
+    document.querySelector('[data-personalization-region="front-number"] .studio-number__ink')?.textContent === '8'
+  ))
+  await page.click('.view-switcher button:nth-child(2)')
+  await page.waitForFunction(() => (
+    document.querySelector('[data-personalization-region="back-number"] .studio-number__ink')?.textContent === '8'
+      && document.querySelector('[data-personalization-region="back-name"]')?.textContent === 'MORGAN'
+  ))
   const notice = await page.$eval('.create-disclaimer p:last-child', (paragraph) => paragraph.textContent?.trim())
   assert(notice === 'WE UNION CREATE products are built on original garment designs and customer-led personalization. WE UNION does not reproduce or accept official league, team, athlete, or third-party brand names, logos, wordmarks, signatures, or confusingly similar variations. Customer-submitted artwork must be original or properly authorized and is subject to intellectual property review.', 'CREATE notice must be an exact DOM match.')
   assert(errors.length === 0, `Browser errors: ${errors.join('; ')}`)
-  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, exact CREATE notice, and browser health.')
+  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, source-artwork replacement, exact CREATE notice, and browser health.')
 } finally {
   await browser.close()
   await server.close()

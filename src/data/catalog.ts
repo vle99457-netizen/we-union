@@ -37,6 +37,25 @@ export type ProductGalleryItem = {
   height: number
 }
 
+export type PersonalizationRegion = {
+  id: 'front-number' | 'back-number' | 'back-name' | 'front-logo'
+  kind: 'number' | 'name' | 'logo'
+  side: 'front' | 'back'
+  x: number
+  y: number
+  width: number
+  height: number
+  rotate?: number
+}
+
+export type ProductPersonalization = {
+  cleanImage: string
+  sourceInk: string
+  sourceOutline: string
+  detectedSourceElements: readonly string[]
+  regions: readonly PersonalizationRegion[]
+}
+
 export type Product = {
   slug: string
   name: string
@@ -48,6 +67,7 @@ export type Product = {
   gallery?: readonly ProductGalleryItem[]
   badge?: string
   personalizable?: boolean
+  personalization?: ProductPersonalization
   catalogState: 'concept-preview'
   theme: string
   story: string
@@ -197,6 +217,23 @@ export const products: Product[] = [
     ],
     badge: 'Concept preview',
     personalizable: true,
+    personalization: {
+      cleanImage: '/images/white-pulse-game-jersey-custom-base.webp',
+      sourceInk: '#132b4d',
+      sourceOutline: '#aeb8c1',
+      detectedSourceElements: [
+        'Front number',
+        'Back number',
+        'Back name position',
+        'Front logo position',
+      ],
+      regions: [
+        { id: 'front-number', kind: 'number', side: 'front', x: 15.8, y: 36.2, width: 15.2, height: 16.8 },
+        { id: 'back-number', kind: 'number', side: 'back', x: 63.0, y: 33.0, width: 18.4, height: 20.2 },
+        { id: 'back-name', kind: 'name', side: 'back', x: 64.6, y: 29.3, width: 15.2, height: 4.5 },
+        { id: 'front-logo', kind: 'logo', side: 'front', x: 17.4, y: 29.6, width: 6.4, height: 5.5, rotate: -1 },
+      ],
+    },
     catalogState: 'concept-preview',
     theme: 'Feel the motion',
     story: 'A personal rhythm becomes the starting point for an original uniform.',

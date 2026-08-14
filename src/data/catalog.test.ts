@@ -38,6 +38,18 @@ describe('catalog helpers', () => {
     expect(new Set(gallery?.map((item) => item.src)).size).toBe(5)
   })
 
+  it('maps White Pulse source artwork to a clean replacement template', () => {
+    const personalization = getProduct('white-pulse-game-jersey')?.personalization
+    expect(personalization?.cleanImage).toBe('/images/white-pulse-game-jersey-custom-base.webp')
+    expect(personalization?.regions.map((region) => region.id)).toEqual([
+      'front-number',
+      'back-number',
+      'back-name',
+      'front-logo',
+    ])
+    expect(personalization?.regions.every((region) => region.width > 0 && region.height > 0)).toBe(true)
+  })
+
   it('searches products, series, and stories without case sensitivity', () => {
     const results = searchCatalog('IDENTITY')
     expect(results.length).toBeGreaterThanOrEqual(3)
