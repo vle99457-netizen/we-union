@@ -14,6 +14,19 @@ const runtimeEnvironment = (
   globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }
 ).process?.env ?? {}
 
+async function withDeadline<T>(operation: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  const deadline = new Promise<never>((_, reject) => {
+    timeout = setTimeout(() => reject(new Error('The storage request timed out.')), timeoutMs)
+  })
+
+  try {
+    return await Promise.race([operation, deadline])
+  } finally {
+    if (timeout !== undefined) clearTimeout(timeout)
+  }
+}
+
 function jsonResponse(body: unknown, status = 200, headers?: HeadersInit): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -54,6 +67,7 @@ async function getImages(productSlug: string): Promise<CustomizerImagesResponse>
     return {
       productSlug,
       storageConfigured: false,
+      storageAvailable: false,
       adminConfigured,
       complete: false,
       images: {},
@@ -61,12 +75,15 @@ async function getImages(productSlug: string): Promise<CustomizerImagesResponse>
   }
 
   const prefix = `customizer/${productSlug}/`
-  const result = await list({
-    prefix,
-    limit: 100,
-    token,
-    abortSignal: AbortSignal.timeout(BLOB_LIST_TIMEOUT_MS),
-  })
+  const result = await withDeadline(
+    list({
+      prefix,
+      limit: 100,
+      token,
+      abortSignal: AbortSignal.timeout(BLOB_LIST_TIMEOUT_MS),
+    }),
+    BLOB_LIST_TIMEOUT_MS + 500,
+  )
   const images: ManagedCustomizerImages = {}
 
   for (const blob of result.blobs) {
@@ -79,6 +96,7 @@ async function getImages(productSlug: string): Promise<CustomizerImagesResponse>
   return {
     productSlug,
     storageConfigured: true,
+    storageAvailable: true,
     adminConfigured,
     complete: customizerViews.every((view) => Boolean(images[view])),
     images,
@@ -103,7 +121,14 @@ export default async function handler(request: Request): Promise<Response> {
       return jsonResponse(await getImages(productSlug))
     } catch (error) {
       console.error('Unable to list customizer preview images.', error)
-      return jsonResponse({ error: 'Preview images could not be loaded.' }, 500)
+      return jsonResponse({
+        productSlug,
+        storageConfigured: Boolean(runtimeEnvironment.BLOB_READ_WRITE_TOKEN),
+        storageAvailable: false,
+        adminConfigured: Boolean(runtimeEnvironment.CUSTOMIZER_ADMIN_PASSWORD),
+        complete: false,
+        images: {},
+      })
     }
   }
 
@@ -135,14 +160,17 @@ export default async function handler(request: Request): Promise<Response> {
     }
 
     const pathname = `customizer/${productSlug}/${view}.webp`
-    const blob = await put(pathname, body, {
-      access: 'public',
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      abortSignal: AbortSignal.timeout(BLOB_UPLOAD_TIMEOUT_MS),
-      contentType: 'image/webp',
-      token: runtimeEnvironment.BLOB_READ_WRITE_TOKEN,
-    })
+    const blob = await withDeadline(
+      put(pathname, body, {
+        access: 'public',
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        abortSignal: AbortSignal.timeout(BLOB_UPLOAD_TIMEOUT_MS),
+        contentType: 'image/webp',
+        token: runtimeEnvironment.BLOB_READ_WRITE_TOKEN,
+      }),
+      BLOB_UPLOAD_TIMEOUT_MS + 500,
+    )
     return jsonResponse({
       productSlug,
       view,
