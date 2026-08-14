@@ -53,6 +53,13 @@ import {
   type CustomizerView,
   type ManagedCustomizerImages,
 } from './data/customizerImages'
+import {
+  clampArtworkPosition,
+  getArtworkRegionPosition,
+  getArtworkScaleLimits,
+  type ArtworkPosition,
+  type ArtworkPositions,
+} from './customizerArtwork'
 import { useCart, type CartItem } from './store/CartContext'
 
 const promiseItems = [
@@ -864,8 +871,6 @@ const studioViewLabels = customizerViewLabels
 type LogoSlot = 'front' | 'leftSleeve' | 'rightSleeve'
 type LogoAsset = { dataUrl: string; name: string }
 type StudioLogos = Record<LogoSlot, LogoAsset>
-type ArtworkPosition = { x: number; y: number }
-type ArtworkPositions = Partial<Record<PersonalizationRegion['id'], ArtworkPosition>>
 
 function isStudioView(value: string | undefined): value is StudioView {
   return isCustomizerView(value)
@@ -887,23 +892,8 @@ type SavedDesignDraft = {
   view?: StudioView
 }
 
-function getArtworkRegionPosition(region: PersonalizationRegion, view: StudioView): ArtworkPosition {
-  return {
-    x: region.x,
-    y: region.y,
-  }
-}
-
-function clampArtworkPosition(region: PersonalizationRegion, position: ArtworkPosition): ArtworkPosition {
-  return {
-    x: Math.min(100 - region.width, Math.max(0, position.x)),
-    y: Math.min(100 - region.height, Math.max(0, position.y)),
-  }
-}
-
 function MovableArtwork({
   region,
-  view,
   position,
   label,
   className,
@@ -911,7 +901,6 @@ function MovableArtwork({
   children,
 }: {
   region: PersonalizationRegion
-  view: StudioView
   position?: ArtworkPosition
   label: string
   className: string
@@ -919,6 +908,7 @@ function MovableArtwork({
   children: ReactNode
 }) {
   const [dragging, setDragging] = useState(false)
+  const [resizing, setResizing] = useState(false)
   const dragState = useRef<{
     pointerId: number
     startClientX: number
@@ -927,13 +917,27 @@ function MovableArtwork({
     canvasWidth: number
     canvasHeight: number
   } | null>(null)
-  const currentPosition = position ?? getArtworkRegionPosition(region, view)
+  const resizeState = useRef<{
+    pointerId: number
+    startClientX: number
+    startClientY: number
+    startScale: number
+    baseWidth: number
+    baseHeight: number
+  } | null>(null)
+  const currentPosition = clampArtworkPosition(region, position ?? getArtworkRegionPosition(region))
+  const currentScale = currentPosition.scale ?? 1
+  const scaleLimits = getArtworkScaleLimits(region)
 
   const updatePosition = (nextPosition: ArtworkPosition) => {
     onPositionChange(region.id, clampArtworkPosition(region, nextPosition))
   }
 
-  const startDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+  const updateScale = (scale: number) => {
+    updatePosition({ ...currentPosition, scale })
+  }
+
+  const startDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return
     const canvas = event.currentTarget.closest('.studio-preview__canvas')
     if (!canvas) return
@@ -951,17 +955,18 @@ function MovableArtwork({
     event.preventDefault()
   }
 
-  const moveDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+  const moveDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     const activeDrag = dragState.current
     if (!activeDrag || activeDrag.pointerId !== event.pointerId) return
     updatePosition({
+      ...activeDrag.startPosition,
       x: activeDrag.startPosition.x + ((event.clientX - activeDrag.startClientX) / activeDrag.canvasWidth) * 100,
       y: activeDrag.startPosition.y + ((event.clientY - activeDrag.startClientY) / activeDrag.canvasHeight) * 100,
     })
     event.preventDefault()
   }
 
-  const finishDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+  const finishDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (dragState.current?.pointerId !== event.pointerId) return
     dragState.current = null
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
@@ -970,7 +975,50 @@ function MovableArtwork({
     setDragging(false)
   }
 
-  const moveWithKeyboard = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+  const startResize = (event: ReactPointerEvent<HTMLSpanElement>) => {
+    event.stopPropagation()
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    const canvas = event.currentTarget.closest('.studio-preview__canvas')
+    if (!canvas) return
+    const bounds = canvas.getBoundingClientRect()
+    resizeState.current = {
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startScale: currentScale,
+      baseWidth: (bounds.width * region.width) / 100,
+      baseHeight: (bounds.height * region.height) / 100,
+    }
+    event.currentTarget.setPointerCapture(event.pointerId)
+    setResizing(true)
+    event.preventDefault()
+  }
+
+  const moveResize = (event: ReactPointerEvent<HTMLSpanElement>) => {
+    event.stopPropagation()
+    const activeResize = resizeState.current
+    if (!activeResize || activeResize.pointerId !== event.pointerId) return
+    const deltaX = event.clientX - activeResize.startClientX
+    const deltaY = event.clientY - activeResize.startClientY
+    const projectionBase = (activeResize.baseWidth ** 2) + (activeResize.baseHeight ** 2)
+    const scaleDelta = projectionBase
+      ? ((deltaX * activeResize.baseWidth) + (deltaY * activeResize.baseHeight)) / projectionBase
+      : 0
+    updateScale(activeResize.startScale + scaleDelta)
+    event.preventDefault()
+  }
+
+  const finishResize = (event: ReactPointerEvent<HTMLSpanElement>) => {
+    event.stopPropagation()
+    if (resizeState.current?.pointerId !== event.pointerId) return
+    resizeState.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    setResizing(false)
+  }
+
+  const moveWithKeyboard = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     const distance = event.shiftKey ? 2 : 0.5
     const movement: Partial<ArtworkPosition> = {}
     if (event.key === 'ArrowLeft') movement.x = -distance
@@ -979,20 +1027,33 @@ function MovableArtwork({
     if (event.key === 'ArrowDown') movement.y = distance
     if (movement.x === undefined && movement.y === undefined) return
     updatePosition({
+      ...currentPosition,
       x: currentPosition.x + (movement.x ?? 0),
       y: currentPosition.y + (movement.y ?? 0),
     })
     event.preventDefault()
   }
 
+  const resizeWithKeyboard = (event: ReactKeyboardEvent<HTMLSpanElement>) => {
+    const distance = event.shiftKey ? 0.15 : 0.05
+    const grow = event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === '+' || event.key === '='
+    const shrink = event.key === 'ArrowLeft' || event.key === 'ArrowDown' || event.key === '-' || event.key === '_'
+    if (!grow && !shrink) return
+    event.stopPropagation()
+    updateScale(currentScale + (grow ? distance : -distance))
+    event.preventDefault()
+  }
+
   return (
-    <button
-      aria-label={`Move ${label}. Drag it, or use the arrow keys for precise placement.`}
+    <div
+      aria-label={`Move and resize ${label}. Drag the item to move it, then drag its corner handle to resize it.`}
       className={`studio-artwork ${className}`}
       data-dragging={dragging ? 'true' : undefined}
       data-personalization-region={region.id}
       data-position-x={currentPosition.x.toFixed(2)}
       data-position-y={currentPosition.y.toFixed(2)}
+      data-resizing={resizing ? 'true' : undefined}
+      data-scale={currentScale.toFixed(2)}
       onKeyDown={moveWithKeyboard}
       onLostPointerCapture={() => {
         dragState.current = null
@@ -1002,18 +1063,39 @@ function MovableArtwork({
       onPointerDown={startDrag}
       onPointerMove={moveDrag}
       onPointerUp={finishDrag}
+      role="group"
       style={{
         left: `${currentPosition.x}%`,
         top: `${currentPosition.y}%`,
-        width: `${region.width}%`,
-        height: `${region.height}%`,
+        width: `${region.width * currentScale}%`,
+        height: `${region.height * currentScale}%`,
         transform: region.rotate ? `rotate(${region.rotate}deg)` : undefined,
       }}
+      tabIndex={0}
       title={`Drag to move ${label}`}
-      type="button"
     >
       {children}
-    </button>
+      <span
+        aria-label={`Resize ${label}`}
+        aria-valuemax={Math.round(scaleLimits.max * 100)}
+        aria-valuemin={Math.round(scaleLimits.min * 100)}
+        aria-valuenow={Math.round(currentScale * 100)}
+        aria-valuetext={`${Math.round(currentScale * 100)}% size`}
+        className="studio-artwork__resize-handle"
+        onKeyDown={resizeWithKeyboard}
+        onLostPointerCapture={() => {
+          resizeState.current = null
+          setResizing(false)
+        }}
+        onPointerCancel={finishResize}
+        onPointerDown={startResize}
+        onPointerMove={moveResize}
+        onPointerUp={finishResize}
+        role="slider"
+        tabIndex={0}
+        title={`Drag to resize ${label}`}
+      />
+    </div>
   )
 }
 
@@ -1053,7 +1135,6 @@ function PersonalizationArtwork({
             onPositionChange={onPositionChange}
             position={positions[region.id]}
             region={region}
-            view={view}
           >
             <svg aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 100 100">
               <text className="studio-number__outline" fill={ink} stroke={outline} x="50" y="84">{number}</text>
@@ -1075,7 +1156,6 @@ function PersonalizationArtwork({
             onPositionChange={onPositionChange}
             position={positions[region.id]}
             region={region}
-            view={view}
           >
             <svg aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 100 24">
               <text
@@ -1103,7 +1183,6 @@ function PersonalizationArtwork({
           onPositionChange={onPositionChange}
           position={positions[region.id]}
           region={region}
-          view={view}
         >
           <img aria-hidden="true" src={logo.dataUrl} alt="" width="128" height="128" />
         </MovableArtwork>
@@ -1484,8 +1563,8 @@ export function CustomPage() {
           </p>
           {personalization ? (
             <div className="studio-preview__position-help">
-              <p>Drag each city, name, number, or logo to position it. Focus an item and use the arrow keys for precise moves.</p>
-              <button type="button" disabled={!Object.keys(artworkPositions).length} onClick={() => setArtworkPositions({})}>Reset positions</button>
+              <p>Drag each city, name, number, or logo to move it. Use its corner handle to resize it; arrow keys provide precise adjustments.</p>
+              <button type="button" disabled={!Object.keys(artworkPositions).length} onClick={() => setArtworkPositions({})}>Reset layout</button>
             </div>
           ) : null}
           <div
