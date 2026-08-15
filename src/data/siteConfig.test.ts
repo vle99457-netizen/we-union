@@ -23,6 +23,18 @@ describe('site configuration', () => {
     expect(config.home.hero.titleLine1).toBe('New line')
     expect(config.home.hero.titleLine2).toBe(defaultSiteConfig.home.hero.titleLine2)
     expect(config.catalog.products).toHaveLength(defaultSiteConfig.catalog.products.length)
+    expect(config.sectionImages.communityGalleryPrimary).toBe(defaultSiteConfig.sectionImages.communityGalleryPrimary)
+  })
+
+  it('keeps every supporting section image configurable when older stored data is normalized', () => {
+    const config = normalizeSiteConfig({
+      ...defaultSiteConfig,
+      sectionImages: { communityGalleryPrimary: '/images/custom-community.webp' },
+    })
+
+    expect(config.sectionImages.communityGalleryPrimary).toBe('/images/custom-community.webp')
+    expect(config.sectionImages.honorConcept).toBe(defaultSiteConfig.sectionImages.honorConcept)
+    expect(Object.keys(config.sectionImages)).toHaveLength(6)
   })
 
   it('migrates the legacy wordmark URL to the official PDF logo', () => {

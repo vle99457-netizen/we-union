@@ -42,6 +42,7 @@ type AdminSection =
   | 'dashboard'
   | 'global'
   | 'homepage'
+  | 'images'
   | 'catalog'
   | 'content'
   | 'customizer'
@@ -71,6 +72,7 @@ const sectionIds: AdminSection[] = [
   'dashboard',
   'global',
   'homepage',
+  'images',
   'catalog',
   'content',
   'customizer',
@@ -83,6 +85,7 @@ const sectionIcons: Record<AdminSection, typeof SquaresFour> = {
   dashboard: SquaresFour,
   global: Globe,
   homepage: House,
+  images: Images,
   catalog: Stack,
   content: FileText,
   customizer: TShirt,
@@ -95,6 +98,7 @@ const navLabels: Record<AdminSection, [string, string]> = {
   dashboard: ['概览', 'Dashboard'],
   global: ['品牌与导航', 'Brand & navigation'],
   homepage: ['首页内容', 'Homepage'],
+  images: ['栏目图片', 'Section images'],
   catalog: ['目录与商品', 'Catalog'],
   content: ['页面与政策', 'Pages & policies'],
   customizer: ['定制器', 'Customizer'],
@@ -303,7 +307,7 @@ function DashboardSection({ config, language, storageConfigured, onNavigate }: {
       </Panel>
       <Panel title={label(language, '快速管理', 'Quick management')}>
         <div className="admin-quick-grid">
-          {(['homepage', 'catalog', 'content', 'customizer', 'media', 'system'] as AdminSection[]).map((section) => {
+          {(['homepage', 'images', 'catalog', 'content', 'customizer', 'media', 'system'] as AdminSection[]).map((section) => {
             const Icon = sectionIcons[section]
             return <button type="button" key={section} onClick={() => onNavigate(section)}><Icon size={24} /><span>{label(language, ...navLabels[section])}</span><small>→</small></button>
           })}
@@ -958,6 +962,127 @@ function ContentSection({ config, language, mutate }: { config: SiteConfig; lang
   )
 }
 
+type SectionImageEditor = {
+  id: string
+  labelZh: string
+  labelEn: string
+  contextZh: string
+  contextEn: string
+  value: string
+  update: (next: SiteConfig, value: string) => void
+}
+
+const supportingSectionImages: Array<{
+  key: keyof SiteConfig['sectionImages']
+  labelZh: string
+  labelEn: string
+  contextZh: string
+  contextEn: string
+}> = [
+  { key: 'honorConcept', labelZh: 'HONOR 概念栏目', labelEn: 'HONOR concept section', contextZh: '/honor · 概念内容图', contextEn: '/honor · concept feature' },
+  { key: 'belongFeature', labelZh: 'BELONG 介绍栏目', labelEn: 'BELONG feature section', contextZh: '/belong · 介绍内容图', contextEn: '/belong · feature image' },
+  { key: 'productDetail', labelZh: '商品详情辅助图', labelEn: 'Product detail supporting image', contextZh: '/products/:slug · 无图库时显示', contextEn: '/products/:slug · shown without a gallery' },
+  { key: 'craftsmanshipFeature', labelZh: '工艺证明栏目', labelEn: 'Craft proof section', contextZh: '/craftsmanship · 辅助栏目', contextEn: '/craftsmanship · supporting section' },
+  { key: 'communityGalleryPrimary', labelZh: '社区图库一', labelEn: 'Community gallery one', contextZh: '/community · 第一张栏目图', contextEn: '/community · first section image' },
+  { key: 'communityGallerySecondary', labelZh: '社区图库二', labelEn: 'Community gallery two', contextZh: '/community · 第二张栏目图', contextEn: '/community · second section image' },
+]
+
+function SectionImagesSection({ config, language, mutate }: { config: SiteConfig; language: AdminLanguage; mutate: MutateDraft }) {
+  const homepageImages: SectionImageEditor[] = [
+    { id: 'home-hero', labelZh: '首页首屏', labelEn: 'Homepage hero', contextZh: '/ · 首屏背景', contextEn: '/ · hero background', value: config.home.hero.image, update: (next, value) => { next.home.hero.image = value } },
+    { id: 'home-featured', labelZh: '首页精选栏目', labelEn: 'Homepage featured section', contextZh: '/ · New & Featured', contextEn: '/ · New & Featured', value: config.home.featured.image, update: (next, value) => { next.home.featured.image = value } },
+    { id: 'home-custom', labelZh: '首页定制栏目', labelEn: 'Homepage custom section', contextZh: '/ · Create Yours', contextEn: '/ · Create Yours', value: config.home.custom.image, update: (next, value) => { next.home.custom.image = value } },
+    { id: 'home-craftsmanship', labelZh: '首页工艺栏目', labelEn: 'Homepage craftsmanship section', contextZh: '/ · Craftsmanship', contextEn: '/ · Craftsmanship', value: config.home.craftsmanship.image, update: (next, value) => { next.home.craftsmanship.image = value } },
+    { id: 'home-community', labelZh: '首页社区栏目', labelEn: 'Homepage community section', contextZh: '/ · Community', contextEn: '/ · Community', value: config.home.community.image, update: (next, value) => { next.home.community.image = value } },
+  ]
+  const catalogImages: SectionImageEditor[] = [
+    ...config.catalog.worlds.map((item, index) => ({
+      id: `world-${item.slug}`,
+      labelZh: `${item.title} 世界卡片`,
+      labelEn: `${item.title} world card`,
+      contextZh: `/ · 首页世界栏目 / ${item.slug}`,
+      contextEn: `/ · homepage worlds / ${item.slug}`,
+      value: item.image,
+      update: (next: SiteConfig, value: string) => { next.catalog.worlds[index]!.image = value },
+    })),
+    ...config.catalog.series.map((item, index) => ({
+      id: `series-${item.slug}`,
+      labelZh: `${item.name} 系列栏目`,
+      labelEn: `${item.name} series section`,
+      contextZh: `/collections · ${item.slug}`,
+      contextEn: `/collections · ${item.slug}`,
+      value: item.image,
+      update: (next: SiteConfig, value: string) => { next.catalog.series[index]!.image = value },
+    })),
+    ...config.catalog.stories.map((item, index) => ({
+      id: `story-${item.slug}`,
+      labelZh: `${item.title} 故事卡片`,
+      labelEn: `${item.title} story card`,
+      contextZh: `/stories · ${item.slug}`,
+      contextEn: `/stories · ${item.slug}`,
+      value: item.image,
+      update: (next: SiteConfig, value: string) => { next.catalog.stories[index]!.image = value },
+    })),
+  ]
+  const pageImages: SectionImageEditor[] = config.pages.map((item, index) => ({
+    id: `page-${item.id}`,
+    labelZh: `${item.label} 顶部栏目`,
+    labelEn: `${item.label} page hero`,
+    contextZh: `${item.route} · 页面顶部背景`,
+    contextEn: `${item.route} · page hero background`,
+    value: item.image,
+    update: (next, value) => { next.pages[index]!.image = value },
+  }))
+  const supportingImages: SectionImageEditor[] = supportingSectionImages.map((item) => ({
+    id: `supporting-${item.key}`,
+    labelZh: item.labelZh,
+    labelEn: item.labelEn,
+    contextZh: item.contextZh,
+    contextEn: item.contextEn,
+    value: config.sectionImages[item.key],
+    update: (next, value) => { next.sectionImages[item.key] = value },
+  }))
+  const groups = [
+    { id: 'homepage', titleZh: '首页主栏目', titleEn: 'Homepage sections', descriptionZh: '首页首屏以及主要内容栏目的背景图片。', descriptionEn: 'Hero and major section backgrounds on the homepage.', items: homepageImages },
+    { id: 'cards', titleZh: '世界、系列与故事卡片', titleEn: 'World, series & story cards', descriptionZh: '首页和目录中重复使用的卡片背景；在这里更换后所有对应位置同步更新。', descriptionEn: 'Shared card backgrounds used across the homepage and catalog.', items: catalogImages },
+    { id: 'pages', titleZh: '全部内页顶部栏目', titleEn: 'All page heroes', descriptionZh: '每个内页的顶部背景，包括当前尚未设置图片的页面。', descriptionEn: 'Hero backgrounds for every internal page, including currently empty slots.', items: pageImages },
+    { id: 'supporting', titleZh: '页面内辅助栏目', titleEn: 'Supporting page sections', descriptionZh: 'HONOR、BELONG、商品详情、工艺与社区页面中的辅助图片。', descriptionEn: 'Supporting imagery used by HONOR, BELONG, product detail, craftsmanship, and community pages.', items: supportingImages },
+  ]
+
+  return (
+    <div className="admin-section-stack">
+      <Panel
+        title={label(language, '全站栏目图片', 'Site-wide section images')}
+        description={label(language, '每个图片位都显示当前预览。可直接从本地电脑选择 JPG、PNG 或 WEBP（最大 10 MB），上传后点击“发布更改”。', 'Every image slot includes its current preview. Choose a JPG, PNG, or WEBP from your computer (up to 10 MB), then publish changes.')}
+      >
+        <div className="admin-section-image-summary">
+          <strong>{groups.reduce((total, group) => total + group.items.length, 0)}</strong>
+          <span>{label(language, '个可管理的栏目图片位', 'managed section image slots')}</span>
+        </div>
+      </Panel>
+      {groups.map((group) => (
+        <Panel key={group.id} title={label(language, group.titleZh, group.titleEn)} description={label(language, group.descriptionZh, group.descriptionEn)}>
+          <div className="admin-section-image-grid" data-admin-image-group={group.id}>
+            {group.items.map((item, index) => (
+              <article className="admin-section-image-card" key={item.id} data-admin-section-image={item.id}>
+                <header><span>{String(index + 1).padStart(2, '0')}</span><div><strong>{label(language, item.labelZh, item.labelEn)}</strong><small>{label(language, item.contextZh, item.contextEn)}</small></div></header>
+                <AdminImageField
+                  language={language}
+                  label={label(language, '栏目背景图片', 'Section background image')}
+                  value={item.value}
+                  previewAlt=""
+                  showUrlField={false}
+                  onChange={(value) => mutate((next) => item.update(next, value))}
+                />
+              </article>
+            ))}
+          </div>
+        </Panel>
+      ))}
+    </div>
+  )
+}
+
 function CustomizerSection({ config, language, mutate }: { config: SiteConfig; language: AdminLanguage; mutate: MutateDraft }) {
   return (
     <div className="admin-section-stack">
@@ -1262,6 +1387,7 @@ export function AdminPage() {
     dashboard: <DashboardSection config={draft} language={language} storageConfigured={storageConfigured} onNavigate={navigate} />,
     global: <GlobalSection config={draft} language={language} mutate={mutate} />,
     homepage: <HomepageSection config={draft} language={language} mutate={mutate} />,
+    images: <SectionImagesSection config={draft} language={language} mutate={mutate} />,
     catalog: <CatalogSection config={draft} language={language} mutate={mutate} />,
     content: <ContentSection config={draft} language={language} mutate={mutate} />,
     customizer: <CustomizerSection config={draft} language={language} mutate={mutate} />,

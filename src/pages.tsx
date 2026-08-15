@@ -404,6 +404,7 @@ export function CollectionsPage() {
         index={page.eyebrow}
         title={page.title}
         copy={page.description}
+        image={page.image}
       />
       <div className="collection-gateway">
         {series.map((item, index) => (
@@ -574,7 +575,7 @@ export function WorldPage({ world }: { world: WorldSlug }) {
           </div>
         )) : world === 'honor' ? honorConcepts.map((concept) => (
           <article className="shell split-feature world-gate" key={concept.slug}>
-            <img src={concept.image} alt="" loading="lazy" width="1672" height="941" />
+            <img src={config.sectionImages.honorConcept || concept.image} alt="" loading="lazy" width="1672" height="941" />
             <div>
               <p className="eyebrow">Original concept / Rights review</p>
               <h2>{concept.name}</h2>
@@ -584,7 +585,7 @@ export function WorldPage({ world }: { world: WorldSlug }) {
           </article>
         )) : (
           <div className="shell split-feature world-gate">
-            <img src="/images/world-belong.webp" alt="A future community identity direction" loading="lazy" width="1672" height="941" />
+            <img src={config.sectionImages.belongFeature} alt="A future community identity direction" loading="lazy" width="1672" height="941" />
             <div>
               <p className="eyebrow">Future direction / Coming soon</p>
               <h2>Wear where you belong.</h2>
@@ -786,7 +787,7 @@ export function ProductPage() {
       ) : (
         <div className="product-gallery">
           <div className="product-gallery__main"><img src={product.image} alt={product.name} fetchPriority="high" width="941" height="941" /></div>
-          <div className="product-gallery__detail"><img src="/images/craft-embroidery.webp" alt="Embroidery construction concept detail" loading="lazy" width="1672" height="941" /></div>
+          <div className="product-gallery__detail"><img src={config.sectionImages.productDetail} alt="Embroidery construction concept detail" loading="lazy" width="1672" height="941" /></div>
         </div>
       )}
       <div className="product-info">
@@ -1904,7 +1905,7 @@ export function StoriesPage() {
   if (!page.enabled) return <NotFoundPage />
   return (
     <>
-      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} />
+      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} image={page.image} />
       <section className="journal-grid section-pad shell">
         {stories.map((story, index) => (
           <article className={index === 0 ? 'journal-card journal-card--feature' : 'journal-card'} key={story.slug}>
@@ -1973,7 +1974,7 @@ export function CraftsmanshipPage() {
       </section>
       <section className="material-proof section-pad">
         <div className="shell split-feature split-feature--reverse">
-          <img src="/images/water-ripple.webp" alt="White Pulse garment concept above a flowing surface" loading="lazy" width="1672" height="941" />
+          <img src={config.sectionImages.craftsmanshipFeature} alt="White Pulse garment concept above a flowing surface" loading="lazy" width="1672" height="941" />
           <div><p className="eyebrow">Evidence before claims</p><h2>Meaning first. Specifications verified.</h2><p>Final material, care, construction, and test information will appear only when a traceable product record is approved. No unsupported performance claim is presented here.</p></div>
         </div>
       </section>
@@ -1993,8 +1994,8 @@ export function CommunityPage() {
       </section>
       <section className="community-grid section-pad shell">
         <article className="community-grid__quote"><p>Verified wearer stories will live here.</p><span>Consent, moderation, attribution, and withdrawal controls required before publication</span></article>
-        <img src="/images/water-ripple.webp" alt="White Pulse creative concept study" loading="lazy" width="1672" height="941" />
-        <img src="/images/craft-embroidery.webp" alt="Embroidery detail study" loading="lazy" width="1672" height="941" />
+        <img src={config.sectionImages.communityGalleryPrimary} alt="White Pulse creative concept study" loading="lazy" width="1672" height="941" />
+        <img src={config.sectionImages.communityGallerySecondary} alt="Embroidery detail study" loading="lazy" width="1672" height="941" />
         <article className="community-grid__cta"><HandHeart size={32} /><h2>Share the meaning.</h2><p>Community submission workflows can connect here once moderation and consent systems are approved.</p><Link className="text-link" to="/support">Learn about submissions <ArrowRight size={17} /></Link></article>
       </section>
     </>
@@ -2007,7 +2008,7 @@ export function AboutPage() {
   if (!page.enabled) return <NotFoundPage />
   return (
     <>
-      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} />
+      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} image={page.image} />
       <section className="about-statement section-pad shell"><p>WE exists between two ideas that are usually separated:</p><h2>I am part of this.<br /><span>And this is still mine.</span></h2></section>
       <section className="about-pillars section-pad shell">
         <article><Cube size={30} /><p className="eyebrow">Original</p><h3>Begin with a point of view.</h3><p>Every WE series is designed as a complete visual world before personalization begins.</p></article>
@@ -2025,7 +2026,7 @@ export function TeamPage() {
   if (!page.enabled || !config.commerce.teamBriefEnabled) return <NotFoundPage />
   return (
     <>
-      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} />
+      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} image={page.image} />
       <section className="team-page section-pad shell">
         <div className="team-process">
           {['Share the brief', 'Build the visual system', 'Approve player details', 'Produce and track'].map((item, index) => <div key={item}><span>0{index + 1}</span><h2>{item}</h2></div>)}
@@ -2141,7 +2142,8 @@ export function TrackPage() {
   const [submitted, setSubmitted] = useState(false)
   if (!page.enabled || !config.commerce.orderTrackingEnabled) return <NotFoundPage />
   return (
-    <section className="track-page shell">
+    <section className={`track-page shell${page.image ? ' track-page--image' : ''}`}>
+      {page.image ? <><img className="track-page__background" src={page.image} alt="" fetchPriority="high" width="1672" height="941" /><span className="track-page__shade" /></> : null}
       <div><p className="eyebrow">{page.eyebrow}</p><h1>{page.title}</h1><p>{page.description}</p></div>
       <form onSubmit={(event) => { event.preventDefault(); setSubmitted(true) }}><label>Order number <input name="order-number" autoComplete="off" spellCheck={false} placeholder="e.g., WE-000000…" pattern="WE-[0-9]{6}" maxLength={9} title="Use the format WE-000000" required /></label><label>Email address <input name="email" type="email" maxLength={120} autoComplete="email" spellCheck={false} required /></label><button className="button button--light" type="submit">Find prototype order <ArrowRight size={18} /></button>{submitted ? <p className="form-success" role="status">Tracking is not connected in this prototype. Add the fulfillment API here before launch.</p> : null}</form>
     </section>
@@ -2206,7 +2208,7 @@ export function SupportPage() {
   if (!page.enabled) return <NotFoundPage />
   return (
     <>
-      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} />
+      <PageIntro index={page.eyebrow} title={page.title} copy={page.description} image={page.image} />
       <section className="support-grid section-pad shell">{supportTopics.map(([title, copy, href], index) => <Link to={href} key={title}><span>0{index + 1}</span><div><h2>{title}</h2><p>{copy}</p></div><ArrowUpRight size={23} /></Link>)}</section>
       <section className="faq-section section-pad shell"><SectionHeading eyebrow="FAQ" title="A few useful answers." /><div>{[
         ['Can I personalize every WE piece?', 'Personalization availability is defined per product. Eligible sample items are clearly labeled in the prototype.'],
@@ -2229,6 +2231,12 @@ export function NotFoundPage() {
   return <section className="not-found shell"><p className="eyebrow">404 / Outside the lines</p><h1>This route isn’t part of the current field.</h1><p>Return to the WE originals and choose a new path.</p><div className="button-row"><Link className="button button--dark" to="/">Go home <ArrowRight size={18} /></Link><Link className="button button--outline" to="/collections">All series</Link><Link className="button button--outline" to="/custom">Create yours</Link><Link className="button button--outline" to="/support">Support</Link></div></section>
 }
 
-function PageIntro({ index, title, copy }: { index: string; title: string; copy: string }) {
-  return <header className="page-intro shell"><p className="eyebrow">{index}</p><div><h1>{title}</h1><p>{copy}</p></div></header>
+function PageIntro({ index, title, copy, image = '' }: { index: string; title: string; copy: string; image?: string }) {
+  return (
+    <header className={`page-intro shell${image ? ' page-intro--image' : ''}`}>
+      {image ? <><img src={image} alt="" fetchPriority="high" width="1672" height="941" /><span className="page-intro__shade" /></> : null}
+      <p className="eyebrow">{index}</p>
+      <div><h1>{title}</h1><p>{copy}</p></div>
+    </header>
+  )
 }

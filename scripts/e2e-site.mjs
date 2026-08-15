@@ -454,8 +454,36 @@ try {
   ))
   const notice = await page.$eval('.create-disclaimer p:last-child', (paragraph) => paragraph.textContent?.trim())
   assert(notice === defaultSiteConfig.customizer.disclaimer, 'CREATE notice must match the published site configuration.')
+
+  const sectionImageConfig = structuredClone(defaultSiteConfig)
+  sectionImageConfig.pages.find((item) => item.id === 'about').image = '/images/water-ripple.webp'
+  sectionImageConfig.pages.find((item) => item.id === 'track').image = '/images/crack-series.webp'
+  sectionImageConfig.sectionImages = {
+    honorConcept: '/images/water-ripple.webp',
+    belongFeature: '/images/craft-embroidery.webp',
+    productDetail: '/images/world-honor.webp',
+    craftsmanshipFeature: '/images/world-belong.webp',
+    communityGalleryPrimary: '/images/world-honor.webp',
+    communityGallerySecondary: '/images/world-belong.webp',
+  }
+  servedSiteConfig = sectionImageConfig
+
+  await page.goto(`${baseUrl}/about`, { waitUntil: 'networkidle0' })
+  assert(await page.$eval('.page-intro--image > img', (image) => new URL(image.src).pathname === '/images/water-ripple.webp'), 'Page hero image settings must render on PageIntro pages.')
+  await page.goto(`${baseUrl}/honor`, { waitUntil: 'networkidle0' })
+  assert(await page.$eval('.world-series img', (image) => new URL(image.src).pathname === '/images/water-ripple.webp'), 'The HONOR supporting image must use the managed section setting.')
+  await page.goto(`${baseUrl}/belong`, { waitUntil: 'networkidle0' })
+  assert(await page.$eval('.world-series img', (image) => new URL(image.src).pathname === '/images/craft-embroidery.webp'), 'The BELONG supporting image must use the managed section setting.')
+  await page.goto(`${baseUrl}/products/white-pulse-motion-top`, { waitUntil: 'networkidle0' })
+  assert(await page.$eval('.product-gallery__detail img', (image) => new URL(image.src).pathname === '/images/world-honor.webp'), 'The fallback product detail image must use the managed section setting.')
+  await page.goto(`${baseUrl}/craftsmanship`, { waitUntil: 'networkidle0' })
+  assert(await page.$eval('.material-proof img', (image) => new URL(image.src).pathname === '/images/world-belong.webp'), 'The craftsmanship supporting image must use the managed section setting.')
+  await page.goto(`${baseUrl}/community`, { waitUntil: 'networkidle0' })
+  assert(await page.$$eval('.community-grid > img', (images) => images.map((image) => new URL(image.src).pathname).join(',') === '/images/world-honor.webp,/images/world-belong.webp'), 'Both community gallery images must use managed section settings.')
+  await page.goto(`${baseUrl}/track`, { waitUntil: 'networkidle0' })
+  assert(await page.$eval('.track-page__background', (image) => new URL(image.src).pathname === '/images/crack-series.webp'), 'Order tracking must render its managed page background when one is selected.')
   assert(errors.length === 0, `Browser errors: ${errors.join('; ')}`)
-  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, four-slot preview admin, backend-managed untransformed view images, movable city/name/number/logo artwork, independent sleeve uploads, source-artwork replacement, exact CREATE notice, and browser health.')
+  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, four-slot preview admin, backend-managed untransformed view images, movable city/name/number/logo artwork, independent sleeve uploads, source-artwork replacement, exact CREATE notice, managed section-image rendering across all page patterns, and browser health.')
   console.log('/tmp/we-managed-series-storefront.png')
 } finally {
   await browser.close()

@@ -1888,6 +1888,42 @@ summary:focus-visible {
   border-bottom: 1px solid var(--obsidian);
 }
 
+.page-intro--image {
+  position: relative;
+  min-height: clamp(560px, 66vw, 760px);
+  padding-inline: clamp(24px, 6vw, 80px);
+  overflow: hidden;
+  color: var(--white);
+  border-bottom: 0;
+  background: var(--obsidian);
+}
+
+.page-intro--image > img,
+.page-intro__shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.page-intro--image > img {
+  object-fit: cover;
+}
+
+.page-intro__shade {
+  background: linear-gradient(90deg, rgba(5, 7, 9, 0.86), rgba(5, 7, 9, 0.18) 70%), linear-gradient(0deg, rgba(5, 7, 9, 0.7), transparent 55%);
+}
+
+.page-intro--image > .eyebrow,
+.page-intro--image > div {
+  position: relative;
+  z-index: 1;
+}
+
+.page-intro--image > div > p {
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .page-intro > .eyebrow {
   margin-bottom: 16px;
 }
@@ -4489,6 +4525,28 @@ summary:focus-visible {
   content: '';
 }
 
+.track-page__background,
+.track-page__shade {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.track-page__background {
+  z-index: -2;
+  object-fit: cover;
+}
+
+.track-page__shade {
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(5, 7, 9, 0.91), rgba(5, 7, 9, 0.68));
+}
+
+.track-page--image::before {
+  display: none;
+}
+
 .track-page h1 {
   margin-bottom: 24px;
   font-family: var(--display);
@@ -6586,6 +6644,120 @@ summary:focus-visible {
   gap: 14px;
 }
 
+.admin-section-image-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid #d8d8d2;
+  background: #fbfbf9;
+}
+
+.admin-section-image-summary strong {
+  color: var(--admin-accent);
+  font-family: var(--display);
+  font-size: 2.8rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.admin-section-image-summary span {
+  color: var(--admin-muted);
+  font-size: 0.74rem;
+}
+
+.admin-section-image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-section-image-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #d8d8d2;
+  background: #fbfbf9;
+}
+
+.admin-section-image-card > header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 70px;
+  padding: 12px 14px;
+}
+
+.admin-section-image-card > header > span {
+  flex: 0 0 auto;
+  color: var(--admin-accent);
+  font-family: var(--display);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.admin-section-image-card > header > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.admin-section-image-card > header strong,
+.admin-section-image-card > header small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-section-image-card > header strong {
+  font-size: 0.75rem;
+  letter-spacing: 0.025em;
+}
+
+.admin-section-image-card > header small {
+  color: var(--admin-muted);
+  font-size: 0.59rem;
+}
+
+.admin-section-image-card .admin-image-field {
+  grid-template-columns: 1fr;
+  border: 0;
+  border-top: 1px solid #d8d8d2;
+}
+
+.admin-section-image-card .admin-image-field__preview,
+.admin-section-image-card .admin-image-field__preview img {
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+}
+
+.admin-section-image-card .admin-image-field__preview {
+  border-right: 0;
+  border-bottom: 1px solid #d8d8d2;
+}
+
+.admin-section-image-card .admin-image-field__preview img {
+  object-fit: cover;
+}
+
+.admin-section-image-card .admin-image-field__body {
+  gap: 12px;
+  padding: 14px;
+}
+
+.admin-section-image-card .admin-image-field__heading {
+  align-items: stretch;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-section-image-card .admin-image-field__actions {
+  width: 100%;
+}
+
+.admin-section-image-card .admin-image-field__choose {
+  flex: 1;
+}
+
 .admin-world-background-card {
   min-width: 0;
   overflow: hidden;
@@ -7404,7 +7576,8 @@ summary:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .admin-world-background-grid {
+  .admin-world-background-grid,
+  .admin-section-image-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -7544,7 +7717,8 @@ summary:focus-visible {
     align-self: flex-start;
   }
 
-  .admin-world-background-grid {
+  .admin-world-background-grid,
+  .admin-section-image-grid {
     grid-template-columns: 1fr;
   }
 

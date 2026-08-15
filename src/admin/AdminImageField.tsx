@@ -83,7 +83,7 @@ export function AdminImageField({
     <section className={`admin-image-field${compact ? ' admin-image-field--compact' : ''}`}>
       <div className="admin-image-field__preview" data-empty={!previewSource}>
         {previewSource ? (
-          <img src={previewSource} alt={previewAlt} width="960" height="640" />
+          <img src={previewSource} alt={previewAlt} loading="lazy" decoding="async" width="960" height="640" />
         ) : (
           <span><Images size={28} />{text(language, '选择图片后在这里预览', 'Your image preview appears here')}</span>
         )}
