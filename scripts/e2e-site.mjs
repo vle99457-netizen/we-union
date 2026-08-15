@@ -43,6 +43,25 @@ const address = server.httpServer?.address()
 if (!address || typeof address === 'string') throw new Error('E2E server did not expose a port.')
 const baseUrl = `http://127.0.0.1:${address.port}`
 const { defaultSiteConfig } = await server.ssrLoadModule('/src/data/siteConfig.ts')
+const managedCatalogConfig = structuredClone(defaultSiteConfig)
+managedCatalogConfig.catalog.series.push({
+  ...managedCatalogConfig.catalog.series[0],
+  slug: 'summer-motion',
+  name: 'Summer Motion',
+  eyebrow: 'Series 04 / Create',
+  statement: 'Move into summer.',
+  description: 'A dynamically managed series used to verify the collection storefront.',
+})
+managedCatalogConfig.catalog.products.push({
+  ...managedCatalogConfig.catalog.products[0],
+  slug: 'summer-motion-game-jersey',
+  name: 'Summer Motion Game Jersey',
+  series: 'summer-motion',
+  image: '/images/water-ripple.webp',
+  gallery: [],
+  featured: true,
+})
+let servedSiteConfig = defaultSiteConfig
 const browser = await puppeteer.launch({
   executablePath: await browserExecutable(),
   headless: 'shell',
@@ -76,7 +95,7 @@ try {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
-          config: defaultSiteConfig,
+          config: servedSiteConfig,
           authenticated: url.searchParams.get('admin') === '1' ? true : undefined,
           adminConfigured: true,
           storageConfigured: true,
@@ -134,6 +153,21 @@ try {
     ]),
     'Collection Gateway must expose exactly White Pulse, Black Rift, and Identity Fusion in that order.',
   )
+
+  servedSiteConfig = managedCatalogConfig
+  await page.goto(`${baseUrl}/collections`, { waitUntil: 'networkidle0' })
+  assert(await page.$$eval('a.collection-row', (rows) => rows.length === 4), 'A series added in the admin data must appear on the Collection Gateway.')
+  assert(await page.$('a.collection-row[href="/collections/summer-motion"]'), 'A managed series must link to its dynamic storefront route.')
+
+  await page.goto(`${baseUrl}/collections/summer-motion?filter=personalizable`, { waitUntil: 'networkidle0' })
+  assert(await page.$eval('h1', (heading) => heading.textContent === 'Summer Motion'), 'A managed series route must render its catalog content.')
+  assert(await page.$$eval('.product-grid .product-card', (cards) => cards.length === 1), 'The managed series storefront must render its assigned products.')
+  assert(await page.$('a[href="/products/summer-motion-game-jersey"]'), 'Managed product cards must link to dynamic product pages.')
+  await page.screenshot({ path: '/tmp/we-managed-series-storefront.png', type: 'png', fullPage: true })
+
+  await page.goto(`${baseUrl}/products/summer-motion-game-jersey`, { waitUntil: 'networkidle0' })
+  assert(await page.$eval('.product-info h1', (heading) => heading.textContent === 'Summer Motion Game Jersey'), 'A product added in the admin data must have a working product-detail route.')
+  servedSiteConfig = defaultSiteConfig
 
   await expectClientRedirect(page, baseUrl, '/shop', '/collections')
   await expectClientRedirect(page, baseUrl, '/collections/water-ripple', '/collections/white-pulse')
@@ -422,6 +456,7 @@ try {
   assert(notice === defaultSiteConfig.customizer.disclaimer, 'CREATE notice must match the published site configuration.')
   assert(errors.length === 0, `Browser errors: ${errors.join('; ')}`)
   console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, four-slot preview admin, backend-managed untransformed view images, movable city/name/number/logo artwork, independent sleeve uploads, source-artwork replacement, exact CREATE notice, and browser health.')
+  console.log('/tmp/we-managed-series-storefront.png')
 } finally {
   await browser.close()
   await server.close()

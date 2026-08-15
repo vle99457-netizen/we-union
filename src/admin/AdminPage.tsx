@@ -28,7 +28,12 @@ import {
 import { Link, useSearchParams } from 'react-router-dom'
 import { AdminImageField } from './AdminImageField'
 import { CustomizerAdminPage } from './CustomizerAdminPage'
-import { normalizeSiteConfig, type SiteConfig } from '../data/siteConfig'
+import {
+  catalogSlugFromName,
+  catalogValidationIssues,
+  normalizeSiteConfig,
+  type SiteConfig,
+} from '../data/siteConfig'
 
 export type AdminLanguage = 'zh' | 'en'
 
@@ -509,12 +514,136 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
 }
 
 type CatalogKind = keyof SiteConfig['catalog']
+type CreatableCatalogKind = 'products' | 'series'
+
+type NewCatalogItem = {
+  kind: CreatableCatalogKind
+  name: string
+  slug: string
+  series?: string
+}
 
 function patchCatalogItem(mutate: MutateDraft, kind: CatalogKind, index: number, patch: Record<string, unknown>) {
   mutate((next) => {
     const collection = next.catalog[kind] as unknown as Array<Record<string, unknown>>
     Object.assign(collection[index]!, patch)
   })
+}
+
+function CatalogCreateForm({ kind, config, language, onCancel, onCreate }: {
+  kind: CreatableCatalogKind
+  config: SiteConfig
+  language: AdminLanguage
+  onCancel: () => void
+  onCreate: (item: NewCatalogItem) => void
+}) {
+  const [name, setName] = useState('')
+  const [slug, setSlug] = useState('')
+  const [slugEdited, setSlugEdited] = useState(false)
+  const [series, setSeries] = useState(config.catalog.series[0]?.slug ?? '')
+  const [attempted, setAttempted] = useState(false)
+  const existingSlugs = config.catalog[kind].map((item) => item.slug)
+  const duplicate = existingSlugs.includes(slug)
+  const missingSeries = kind === 'products' && !config.catalog.series.some((item) => item.slug === series)
+  const validationMessage = !name.trim()
+    ? label(language, '请输入名称。', 'Enter a name.')
+    : !slug
+      ? label(language, '请输入有效的网址别名。', 'Enter a valid URL slug.')
+      : duplicate
+        ? label(language, '此网址别名已被使用。', 'This URL slug is already in use.')
+        : missingSeries
+          ? label(language, '请先选择商品所属系列。', 'Choose a series for this product.')
+          : ''
+
+  const updateName = (value: string) => {
+    setName(value)
+    if (!slugEdited) setSlug(catalogSlugFromName(value))
+  }
+
+  const updateSlug = (value: string) => {
+    setSlugEdited(true)
+    setSlug(catalogSlugFromName(value))
+  }
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setAttempted(true)
+    if (validationMessage) return
+    onCreate({ kind, name: name.trim(), slug, ...(kind === 'products' ? { series } : {}) })
+  }
+
+  return (
+    <form className="admin-catalog-create" data-catalog-create-form={kind} onSubmit={submit}>
+      <header>
+        <div>
+          <span>{label(language, '新增', 'Create')}</span>
+          <h3>{kind === 'products' ? label(language, '添加商品', 'Add product') : label(language, '添加系列', 'Add series')}</h3>
+          <p>{label(language, '先建立项目，再使用下方完整编辑器补充图片、价格与内容。', 'Create the item first, then use the full editor below for images, pricing, and content.')}</p>
+        </div>
+        <button className="admin-text-button" type="button" onClick={onCancel}>{label(language, '取消', 'Cancel')}</button>
+      </header>
+      <div className="admin-catalog-create__fields">
+        <Field label={kind === 'products' ? label(language, '商品名称', 'Product name') : label(language, '系列名称', 'Series name')} value={name} onChange={updateName} />
+        <Field
+          label={label(language, '网址别名', 'URL slug')}
+          value={slug}
+          help={`${kind === 'products' ? '/products/' : '/collections/'}${slug || '...'}`}
+          onChange={updateSlug}
+        />
+        {kind === 'products' ? (
+          <SelectField
+            label={label(language, '所属系列', 'Series')}
+            value={series}
+            options={config.catalog.series.map((item) => ({ value: item.slug, label: item.name }))}
+            onChange={setSeries}
+          />
+        ) : null}
+      </div>
+      {attempted && validationMessage ? <p className="admin-catalog-create__error" role="alert"><WarningCircle size={17} />{validationMessage}</p> : null}
+      <button className="button button--dark" data-catalog-create-submit type="submit">
+        + {kind === 'products' ? label(language, '创建商品', 'Create product') : label(language, '创建系列', 'Create series')}
+      </button>
+    </form>
+  )
+}
+
+function createSeriesItem(name: string, slug: string, position: number): SiteConfig['catalog']['series'][number] {
+  return {
+    slug,
+    name,
+    eyebrow: `Series ${String(position).padStart(2, '0')} / Create`,
+    statement: name,
+    description: '',
+    world: 'create',
+    image: '/images/water-ripple.webp',
+    tone: 'light',
+    designLanguage: '',
+    craftDirection: '',
+    visible: true,
+  }
+}
+
+function createProductItem(name: string, slug: string, series: SiteConfig['catalog']['series'][number]): SiteConfig['catalog']['products'][number] {
+  return {
+    slug,
+    name,
+    series: series.slug,
+    world: 'create',
+    price: { status: 'tbd' },
+    color: '',
+    image: series.image || '/images/water-ripple.webp',
+    gallery: [],
+    badge: '',
+    personalizable: false,
+    catalogState: 'concept-preview',
+    theme: series.statement || name,
+    story: '',
+    design: '',
+    craft: '',
+    connection: '',
+    visible: true,
+    featured: false,
+  }
 }
 
 type ProductGalleryEntry = NonNullable<SiteConfig['catalog']['products'][number]['gallery']>[number]
@@ -608,6 +737,7 @@ function ProductGalleryEditor({ product, productIndex, language, mutate }: {
 function CatalogSection({ config, language, mutate }: { config: SiteConfig; language: AdminLanguage; mutate: MutateDraft }) {
   const [kind, setKind] = useState<CatalogKind>('products')
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [createKind, setCreateKind] = useState<CreatableCatalogKind | null>(null)
   const collection = config.catalog[kind]
   const index = Math.min(selectedIndex, Math.max(collection.length - 1, 0))
   const item = collection[index]
@@ -616,6 +746,34 @@ function CatalogSection({ config, language, mutate }: { config: SiteConfig; lang
     label: 'name' in entry ? entry.name : entry.title,
   }))
   const product = kind === 'products' ? config.catalog.products[index] : null
+  const previewHref = item
+    ? kind === 'products'
+      ? `/products/${item.slug}`
+      : kind === 'series'
+        ? `/collections/${item.slug}`
+        : null
+    : null
+
+  const changeKind = (value: CatalogKind) => {
+    setKind(value)
+    setSelectedIndex(0)
+    setCreateKind(null)
+  }
+
+  const createItem = (newItem: NewCatalogItem) => {
+    const insertionIndex = config.catalog[newItem.kind].length
+    mutate((next) => {
+      if (newItem.kind === 'series') {
+        next.catalog.series.push(createSeriesItem(newItem.name, newItem.slug, next.catalog.series.length + 1))
+        return
+      }
+      const series = next.catalog.series.find((entry) => entry.slug === newItem.series) ?? next.catalog.series[0]
+      if (series) next.catalog.products.push(createProductItem(newItem.name, newItem.slug, series))
+    })
+    setKind(newItem.kind)
+    setSelectedIndex(insertionIndex)
+    setCreateKind(null)
+  }
 
   const updateItemImage = (value: string) => {
     if (kind !== 'products') {
@@ -636,20 +794,38 @@ function CatalogSection({ config, language, mutate }: { config: SiteConfig; lang
 
   return (
     <div className="admin-section-stack">
-      <Panel title={label(language, '目录与商品', 'Catalog & products')} description={label(language, '管理世界、系列、商品和故事。Slug 作为稳定网址不可在后台修改。', 'Manage worlds, series, products, and stories. Slugs remain fixed as stable URLs.')}>
+      <Panel
+        title={label(language, '目录与商品', 'Catalog & products')}
+        description={label(language, '新增和编辑系列及商品；发布后会自动显示在系列商城和商品详情页。网址别名创建后保持固定。', 'Create and edit series and products. Published items automatically appear in collection storefronts and product pages. URL slugs stay fixed after creation.')}
+        actions={kind === 'products' || kind === 'series' ? (
+          <button
+            className="button button--outline admin-catalog-add"
+            data-catalog-add={kind}
+            type="button"
+            aria-expanded={createKind === kind}
+            onClick={() => setCreateKind((current) => current === kind ? null : kind)}
+          >
+            + {kind === 'products' ? label(language, '添加商品', 'Add product') : label(language, '添加系列', 'Add series')}
+          </button>
+        ) : null}
+      >
         <div className="admin-tab-row" role="tablist" aria-label={label(language, '目录类型', 'Catalog type')}>
           {(['products', 'series', 'worlds', 'stories'] as CatalogKind[]).map((value) => (
-            <button type="button" role="tab" aria-selected={kind === value} className={kind === value ? 'is-active' : ''} key={value} onClick={() => { setKind(value); setSelectedIndex(0) }}>
+            <button type="button" role="tab" aria-selected={kind === value} className={kind === value ? 'is-active' : ''} key={value} onClick={() => changeKind(value)}>
               {label(language, ({ products: '商品', series: '系列', worlds: '世界', stories: '故事' })[value], ({ products: 'Products', series: 'Series', worlds: 'Worlds', stories: 'Stories' })[value])}
               <span>{config.catalog[value].length}</span>
             </button>
           ))}
         </div>
+        {createKind ? <CatalogCreateForm key={createKind} kind={createKind} config={config} language={language} onCancel={() => setCreateKind(null)} onCreate={createItem} /> : null}
         {item ? (
           <>
             <div className="admin-catalog-picker">
-              <SelectField label={label(language, '选择项目', 'Select item')} value={String(index)} options={options} onChange={(value) => setSelectedIndex(Number(value))} />
-              <p><span>Slug</span><code>{item.slug}</code></p>
+              <SelectField label={label(language, '选择并编辑项目', 'Select item to edit')} value={String(index)} options={options} onChange={(value) => setSelectedIndex(Number(value))} />
+              <div className="admin-catalog-picker__meta">
+                <p><span>Slug</span><code>{item.slug}</code></p>
+                {previewHref ? <a href={previewHref} target="_blank" rel="noreferrer">{label(language, '前台预览', 'Storefront preview')}<ArrowSquareOut size={15} /></a> : null}
+              </div>
             </div>
             <div className="admin-field-grid">
               <ToggleField label={label(language, '在网站显示', 'Visible on website')} checked={item.visible} onChange={(value) => patchCatalogItem(mutate, kind, index, { visible: value })} />
@@ -1020,6 +1196,11 @@ export function AdminPage() {
     if (!draft) return
     if (!draft.global.siteName.trim() || !draft.seo.defaultTitle.trim()) {
       setError(label(language, '网站名称和 SEO 默认标题不能为空。', 'Site name and the default SEO title are required.'))
+      return
+    }
+    const catalogIssues = catalogValidationIssues(draft)
+    if (catalogIssues.length) {
+      setError(`${label(language, '目录无法发布，请检查名称、网址别名及商品所属系列。', 'The catalog cannot be published. Check names, URL slugs, and product series assignments.')} ${catalogIssues[0]}`)
       return
     }
     setPublishBusy(true)

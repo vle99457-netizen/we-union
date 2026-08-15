@@ -454,9 +454,12 @@ export function SeriesPage() {
   if (!current) return <NotFoundPage />
 
   const available = products.filter((product) => product.series === current.slug)
-  const filtered = available.filter((product) => filter === 'all' || product.badge?.toLowerCase().includes(filter))
+  const filtered = available.filter((product) => filter === 'all' || product.personalizable)
   const visible = [...filtered].sort((a, b) => {
-    if (sort === 'featured') return 0
+    if (sort === 'featured') {
+      const featuredDifference = Number(b.featured) - Number(a.featured)
+      return featuredDifference || a.name.localeCompare(b.name)
+    }
     if (sort === 'name-asc') return a.name.localeCompare(b.name)
     if (sort === 'name-desc') return b.name.localeCompare(a.name)
     return 0
@@ -477,8 +480,8 @@ export function SeriesPage() {
       <section className="listing-section section-pad shell">
         <div className="listing-toolbar">
           <div>
-            <p className="eyebrow">{visible.length} concepts / pre-launch</p>
-            <h2>Build the full story.</h2>
+            <p className="eyebrow">{visible.length} {visible.length === 1 ? 'product' : 'products'}</p>
+            <h2>Shop {current.name}.</h2>
           </div>
           <div className="listing-controls">
             <label>
@@ -503,9 +506,12 @@ export function SeriesPage() {
             {visible.map((product, index) => <ProductCard key={product.slug} product={product} priority={index < 2} />)}
           </div>
         ) : (
-          <div className="empty-state"><h3>No matching pieces</h3><p>Try a broader filter.</p></div>
+          <div className="empty-state">
+            <h3>{available.length ? 'No matching products' : 'Products coming soon'}</h3>
+            <p>{available.length ? 'Try a broader filter.' : 'This series does not have published products yet.'}</p>
+          </div>
         )}
-        <div className="listing-more"><span>All current concepts shown</span><p>Additional pieces appear only after catalog and product facts are verified.</p></div>
+        <div className="listing-more"><span>All current products shown</span><p>New products published from the catalog appear here automatically.</p></div>
         <nav className="series-crosslinks" aria-label="Other original series">
           <p className="eyebrow">Continue through CREATE</p>
           {series.filter((item) => item.slug !== current.slug).map((item) => (

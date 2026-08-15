@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  catalogSlugFromName,
+  catalogValidationIssues,
   defaultSiteConfig,
   normalizeSiteConfig,
   pageSetting,
   visibleProducts,
+  visibleSeries,
 } from './siteConfig'
 
 describe('site configuration', () => {
@@ -60,5 +63,54 @@ describe('site configuration', () => {
 
     expect(config.home.custom.steps).toHaveLength(4)
     expect(pageSetting(config, 'support').route).toBe('/support')
+  })
+
+  it('creates URL-safe catalog slugs from editor names', () => {
+    expect(catalogSlugFromName('  Summer Motion 2026  ')).toBe('summer-motion-2026')
+    expect(catalogSlugFromName('Crème / Blue')).toBe('creme-blue')
+  })
+
+  it('preserves newly added series and products for the storefront', () => {
+    const newSeries = {
+      ...defaultSiteConfig.catalog.series[0]!,
+      slug: 'summer-motion',
+      name: 'Summer Motion',
+    }
+    const newProduct = {
+      ...defaultSiteConfig.catalog.products[0]!,
+      slug: 'summer-motion-game-jersey',
+      name: 'Summer Motion Game Jersey',
+      series: newSeries.slug,
+      gallery: [],
+      featured: false,
+    }
+    const config = normalizeSiteConfig({
+      ...defaultSiteConfig,
+      catalog: {
+        ...defaultSiteConfig.catalog,
+        series: [...defaultSiteConfig.catalog.series, newSeries],
+        products: [...defaultSiteConfig.catalog.products, newProduct],
+      },
+    })
+
+    expect(visibleSeries(config).some((item) => item.slug === newSeries.slug)).toBe(true)
+    expect(visibleProducts(config).find((item) => item.slug === newProduct.slug)?.series).toBe(newSeries.slug)
+    expect(catalogValidationIssues(config)).toEqual([])
+  })
+
+  it('rejects duplicate slugs and products assigned to missing series', () => {
+    const config = structuredClone(defaultSiteConfig)
+    config.catalog.series.push({ ...config.catalog.series[0]!, name: 'Duplicate series' })
+    config.catalog.products.push({
+      ...config.catalog.products[0]!,
+      slug: 'orphan-product',
+      name: 'Orphan Product',
+      series: 'missing-series',
+    })
+
+    expect(catalogValidationIssues(config)).toEqual(expect.arrayContaining([
+      expect.stringContaining('duplicated'),
+      expect.stringContaining('missing series'),
+    ]))
   })
 })
