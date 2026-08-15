@@ -133,6 +133,14 @@ export type SiteConfig = {
     products: ManagedProduct[]
     stories: ManagedStory[]
   }
+  sectionImages: {
+    honorConcept: string
+    belongFeature: string
+    productDetail: string
+    craftsmanshipFeature: string
+    communityGalleryPrimary: string
+    communityGallerySecondary: string
+  }
   pages: ManagedPage[]
   policies: ManagedPolicy[]
   customizer: {
@@ -278,6 +286,14 @@ export const defaultSiteConfig: SiteConfig = {
     products: catalogProducts.map((item, index) => ({ ...item, visible: true, featured: index === 0 })),
     stories: catalogStories.map((item) => ({ ...item, visible: true })),
   },
+  sectionImages: {
+    honorConcept: '/images/world-honor.webp',
+    belongFeature: '/images/world-belong.webp',
+    productDetail: '/images/craft-embroidery.webp',
+    craftsmanshipFeature: '/images/water-ripple.webp',
+    communityGalleryPrimary: '/images/water-ripple.webp',
+    communityGallerySecondary: '/images/craft-embroidery.webp',
+  },
   pages: [
     { id: 'collections', route: '/collections', label: 'Collections', eyebrow: '01 / Originals', title: 'Every series starts with an idea.', description: 'Explore WE originals as complete visual worlds, then choose the piece that makes the idea yours.', image: '/images/water-ripple.webp', enabled: true },
     { id: 'create', route: '/create', label: 'Create world', eyebrow: 'World 01', title: 'Create', description: 'Original visual systems made personal.', image: '/images/water-ripple.webp', enabled: true },
@@ -403,6 +419,7 @@ export function normalizeSiteConfig(input: unknown): SiteConfig {
   const global = isRecord(input.global) ? input.global : {}
   const home = isRecord(input.home) ? input.home : {}
   const catalog = isRecord(input.catalog) ? input.catalog : {}
+  const sectionImages = isRecord(input.sectionImages) ? input.sectionImages : {}
   const customizer = isRecord(input.customizer) ? input.customizer : {}
   const commerce = isRecord(input.commerce) ? input.commerce : {}
   const seo = isRecord(input.seo) ? input.seo : {}
@@ -448,6 +465,7 @@ export function normalizeSiteConfig(input: unknown): SiteConfig {
       products: mergeBySlug(defaultSiteConfig.catalog.products, catalog.products),
       stories: mergeBySlug(defaultSiteConfig.catalog.stories, catalog.stories),
     },
+    sectionImages: { ...defaultSiteConfig.sectionImages, ...sectionImages },
     pages: mergeById(defaultSiteConfig.pages, input.pages),
     policies: defaultSiteConfig.policies.map((item) => ({ ...item, ...(policyBySlug.get(item.slug) ?? {}) })) as ManagedPolicy[],
     customizer: { ...defaultSiteConfig.customizer, ...customizer },
