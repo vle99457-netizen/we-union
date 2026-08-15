@@ -34,6 +34,15 @@ function safeFilename(value: string): string {
   return `${stem}-${Date.now()}${extension}`
 }
 
+function decodedFilenameHeader(value: string): string {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    // Keep compatibility with older clients and malformed percent sequences.
+    return value
+  }
+}
+
 async function handleRequest(request: Request): Promise<Response> {
   if (!(await isAdminAuthorized(request))) return jsonResponse({ error: 'Admin authentication is required.' }, 401)
   if (!isStorageConfigured()) return jsonResponse({ error: 'Vercel Blob is not configured.' }, 503)
@@ -75,7 +84,7 @@ async function handleRequest(request: Request): Promise<Response> {
     const body = await request.arrayBuffer()
     if (!body.byteLength) return jsonResponse({ error: 'The uploaded image is empty.' }, 400)
     if (body.byteLength > MAX_MEDIA_BYTES) return jsonResponse({ error: 'The image exceeds 10 MB.' }, 413)
-    const filename = safeFilename(request.headers.get('x-file-name') ?? 'image')
+    const filename = safeFilename(decodedFilenameHeader(request.headers.get('x-file-name') ?? 'image'))
     const blob = await put(`${MEDIA_PREFIX}${filename}`, body, {
       access: BLOB_ACCESS,
       addRandomSuffix: false,

@@ -32,6 +32,8 @@ const address = server.httpServer?.address()
 if (!address || typeof address === 'string') throw new Error('Admin browser server did not expose a port.')
 const baseUrl = `http://127.0.0.1:${address.port}`
 const { defaultSiteConfig } = await server.ssrLoadModule('/src/data/siteConfig.ts')
+const unicodeUploadPath = path.join(tmpdir(), '商品主图.webp')
+await fs.copyFile(path.resolve('public/images/water-ripple.webp'), unicodeUploadPath)
 
 const browser = await puppeteer.launch({
   executablePath: await browserExecutable(),
@@ -48,6 +50,7 @@ try {
   const page = await browser.newPage()
   const consoleErrors = []
   const pageErrors = []
+  let mediaUploadFilenameHeader = ''
   page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()) })
   page.on('pageerror', (error) => pageErrors.push(error.message))
   await page.setRequestInterception(true)
@@ -63,6 +66,7 @@ try {
     }
     if (url.pathname === '/api/admin-media') {
       if (request.method() === 'POST') {
+        mediaUploadFilenameHeader = request.headers()['x-file-name'] ?? ''
         await request.respond({
           status: 200,
           contentType: 'application/json',
@@ -104,8 +108,9 @@ try {
 
   const homepageUpload = await page.$('.admin-image-field input[type="file"]')
   if (!homepageUpload) throw new Error('Homepage image upload input was not found.')
-  await homepageUpload.uploadFile(path.resolve('public/images/water-ripple.webp'))
+  await homepageUpload.uploadFile(unicodeUploadPath)
   await page.waitForFunction(() => document.querySelector('.admin-image-field__message.is-success')?.textContent?.includes('Image uploaded'))
+  assert(mediaUploadFilenameHeader === encodeURIComponent(path.basename(unicodeUploadPath)), 'Unicode upload filenames must be percent-encoded in request headers.')
   assert(await page.$eval('.admin-publish-bar', (bar) => bar.dataset.dirty === 'true'), 'A completed image upload must mark the configuration as unpublished.')
   await page.screenshot({ path: '/tmp/we-admin-homepage-en.png', type: 'png', fullPage: true })
 
@@ -163,4 +168,5 @@ try {
 } finally {
   await browser.close()
   await server.close()
+  await fs.rm(unicodeUploadPath, { force: true })
 }
