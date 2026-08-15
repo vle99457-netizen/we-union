@@ -9,6 +9,7 @@ import {
   verifyAdminPassword,
 } from '../src/server/adminAuth.js'
 import {
+  catalogValidationIssues,
   defaultSiteConfig,
   isPublishableSiteConfig,
   normalizeSiteConfig,
@@ -70,6 +71,8 @@ async function readStoredConfig(): Promise<SiteConfig> {
 async function saveConfig(input: unknown): Promise<SiteConfig> {
   if (!isPublishableSiteConfig(input)) throw new Error('The site configuration is incomplete.')
   const config = normalizeSiteConfig(input)
+  const catalogIssues = catalogValidationIssues(config)
+  if (catalogIssues.length) throw new Error(`Catalog validation failed: ${catalogIssues[0]}`)
   config.updatedAt = new Date().toISOString()
   const payload = JSON.stringify(config)
   if (new TextEncoder().encode(payload).byteLength > MAX_CONFIG_BYTES) {
@@ -167,7 +170,7 @@ async function handleRequest(request: Request): Promise<Response> {
       return jsonResponse({ config, published: true })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'The site configuration could not be published.'
-      const status = message.includes('incomplete') || message.includes('limit') ? 400 : 500
+      const status = message.includes('incomplete') || message.includes('validation') || message.includes('limit') ? 400 : 500
       console.error('Unable to publish the site configuration.', error)
       return jsonResponse({ error: message }, status)
     }

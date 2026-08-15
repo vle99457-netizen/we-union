@@ -336,14 +336,57 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 }
 
+const catalogSlugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+export function catalogSlugFromName(value: string): string {
+  return value
+    .trim()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+export function catalogValidationIssues(config: Pick<SiteConfig, 'catalog'>): string[] {
+  const issues: string[] = []
+  const seriesSlugs = new Set<string>()
+  const productSlugs = new Set<string>()
+
+  for (const item of config.catalog.series) {
+    const slug = typeof item.slug === 'string' ? item.slug : ''
+    const name = typeof item.name === 'string' ? item.name : ''
+    if (!name.trim()) issues.push(`Series "${slug || '(missing slug)'}" needs a name.`)
+    if (!catalogSlugPattern.test(slug)) issues.push(`Series slug "${slug || '(empty)'}" is not URL-safe.`)
+    if (seriesSlugs.has(slug)) issues.push(`Series slug "${slug}" is duplicated.`)
+    seriesSlugs.add(slug)
+  }
+
+  for (const item of config.catalog.products) {
+    const slug = typeof item.slug === 'string' ? item.slug : ''
+    const name = typeof item.name === 'string' ? item.name : ''
+    const series = typeof item.series === 'string' ? item.series : ''
+    if (!name.trim()) issues.push(`Product "${slug || '(missing slug)'}" needs a name.`)
+    if (!catalogSlugPattern.test(slug)) issues.push(`Product slug "${slug || '(empty)'}" is not URL-safe.`)
+    if (productSlugs.has(slug)) issues.push(`Product slug "${slug}" is duplicated.`)
+    if (!seriesSlugs.has(series)) issues.push(`Product "${slug}" references a missing series.`)
+    productSlugs.add(slug)
+  }
+
+  return issues
+}
+
 function mergeBySlug<T extends { slug: string }>(defaults: T[], incoming: unknown): T[] {
   if (!Array.isArray(incoming)) return defaults
   const incomingItems = incoming.filter(isRecord) as Array<Record<string, unknown> & { slug?: unknown }>
   const bySlug = new Map(incomingItems.filter((item) => typeof item.slug === 'string').map((item) => [item.slug as string, item]))
   const merged = defaults.map((item) => ({ ...item, ...(bySlug.get(item.slug) ?? {}) })) as T[]
-  const defaultSlugs = new Set(defaults.map((item) => item.slug))
+  const seenSlugs = new Set(defaults.map((item) => item.slug))
   for (const item of incomingItems) {
-    if (typeof item.slug === 'string' && !defaultSlugs.has(item.slug)) merged.push(item as T)
+    if (typeof item.slug === 'string' && !seenSlugs.has(item.slug)) {
+      merged.push(item as T)
+      seenSlugs.add(item.slug)
+    }
   }
   return merged
 }
@@ -414,19 +457,19 @@ export function normalizeSiteConfig(input: unknown): SiteConfig {
   }
 }
 
-export function visibleWorlds(config: SiteConfig): World[] {
+export function visibleWorlds(config: SiteConfig): ManagedWorld[] {
   return config.catalog.worlds.filter((item) => item.visible)
 }
 
-export function visibleSeries(config: SiteConfig): Series[] {
+export function visibleSeries(config: SiteConfig): ManagedSeries[] {
   return config.catalog.series.filter((item) => item.visible)
 }
 
-export function visibleProducts(config: SiteConfig): Product[] {
+export function visibleProducts(config: SiteConfig): ManagedProduct[] {
   return config.catalog.products.filter((item) => item.visible)
 }
 
-export function visibleStories(config: SiteConfig): Story[] {
+export function visibleStories(config: SiteConfig): ManagedStory[] {
   return config.catalog.stories.filter((item) => item.visible)
 }
 
@@ -437,5 +480,8 @@ export function pageSetting(config: SiteConfig, id: AdminPageId): ManagedPage {
 export function isPublishableSiteConfig(value: unknown): value is SiteConfig {
   if (!isRecord(value) || value.version !== 1) return false
   if (!isRecord(value.global) || !isRecord(value.home) || !isRecord(value.catalog)) return false
-  return Array.isArray(value.pages) && Array.isArray(value.policies)
+  return Array.isArray(value.catalog.series)
+    && Array.isArray(value.catalog.products)
+    && Array.isArray(value.pages)
+    && Array.isArray(value.policies)
 }
