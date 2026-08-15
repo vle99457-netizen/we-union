@@ -55,6 +55,26 @@ describe('private Blob API integration', () => {
     expect(payload.image.url).toMatch(/^\/api\/blob-media\?pathname=cms%2Fmedia%2Fhero-123\.png&v=\d+$/)
   })
 
+  it('accepts a percent-encoded Unicode upload filename header', async () => {
+    blobMocks.put.mockResolvedValue({ pathname: 'cms/media/image-123.png' })
+    const { fetch: adminMediaFetch } = await import('../api/admin-media')
+    const response = await adminMediaFetch(new Request('https://example.test/api/admin-media', {
+      method: 'POST',
+      headers: {
+        ...authorizedHeaders('image/png'),
+        'X-File-Name': encodeURIComponent('商品主图.png'),
+      },
+      body: new Uint8Array([1, 2, 3]),
+    }))
+
+    expect(response.status).toBe(200)
+    expect(blobMocks.put).toHaveBeenCalledWith(
+      expect.stringMatching(/^cms\/media\/image-\d+\.png$/),
+      expect.any(ArrayBuffer),
+      expect.objectContaining({ access: 'private', token: BLOB_TOKEN }),
+    )
+  })
+
   it('publishes site configuration to private storage', async () => {
     blobMocks.put.mockResolvedValue({ pathname: 'cms/site-config.json' })
     const [{ fetch: siteConfigFetch }, { defaultSiteConfig }] = await Promise.all([

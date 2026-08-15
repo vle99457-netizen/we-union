@@ -28,6 +28,7 @@ import {
 import { Link, useSearchParams } from 'react-router-dom'
 import { AdminImageField } from './AdminImageField'
 import { CustomizerAdminPage } from './CustomizerAdminPage'
+import { uploadAdminImage } from './adminMedia'
 import {
   catalogSlugFromName,
   catalogValidationIssues,
@@ -986,15 +987,8 @@ function MediaSection({ language }: { language: AdminLanguage }) {
     setUploading(true)
     setError('')
     try {
-      const response = await fetch('/api/admin-media', {
-        method: 'POST',
-        headers: { 'Content-Type': file.type, 'X-File-Name': file.name },
-        credentials: 'same-origin',
-        body: file,
-      })
-      if (!response.ok) throw new Error(await responseError(response))
-      const payload = await response.json() as { image: MediaItem }
-      setMedia((current) => [payload.image, ...current])
+      const image = await uploadAdminImage(file)
+      setMedia((current) => [image, ...current])
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : label(language, '图片上传失败。', 'The image could not be uploaded.'))
     } finally {

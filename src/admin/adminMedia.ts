@@ -16,6 +16,10 @@ export function validateAdminImageFile(file: { type: string; size: number }): Ad
   return null
 }
 
+export function encodeUploadFilename(filename: string): string {
+  return encodeURIComponent(filename)
+}
+
 async function responseError(response: Response): Promise<string> {
   try {
     const payload = await response.json() as { error?: string }
@@ -34,7 +38,9 @@ export async function uploadAdminImage(
     method: 'POST',
     headers: {
       'Content-Type': file.type,
-      'X-File-Name': file.name,
+      // Header values must be ByteString-compatible in browsers. Percent-encoding
+      // preserves Unicode filenames while keeping the wire value ASCII-only.
+      'X-File-Name': encodeUploadFilename(file.name),
     },
     credentials: 'same-origin',
     body: file,
