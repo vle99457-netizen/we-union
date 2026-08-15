@@ -70,7 +70,7 @@ try {
         await request.respond({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ image: { pathname: 'cms/media/smoke.webp', url: '/images/water-ripple.webp', size: 1024, uploadedAt: new Date().toISOString() } }),
+          body: JSON.stringify({ image: { pathname: 'cms/media/smoke.webp', url: '/images/world-honor.webp', size: 1024, uploadedAt: new Date().toISOString() } }),
         })
       } else {
         await request.respond({ status: 200, contentType: 'application/json', body: JSON.stringify({ media: [] }) })
@@ -105,11 +105,16 @@ try {
   assert(await page.$$eval('.admin-editor-group', (groups) => groups.length === 8), 'Homepage editor must expose all eight sections.')
   assert(await page.$$eval('.admin-image-field', (fields) => fields.length >= 5), 'Homepage image settings must expose direct local-image controls.')
   assert(await page.$$eval('.admin-image-field__preview img', (images) => images.length >= 5), 'Homepage image settings must show previews.')
+  assert(await page.$eval('[data-admin-section="worlds"]', (group) => group.hasAttribute('open')), 'World card background controls must be open by default.')
+  assert(await page.$$eval('[data-admin-world-background]', (cards) => cards.length === 3), 'Homepage editing must expose three dedicated world background cards.')
+  assert(await page.$$eval('[data-admin-world-background]', (cards) => cards.map((card) => card.getAttribute('data-admin-world-background')).join(',') === 'create,honor,belong'), 'World background controls must map to Create, Honor, and Belong in homepage order.')
+  assert(await page.$$eval('[data-admin-world-background] .admin-image-field__preview img', (images) => images.length === 3), 'Each world background control must show its current image preview.')
+  assert(await page.$$eval('[data-admin-world-background] input[type="file"]', (inputs) => inputs.length === 3), 'Each world background control must accept a local image file.')
 
-  const homepageUpload = await page.$('.admin-image-field input[type="file"]')
-  if (!homepageUpload) throw new Error('Homepage image upload input was not found.')
+  const homepageUpload = await page.$('[data-admin-world-background="create"] input[type="file"]')
+  if (!homepageUpload) throw new Error('Create card background upload input was not found.')
   await homepageUpload.uploadFile(unicodeUploadPath)
-  await page.waitForFunction(() => document.querySelector('.admin-image-field__message.is-success')?.textContent?.includes('Image uploaded'))
+  await page.waitForFunction(() => document.querySelector('[data-admin-world-background="create"] .admin-image-field__message.is-success')?.textContent?.includes('Image uploaded'))
   assert(mediaUploadFilenameHeader === encodeURIComponent(path.basename(unicodeUploadPath)), 'Unicode upload filenames must be percent-encoded in request headers.')
   assert(await page.$eval('.admin-publish-bar', (bar) => bar.dataset.dirty === 'true'), 'A completed image upload must mark the configuration as unpublished.')
   await page.screenshot({ path: '/tmp/we-admin-homepage-en.png', type: 'png', fullPage: true })
@@ -153,7 +158,13 @@ try {
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 })
   await page.waitForFunction(() => window.innerWidth === 390)
   await page.waitForSelector('.admin-app')
+  await page.click('.admin-language button:first-child')
+  await page.waitForFunction(() => document.querySelector('.admin-topbar h1')?.textContent === '目录与商品')
+  await page.click('.admin-sidebar nav button:nth-child(3)')
+  await page.waitForFunction(() => document.querySelector('.admin-topbar h1')?.textContent === '首页内容')
   assert(await page.$eval('.admin-sidebar', (sidebar) => getComputedStyle(sidebar).position === 'fixed'), 'Mobile admin navigation must remain fixed.')
+  assert(await page.$$eval('[data-admin-world-background]', (cards) => cards.length === 3), 'Mobile homepage editing must retain all three world background controls.')
+  assert(await page.$eval('.admin-world-background-grid', (grid) => getComputedStyle(grid).gridTemplateColumns.split(' ').length === 1), 'World background controls must stack into one column on mobile.')
   assert(await page.$eval('body', (body) => body.scrollWidth <= window.innerWidth), 'Mobile admin must not overflow horizontally.')
   await page.screenshot({ path: '/tmp/we-admin-mobile.png', type: 'png', fullPage: true })
 
