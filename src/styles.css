@@ -6544,6 +6544,125 @@ summary:focus-visible {
   font-size: 0.82rem;
 }
 
+.admin-world-backgrounds {
+  gap: 18px;
+}
+
+.admin-world-backgrounds__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.admin-world-backgrounds__header h3 {
+  margin: 0 0 6px;
+  font-size: 0.86rem;
+}
+
+.admin-world-backgrounds__header p {
+  max-width: 720px;
+  margin: 0;
+  color: var(--admin-muted);
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
+.admin-world-backgrounds__header > span {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  color: #7b5b30;
+  border: 1px solid #d6c2a6;
+  background: #fbf4e8;
+  font-size: 0.61rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-world-background-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-world-background-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #d8d8d2;
+  background: #fbfbf9;
+}
+
+.admin-world-background-card > header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 62px;
+  padding: 12px 14px;
+}
+
+.admin-world-background-card > header > span {
+  color: var(--admin-accent);
+  font-family: var(--display);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.admin-world-background-card > header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.admin-world-background-card > header strong {
+  font-size: 0.75rem;
+  letter-spacing: 0.045em;
+}
+
+.admin-world-background-card > header small {
+  color: var(--admin-muted);
+  font-size: 0.59rem;
+}
+
+.admin-world-background-card .admin-image-field {
+  grid-template-columns: 1fr;
+  border: 0;
+  border-top: 1px solid #d8d8d2;
+}
+
+.admin-world-background-card .admin-image-field__preview,
+.admin-world-background-card .admin-image-field__preview img {
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+}
+
+.admin-world-background-card .admin-image-field__preview {
+  border-right: 0;
+  border-bottom: 1px solid #d8d8d2;
+}
+
+.admin-world-background-card .admin-image-field__preview img {
+  object-fit: cover;
+}
+
+.admin-world-background-card .admin-image-field__body {
+  gap: 12px;
+  padding: 14px;
+}
+
+.admin-world-background-card .admin-image-field__heading {
+  align-items: stretch;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-world-background-card .admin-image-field__actions {
+  width: 100%;
+}
+
+.admin-world-background-card .admin-image-field__choose {
+  flex: 1;
+}
+
 .admin-metric-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -7284,6 +7403,10 @@ summary:focus-visible {
   .admin-toggle-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .admin-world-background-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 900px) {
@@ -7409,6 +7532,20 @@ summary:focus-visible {
     align-items: stretch;
     flex-direction: column;
     gap: 16px;
+  }
+
+  .admin-world-backgrounds__header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .admin-world-backgrounds__header > span {
+    align-self: flex-start;
+  }
+
+  .admin-world-background-grid {
+    grid-template-columns: 1fr;
   }
 
   .admin-field-grid,

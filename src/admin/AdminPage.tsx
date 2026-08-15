@@ -388,26 +388,48 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
         </div>
       </details>
 
-      <details className="admin-editor-group">
+      <details className="admin-editor-group admin-worlds-editor" data-admin-section="worlds" open>
         <summary><span>02</span>{label(language, '世界入口', 'Worlds')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.worlds.enabled} onChange={(value) => mutate((next) => { next.home.worlds.enabled = value })} /></summary>
         <div className="admin-field-grid">
           <Field label={label(language, '眉题', 'Eyebrow')} value={home.worlds.eyebrow} onChange={(value) => mutate((next) => { next.home.worlds.eyebrow = value })} />
           <Field label={label(language, '标题', 'Title')} value={home.worlds.title} onChange={(value) => mutate((next) => { next.home.worlds.title = value })} />
           <Field label={label(language, '说明', 'Description')} multiline value={home.worlds.copy} onChange={(value) => mutate((next) => { next.home.worlds.copy = value })} />
         </div>
-        <div className="admin-section-image-list">
-          <h3>{label(language, '栏目卡片背景', 'Section card backgrounds')}</h3>
-          {config.catalog.worlds.map((world, worldIndex) => (
-            <AdminImageField
-              key={world.slug}
-              compact
-              language={language}
-              label={world.title}
-              value={world.image}
-              previewAlt=""
-              onChange={(value) => mutate((next) => { next.catalog.worlds[worldIndex]!.image = value })}
-            />
-          ))}
+        <div className="admin-section-image-list admin-world-backgrounds" data-admin-world-backgrounds>
+          <div className="admin-world-backgrounds__header">
+            <div>
+              <h3>{label(language, 'CREATE、HONOR、BELONG 卡片背景', 'CREATE, HONOR, and BELONG card backgrounds')}</h3>
+              <p>{label(language, '从本地电脑选择图片，上传时会立即显示预览；点击“发布更改”后同步到首页。', 'Choose images from your computer and preview them immediately while they upload. Publish changes to update the homepage.')}</p>
+            </div>
+            <span>{label(language, '3 张卡片', '3 cards')}</span>
+          </div>
+          <div className="admin-world-background-grid">
+            {config.catalog.worlds.map((world, worldIndex) => (
+              <article
+                className="admin-world-background-card"
+                data-admin-world-background={world.slug}
+                key={world.slug}
+              >
+                <header>
+                  <span>{world.index}</span>
+                  <div>
+                    <strong>{world.title.toUpperCase()}</strong>
+                    <small>{label(language, '首页入口卡片', 'Homepage entry card')}</small>
+                  </div>
+                </header>
+                <AdminImageField
+                  compact
+                  language={language}
+                  label={label(language, `${world.title.toUpperCase()} 背景图片`, `${world.title} background image`)}
+                  value={world.image}
+                  help={label(language, '支持 JPG、PNG、WEBP，最大 10 MB。', 'JPG, PNG, or WEBP, up to 10 MB.')}
+                  previewAlt={label(language, `${world.title} 卡片背景预览`, `${world.title} card background preview`)}
+                  showUrlField={false}
+                  onChange={(value) => mutate((next) => { next.catalog.worlds[worldIndex]!.image = value })}
+                />
+              </article>
+            ))}
+          </div>
         </div>
       </details>
 
