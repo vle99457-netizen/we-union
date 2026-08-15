@@ -1,4 +1,4 @@
-import { list, put } from '@vercel/blob'
+import { get, put } from '@vercel/blob'
 import {
   blobToken,
   clearAdminSessionCookie,
@@ -15,6 +15,7 @@ import {
   normalizeSiteConfig,
   type SiteConfig,
 } from '../src/data/siteConfig.js'
+import { BLOB_ACCESS } from '../src/server/blobMedia.js'
 
 const CONFIG_PATHNAME = 'cms/site-config.json'
 const MAX_CONFIG_BYTES = 750 * 1024
@@ -51,21 +52,15 @@ async function readStoredConfig(): Promise<SiteConfig> {
   const token = blobToken()
   if (!token) return structuredClone(defaultSiteConfig)
 
-  const result = await withDeadline(list({
-    prefix: CONFIG_PATHNAME,
-    limit: 5,
+  const result = await withDeadline(get(CONFIG_PATHNAME, {
+    access: BLOB_ACCESS,
     token,
+    useCache: false,
     abortSignal: AbortSignal.timeout(STORAGE_TIMEOUT_MS),
   }))
-  const blob = result.blobs.find((item) => item.pathname === CONFIG_PATHNAME)
-  if (!blob) return structuredClone(defaultSiteConfig)
-
-  const response = await withDeadline(globalThis.fetch(`${blob.url}?version=${blob.uploadedAt.getTime()}`, {
-    headers: { Accept: 'application/json' },
-    cache: 'no-store',
-  }))
-  if (!response.ok) throw new Error('The published site configuration could not be read.')
-  return normalizeSiteConfig(await response.json())
+  if (!result) return structuredClone(defaultSiteConfig)
+  if (result.statusCode !== 200) throw new Error('The published site configuration could not be read.')
+  return normalizeSiteConfig(await new Response(result.stream).json())
 }
 
 async function saveConfig(input: unknown): Promise<SiteConfig> {
@@ -80,7 +75,7 @@ async function saveConfig(input: unknown): Promise<SiteConfig> {
   }
 
   await withDeadline(put(CONFIG_PATHNAME, payload, {
-    access: 'public',
+    access: BLOB_ACCESS,
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: 'application/json; charset=utf-8',
