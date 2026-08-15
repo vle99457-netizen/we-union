@@ -5,6 +5,7 @@ import {
   type CustomizerImagesResponse,
   type ManagedCustomizerImages,
 } from '../src/data/customizerImages.js'
+import { BLOB_ACCESS, blobMediaUrl } from '../src/server/blobMedia.js'
 import { isAdminAuthorized, isAdminConfigured } from '../src/server/adminAuth.js'
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024
@@ -69,7 +70,10 @@ async function getImages(productSlug: string): Promise<CustomizerImagesResponse>
     const filename = blob.pathname.slice(prefix.length)
     const view = filename.replace(/\.webp$/, '')
     if (!filename.endsWith('.webp') || !isCustomizerView(view)) continue
-    images[view] = { url: blob.url, uploadedAt: blob.uploadedAt.toISOString() }
+    images[view] = {
+      url: blobMediaUrl(blob.pathname, blob.uploadedAt),
+      uploadedAt: blob.uploadedAt.toISOString(),
+    }
   }
 
   return {
@@ -141,7 +145,7 @@ async function handleRequest(request: Request): Promise<Response> {
     const pathname = `customizer/${productSlug}/${view}.webp`
     const blob = await withDeadline(
       put(pathname, body, {
-        access: 'public',
+        access: BLOB_ACCESS,
         addRandomSuffix: false,
         allowOverwrite: true,
         abortSignal: AbortSignal.timeout(BLOB_UPLOAD_TIMEOUT_MS),
@@ -150,10 +154,11 @@ async function handleRequest(request: Request): Promise<Response> {
       }),
       BLOB_UPLOAD_TIMEOUT_MS + 500,
     )
+    const uploadedAt = new Date()
     return jsonResponse({
       productSlug,
       view,
-      image: { url: blob.url, uploadedAt: new Date().toISOString() },
+      image: { url: blobMediaUrl(blob.pathname, uploadedAt), uploadedAt: uploadedAt.toISOString() },
     })
   } catch (error) {
     console.error('Unable to upload a customizer preview image.', error)

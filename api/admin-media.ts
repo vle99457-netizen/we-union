@@ -4,6 +4,7 @@ import {
   isAdminAuthorized,
   isStorageConfigured,
 } from '../src/server/adminAuth.js'
+import { BLOB_ACCESS, blobMediaUrl } from '../src/server/blobMedia.js'
 
 const MEDIA_PREFIX = 'cms/media/'
 const MAX_MEDIA_BYTES = 10 * 1024 * 1024
@@ -50,7 +51,7 @@ async function handleRequest(request: Request): Promise<Response> {
           .sort((first, second) => second.uploadedAt.getTime() - first.uploadedAt.getTime())
           .map((blob) => ({
             pathname: blob.pathname,
-            url: blob.url,
+            url: blobMediaUrl(blob.pathname, blob.uploadedAt),
             size: blob.size,
             uploadedAt: blob.uploadedAt.toISOString(),
           })),
@@ -76,18 +77,19 @@ async function handleRequest(request: Request): Promise<Response> {
     if (body.byteLength > MAX_MEDIA_BYTES) return jsonResponse({ error: 'The image exceeds 10 MB.' }, 413)
     const filename = safeFilename(request.headers.get('x-file-name') ?? 'image')
     const blob = await put(`${MEDIA_PREFIX}${filename}`, body, {
-      access: 'public',
+      access: BLOB_ACCESS,
       addRandomSuffix: false,
       contentType,
       token: blobToken(),
       abortSignal: AbortSignal.timeout(STORAGE_TIMEOUT_MS),
     })
+    const uploadedAt = new Date()
     return jsonResponse({
       image: {
         pathname: blob.pathname,
-        url: blob.url,
+        url: blobMediaUrl(blob.pathname, uploadedAt),
         size: body.byteLength,
-        uploadedAt: new Date().toISOString(),
+        uploadedAt: uploadedAt.toISOString(),
       },
     })
   } catch (error) {
