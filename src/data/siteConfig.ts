@@ -489,6 +489,12 @@ export function normalizeSiteConfig(input: unknown): SiteConfig {
 
   const needsHomepageMigration = !isRecord(home.products) && Array.isArray(catalog.products)
   if (needsHomepageMigration) {
+    const legacySectionEnabled = (key: keyof SiteConfig['home']) => {
+      const section = home[key]
+      return isRecord(section) && typeof section.enabled === 'boolean'
+        ? section.enabled
+        : defaultSiteConfig.home[key].enabled
+    }
     const legacyHeroImage = typeof normalizedHome.hero.image === 'string' ? normalizedHome.hero.image : ''
     const legacyFeaturedImage = typeof normalizedHome.featured.image === 'string' ? normalizedHome.featured.image : ''
     const legacyCustomImage = typeof normalizedHome.custom.image === 'string' ? normalizedHome.custom.image : ''
@@ -496,21 +502,34 @@ export function normalizeSiteConfig(input: unknown): SiteConfig {
     const legacyCommunityImage = typeof normalizedHome.community.image === 'string' ? normalizedHome.community.image : ''
 
     Object.assign(normalizedHome.hero, defaultSiteConfig.home.hero, {
+      enabled: legacySectionEnabled('hero'),
       image: legacyHeroImage === '/images/hero-stadium.webp' ? '' : legacyHeroImage,
     })
-    Object.assign(normalizedHome.worlds, defaultSiteConfig.home.worlds)
-    Object.assign(normalizedHome.featured, defaultSiteConfig.home.featured, { image: legacyFeaturedImage || defaultSiteConfig.home.featured.image })
+    Object.assign(normalizedHome.worlds, defaultSiteConfig.home.worlds, { enabled: legacySectionEnabled('worlds') })
+    Object.assign(normalizedHome.featured, defaultSiteConfig.home.featured, {
+      enabled: legacySectionEnabled('featured'),
+      image: legacyFeaturedImage || defaultSiteConfig.home.featured.image,
+    })
     Object.assign(normalizedHome.products, defaultSiteConfig.home.products)
-    Object.assign(normalizedHome.custom, defaultSiteConfig.home.custom, { image: legacyCustomImage || defaultSiteConfig.home.custom.image })
-    Object.assign(normalizedHome.craftsmanship, defaultSiteConfig.home.craftsmanship, { image: legacyCraftImage || defaultSiteConfig.home.craftsmanship.image })
+    Object.assign(normalizedHome.custom, defaultSiteConfig.home.custom, {
+      enabled: legacySectionEnabled('custom'),
+      image: legacyCustomImage || defaultSiteConfig.home.custom.image,
+    })
+    Object.assign(normalizedHome.craftsmanship, defaultSiteConfig.home.craftsmanship, {
+      enabled: legacySectionEnabled('craftsmanship'),
+      image: legacyCraftImage || defaultSiteConfig.home.craftsmanship.image,
+    })
     normalizedHome.craftsmanship.items = structuredClone(defaultSiteConfig.home.craftsmanship.items)
     if (legacyCraftImage && legacyCraftImage !== '/images/craft-embroidery.webp') {
       normalizedHome.craftsmanship.items[0]!.image = legacyCraftImage
     }
-    Object.assign(normalizedHome.promises, defaultSiteConfig.home.promises)
+    Object.assign(normalizedHome.promises, defaultSiteConfig.home.promises, { enabled: legacySectionEnabled('promises') })
     normalizedHome.promises.items = structuredClone(defaultSiteConfig.home.promises.items)
-    Object.assign(normalizedHome.stories, defaultSiteConfig.home.stories)
-    Object.assign(normalizedHome.community, defaultSiteConfig.home.community, { image: legacyCommunityImage || defaultSiteConfig.home.community.image })
+    Object.assign(normalizedHome.stories, defaultSiteConfig.home.stories, { enabled: legacySectionEnabled('stories') })
+    Object.assign(normalizedHome.community, defaultSiteConfig.home.community, {
+      enabled: legacySectionEnabled('community'),
+      image: legacyCommunityImage || defaultSiteConfig.home.community.image,
+    })
     normalizedHome.community.images = structuredClone(defaultSiteConfig.home.community.images)
     if (legacyCommunityImage && legacyCommunityImage !== '/images/hero-stadium.webp') {
       normalizedHome.community.images[0] = legacyCommunityImage

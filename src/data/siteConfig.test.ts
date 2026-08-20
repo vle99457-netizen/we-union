@@ -116,6 +116,20 @@ describe('site configuration', () => {
     expect(config.global.utilityText).toBe('Shipping calculated at checkout.')
   })
 
+  it('preserves disabled legacy homepage sections during the redesign migration', () => {
+    const legacy = structuredClone(defaultSiteConfig) as unknown as Record<string, any>
+    delete legacy.home.products
+    const legacySectionKeys = ['hero', 'worlds', 'featured', 'custom', 'craftsmanship', 'promises', 'stories', 'community']
+    for (const key of legacySectionKeys) legacy.home[key].enabled = false
+
+    const config = normalizeSiteConfig(legacy)
+
+    for (const key of legacySectionKeys) {
+      expect(config.home[key as keyof typeof config.home].enabled).toBe(false)
+    }
+    expect(config.home.products.enabled).toBe(true)
+  })
+
   it('creates URL-safe catalog slugs from editor names', () => {
     expect(catalogSlugFromName('  Summer Motion 2026  ')).toBe('summer-motion-2026')
     expect(catalogSlugFromName('Crème / Blue')).toBe('creme-blue')
