@@ -63,12 +63,20 @@ import { useCart, type CartItem } from './store/CartContext'
 const promiseIcons = [Sparkle, CirclesThreePlus, ShieldCheck, Package] as const
 
 export function HomePage() {
-  const { config, worlds, stories } = useSiteConfig()
+  const { config, worlds, products } = useSiteConfig()
   const { home } = config
   const customSteps = home.custom.steps
+  const navigate = useNavigate()
   const [activeStep, setActiveStep] = useState(0)
   const [isProcessPlaying, setIsProcessPlaying] = useState(true)
+  const [cityQuery, setCityQuery] = useState('')
   const activeCustomStep = customSteps[activeStep] ?? customSteps[0] ?? { label: '', copy: '', kicker: '', status: '' }
+  const featuredProducts = useMemo(() => {
+    const selected = products.filter((product) => product.featured)
+    const remainder = products.filter((product) => !product.featured)
+    return [...selected, ...remainder].slice(0, 2)
+  }, [products])
+  const conceptWorlds = worlds.filter((world) => world.slug === 'honor' || world.slug === 'belong')
 
   useEffect(() => {
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -91,31 +99,62 @@ export function HomePage() {
     return () => window.clearTimeout(timer)
   }, [activeStep, isProcessPlaying])
 
+  const findCity = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const normalized = cityQuery.trim().toLowerCase()
+    if (!normalized) return
+    const match = cityChoices.find((city) =>
+      city.name.toLowerCase() === normalized ||
+      city.slug === normalized ||
+      city.name.toLowerCase().includes(normalized),
+    )
+    const citySlug = match?.slug ?? normalized
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+    navigate(`/search?city=${encodeURIComponent(citySlug)}`)
+  }
+
   return (
     <>
       {home.hero.enabled ? <section className="home-hero" aria-labelledby="home-title">
-        <img
+        {home.hero.image ? <img
           className="home-hero__image"
           src={home.hero.image}
-          alt="An athlete wearing an original black and gold WE jersey in a stadium tunnel"
+          alt=""
           fetchPriority="high"
           decoding="async"
           width="1672"
           height="941"
-        />
+        /> : null}
+        <div className="home-hero__texture" aria-hidden="true" />
         <div className="home-hero__veil" />
         <div className="home-hero__content shell">
+          <img className="home-hero__mark" src={config.global.logoUrl} alt="" width="307" height="195" />
           <p className="eyebrow eyebrow--gold">{home.hero.eyebrow}</p>
           <h1 id="home-title">{home.hero.titleLine1}<br />{home.hero.titleLine2}</h1>
           <p className="hero-copy">{home.hero.copy}</p>
-          <div className="button-row">
-            <Link className="button button--gold" to={home.hero.primaryHref}>
-              {home.hero.primaryLabel} <ArrowRight size={18} weight="bold" />
-            </Link>
-            <Link className="button button--ghost-light" to={home.hero.secondaryHref}>
-              {home.hero.secondaryLabel}
-            </Link>
-          </div>
+          <form className="home-city-search" role="search" onSubmit={findCity}>
+            <label htmlFor="home-city-search">{home.hero.searchLabel}</label>
+            <MagnifyingGlass size={19} aria-hidden="true" />
+            <input
+              id="home-city-search"
+              name="city"
+              type="search"
+              list="home-city-options"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={home.hero.searchPlaceholder}
+              value={cityQuery}
+              onChange={(event) => setCityQuery(event.target.value)}
+              required
+            />
+            <button type="submit">Find <ArrowRight size={17} weight="bold" /></button>
+            <datalist id="home-city-options">
+              {cityChoices.map((city) => <option key={city.slug} value={city.name} />)}
+            </datalist>
+          </form>
         </div>
         <a className="hero-scroll" href="#worlds">
           {home.hero.scrollLabel} <ArrowDown size={18} />
@@ -124,12 +163,10 @@ export function HomePage() {
       </section> : null}
 
       {home.worlds.enabled ? <section className="worlds-section section-pad shell" id="worlds" aria-labelledby="worlds-title">
-        <SectionHeading
-          id="worlds-title"
-          eyebrow={home.worlds.eyebrow}
-          title={home.worlds.title}
-          copy={home.worlds.copy}
-        />
+        <header className="home-section-intro">
+          <div><p className="eyebrow">{home.worlds.eyebrow}</p><h2 id="worlds-title">{home.worlds.title}</h2></div>
+          <p>{home.worlds.copy}</p>
+        </header>
         <div className="world-grid">
           {worlds.map((world) => (
             <div
@@ -152,34 +189,51 @@ export function HomePage() {
         </div>
       </section> : null}
 
-      {home.featured.enabled ? <section className="series-spotlight section-pad" aria-labelledby="series-title">
-        <div className="shell">
-          <SectionHeading
-            id="series-title"
-            eyebrow={home.featured.eyebrow}
-            title={home.featured.title}
-            copy={home.featured.copy}
-            action={
-              <Link className="text-link" to={home.featured.ctaHref}>
-                {home.featured.ctaLabel} <ArrowRight size={17} weight="bold" />
-              </Link>
-            }
-          />
-        </div>
-        <AnimatedContent className="series-banner">
+      {home.featured.enabled ? <section className="home-release section-pad shell" aria-labelledby="release-title">
+        <AnimatedContent className="home-release__frame">
           <img
             src={home.featured.image}
-            alt="White Pulse original concept displayed above a flowing surface"
+            alt="An original WE release presented as a premium sportswear editorial"
             loading="lazy"
             decoding="async"
             width="1672"
             height="941"
           />
-          <div className="series-banner__copy">
-            <p>{home.featured.bannerKicker}</p>
-            <h3>{home.featured.bannerTitleLine1}<br />{home.featured.bannerTitleLine2}</h3>
+          <span className="home-release__shade" />
+          <div className="home-release__copy">
+            <p className="eyebrow eyebrow--gold">{home.featured.eyebrow}</p>
+            <h2 id="release-title">{home.featured.title}</h2>
+            <p>{home.featured.copy}</p>
+            <Link className="button button--ghost-light" to={home.featured.ctaHref}>
+              {home.featured.ctaLabel} <ArrowRight size={17} weight="bold" />
+            </Link>
+          </div>
+          <div className="home-release__signature" aria-hidden="true">
+            <span>{home.featured.bannerKicker}</span>
+            <strong>{home.featured.bannerTitleLine1}<br />{home.featured.bannerTitleLine2}</strong>
           </div>
         </AnimatedContent>
+      </section> : null}
+
+      {home.products.enabled ? <section className="home-products section-pad shell" aria-labelledby="home-products-title">
+        <header className="home-section-intro">
+          <div><p className="eyebrow">{home.products.eyebrow}</p><h2 id="home-products-title">{home.products.title}</h2></div>
+          <div><p>{home.products.copy}</p><Link className="text-link" to={home.products.ctaHref}>{home.products.ctaLabel} <ArrowRight size={17} weight="bold" /></Link></div>
+        </header>
+        <div className="product-grid home-product-grid">
+          {featuredProducts.map((product, index) => <ProductCard key={product.slug} product={product} priority={index === 0} />)}
+          {conceptWorlds.map((world) => (
+            <article className={`product-card product-card--concept product-card--${world.slug}`} key={world.slug}>
+              <Link className="product-card__image" to={`/${world.slug}`} aria-label={`Explore the ${world.title} concept`}>
+                <span className="product-card__badge">Concept preview</span>
+                <img src={world.image} alt="" loading="lazy" decoding="async" width="941" height="941" />
+                <span className="product-card__concept-grid" aria-hidden="true" />
+                <span className="product-card__arrow" aria-hidden="true"><ArrowUpRight size={18} weight="bold" /></span>
+              </Link>
+              <div className="product-card__meta"><div><h3><Link to={`/${world.slug}`}>{world.title} concept</Link></h3><p>{world.statusLabel}</p></div><p className="product-card__price">PREVIEW</p></div>
+            </article>
+          ))}
+        </div>
       </section> : null}
 
       {home.custom.enabled ? <section
@@ -305,29 +359,19 @@ export function HomePage() {
         </div>
       </section> : null}
 
-      {home.craftsmanship.enabled ? <section className="craft-story section-pad" aria-labelledby="craft-title">
-        <div className="craft-story__image">
-          <img
-            src={home.craftsmanship.image}
-            alt="A craftsperson inspecting embroidery on a black garment concept"
-            loading="lazy"
-            decoding="async"
-            width="1672"
-            height="941"
-          />
-        </div>
-        <div className="craft-story__panel">
-          <p className="eyebrow">{home.craftsmanship.eyebrow}</p>
-          <h2 id="craft-title">{home.craftsmanship.title}</h2>
-          <p>{home.craftsmanship.copy}</p>
-          <Link className="text-link" to={home.craftsmanship.ctaHref}>
-            {home.craftsmanship.ctaLabel} <ArrowRight size={17} weight="bold" />
-          </Link>
-          <dl className="craft-metrics">
-            <div><dt>01</dt><dd>Material selection</dd></div>
-            <div><dt>02</dt><dd>Personalized build</dd></div>
-            <div><dt>03</dt><dd>Final inspection</dd></div>
-          </dl>
+      {home.craftsmanship.enabled ? <section className="home-craft section-pad shell" aria-labelledby="craft-title">
+        <header className="home-section-intro">
+          <div><p className="eyebrow">{home.craftsmanship.eyebrow}</p><h2 id="craft-title">{home.craftsmanship.title}</h2></div>
+          <div><p>{home.craftsmanship.copy}</p><Link className="text-link" to={home.craftsmanship.ctaHref}>{home.craftsmanship.ctaLabel} <ArrowRight size={17} weight="bold" /></Link></div>
+        </header>
+        <div className="home-craft__grid">
+          {home.craftsmanship.items.map((item, index) => (
+            <article key={`${item.title}-${index}`}>
+              <div><img src={item.image} alt="" loading="lazy" decoding="async" width="941" height="941" /><span>0{index + 1}</span></div>
+              <h3>{item.title}</h3>
+              <p>{item.copy}</p>
+            </article>
+          ))}
         </div>
       </section> : null}
 
@@ -351,43 +395,33 @@ export function HomePage() {
       </section> : null}
 
       {home.stories.enabled ? <section className="stories-section section-pad shell" aria-labelledby="stories-title">
-        <SectionHeading
-          id="stories-title"
-          eyebrow={home.stories.eyebrow}
-          title={home.stories.title}
-          action={
-            <Link className="text-link" to="/stories">
-              {home.stories.ctaLabel} <ArrowRight size={17} weight="bold" />
-            </Link>
-          }
-        />
-        <div className="story-mosaic">
-          {stories.map((story, index) => (
-            <article className={index === 0 ? 'story-card story-card--lead' : 'story-card'} key={story.slug}>
-              <Link to={`/stories/${story.slug}`}>
-                <div className="story-card__image">
-                  <img src={story.image} alt="" loading="lazy" decoding="async" width="1672" height="941" />
-                  <span>{story.category}</span>
-                </div>
-                <p className="eyebrow">{story.readTime} read</p>
-                <h3>{story.title}</h3>
-                <p>{story.excerpt}</p>
+        <header className="home-section-intro">
+          <div><p className="eyebrow">{home.stories.eyebrow}</p><h2 id="stories-title">{home.stories.title}</h2></div>
+          <Link className="text-link" to="/stories">{home.stories.ctaLabel} <ArrowRight size={17} weight="bold" /></Link>
+        </header>
+        <div className="home-world-stories">
+          {worlds.slice(0, 3).map((world) => (
+            <article className={`home-world-story home-world-story--${world.slug}`} key={world.slug}>
+              <Link to={`/${world.slug}`}>
+                <img src={world.image} alt="" loading="lazy" decoding="async" width="1672" height="941" />
+                <span className="home-world-story__shade" />
+                <span className="eyebrow">World {world.index}</span>
+                <div><h3>{world.title}</h3><p>{world.copy}</p><span>Read story <ArrowRight size={15} weight="bold" /></span></div>
               </Link>
             </article>
           ))}
         </div>
       </section> : null}
 
-      {home.community.enabled ? <section className="community-banner" aria-labelledby="community-title">
-        <img src={home.community.image} alt="An athlete walking toward the field in a personalized jersey" loading="lazy" decoding="async" width="1672" height="941" />
-        <div className="community-banner__veil" />
-        <div className="community-banner__content">
-          <p className="eyebrow eyebrow--gold">{home.community.eyebrow}</p>
-          <h2 id="community-title">{home.community.title}</h2>
-          <p>{home.community.copy}</p>
-          <Link className="button button--ghost-light" to={home.community.ctaHref}>
-            {home.community.ctaLabel} <ArrowRight size={18} weight="bold" />
-          </Link>
+      {home.community.enabled ? <section className="home-community section-pad shell" aria-labelledby="community-title">
+        <header className="home-section-intro">
+          <div><p className="eyebrow">{home.community.eyebrow}</p><h2 id="community-title">{home.community.title}</h2></div>
+          <div><p>{home.community.copy}</p><Link className="text-link" to={home.community.ctaHref}>{home.community.ctaLabel} <ArrowRight size={17} weight="bold" /></Link></div>
+        </header>
+        <div className="home-community__grid">
+          {home.community.images.map((image, index) => (
+            <div key={`${image}-${index}`}><img src={image} alt="" loading="lazy" decoding="async" width="941" height="941" /><span aria-hidden="true">0{index + 1}</span></div>
+          ))}
         </div>
       </section> : null}
     </>

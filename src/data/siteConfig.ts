@@ -72,6 +72,8 @@ export type SiteConfig = {
       titleLine2: string
       copy: string
       image: string
+      searchLabel: string
+      searchPlaceholder: string
       primaryLabel: string
       primaryHref: string
       secondaryLabel: string
@@ -90,6 +92,14 @@ export type SiteConfig = {
       bannerKicker: string
       bannerTitleLine1: string
       bannerTitleLine2: string
+    }
+    products: {
+      enabled: boolean
+      eyebrow: string
+      title: string
+      copy: string
+      ctaLabel: string
+      ctaHref: string
     }
     custom: {
       enabled: boolean
@@ -110,6 +120,7 @@ export type SiteConfig = {
       image: string
       ctaLabel: string
       ctaHref: string
+      items: Array<{ title: string; copy: string; image: string }>
     }
     promises: {
       enabled: boolean
@@ -125,6 +136,7 @@ export type SiteConfig = {
       image: string
       ctaLabel: string
       ctaHref: string
+      images: string[]
     }
   }
   catalog: {
@@ -184,9 +196,9 @@ export const defaultSiteConfig: SiteConfig = {
   global: {
     siteName: 'WE',
     logoUrl: '/images/we-logo.svg',
-    utilityText: 'Sports heritage meets personal identity.',
-    utilityLinkLabel: 'All series',
-    utilityLinkHref: '/collections',
+    utilityText: 'Shipping calculated at checkout.',
+    utilityLinkLabel: 'Shipping & returns',
+    utilityLinkHref: '/legal/shipping',
     navigation: [
       { id: 'create', label: 'Create', href: '/collections', enabled: true },
       { id: 'honor', label: 'Honor', href: '/honor', enabled: true },
@@ -197,19 +209,21 @@ export const defaultSiteConfig: SiteConfig = {
     ],
     contactEmail: 'hello@we-union.com',
     supportEmail: 'support@we-union.com',
-    footerEyebrow: 'Stay in the story',
-    footerTitle: 'New originals.\nNo noise.',
+    footerEyebrow: 'Newsletter',
+    footerTitle: 'Stay in\nthe story.',
     footerTagline: 'Original sportswear. Made personal.',
     newsletterEnabled: true,
   },
   home: {
     hero: {
       enabled: true,
-      eyebrow: 'Sports heritage meets personal identity',
+      eyebrow: 'WE / Original sportswear',
       titleLine1: 'Gear made',
       titleLine2: 'personal.',
-      copy: 'A uniform can identify you. A WE original can tell your story.',
-      image: '/images/hero-stadium.webp',
+      copy: 'Original sportswear built around identity, achievement, and belonging.',
+      image: '',
+      searchLabel: 'Find your city',
+      searchPlaceholder: 'Search by city',
       primaryLabel: 'Explore originals',
       primaryHref: '/collections',
       secondaryLabel: 'Create yours',
@@ -218,21 +232,29 @@ export const defaultSiteConfig: SiteConfig = {
     },
     worlds: {
       enabled: true,
-      eyebrow: 'Three ways into WE',
-      title: 'Choose what the piece should carry.',
-      copy: 'Each world starts with a different intention. All three end in something personal.',
+      eyebrow: 'Three systems of WE',
+      title: 'Create. Honor. Belong.',
+      copy: 'Three distinct visual worlds—each built to carry a different kind of meaning.',
     },
     featured: {
       enabled: true,
-      eyebrow: 'New & featured / Series 01',
-      title: 'White Pulse',
-      copy: 'Continuous waves and flowing paths translate personal rhythm into an original visual language.',
+      eyebrow: 'Current drop / Edit 01',
+      title: 'Featured Release',
+      copy: 'Meet the current WE edit: an original system, a clear story, and room to make it personal.',
       image: '/images/water-ripple.webp',
-      ctaLabel: 'View the series',
+      ctaLabel: 'Explore the drop',
       ctaHref: '/collections/white-pulse',
-      bannerKicker: 'WE / WP–01',
-      bannerTitleLine1: 'Feel the motion.',
-      bannerTitleLine2: 'Make it yours.',
+      bannerKicker: 'White Pulse / Release 01',
+      bannerTitleLine1: 'Wear the motion.',
+      bannerTitleLine2: 'Make it personal.',
+    },
+    products: {
+      enabled: true,
+      eyebrow: 'Selected from the three worlds',
+      title: 'New & Featured',
+      copy: 'Two CREATE originals alongside one HONOR and one BELONG concept preview.',
+      ctaLabel: 'View all originals',
+      ctaHref: '/collections',
     },
     custom: {
       enabled: true,
@@ -244,24 +266,30 @@ export const defaultSiteConfig: SiteConfig = {
       ctaHref: '/custom',
       image: '/images/white-pulse-process-jersey.webp',
       steps: [
-        { label: 'CHOOSE', copy: 'Start with a WE original visual system.', kicker: 'Original / Selected', status: 'White Pulse 01' },
+        { label: 'CHOOSE AN ORIGINAL', copy: 'Start with a WE original visual system.', kicker: 'Original / Selected', status: 'White Pulse 01' },
         { label: 'PERSONALIZE', copy: 'Set the city, name, number, logo, and approved details.', kicker: 'Identity / Applied', status: 'Sacramento · 17' },
         { label: 'REVIEW', copy: 'Confirm the front, back, and both sleeve proofs.', kicker: 'Proof / 04 views', status: 'Ready to review' },
-        { label: 'ORDER & TRACK', copy: 'Approve the proof, then follow production and delivery.', kicker: 'Status / Live', status: 'Production ready' },
+        { label: 'MADE FOR YOU', copy: 'Approve the proof, then follow production and delivery.', kicker: 'Finished / Tracked', status: 'Made for you' },
       ],
     },
     craftsmanship: {
       enabled: true,
-      eyebrow: 'Made visible',
-      title: 'The last five percent is where trust lives.',
-      copy: 'Color alignment, stitch tension, placement, and finish are reviewed before a piece moves forward.',
+      eyebrow: 'Craftsmanship',
+      title: 'Precision you can see.',
+      copy: 'Embroidery, materials, stitching, and inspection make the design real—and make every approved piece consistent.',
       image: '/images/craft-embroidery.webp',
       ctaLabel: 'See how WE makes it',
       ctaHref: '/craftsmanship',
+      items: [
+        { title: 'Embroidery', copy: 'Elevated stitching with visible depth and controlled placement.', image: '/images/craft-embroidery.webp' },
+        { title: 'Materials', copy: 'Approved fabric and trim choices support the intended form.', image: '/images/white-pulse-game-jersey-03-pattern-detail.webp' },
+        { title: 'Stitching', copy: 'Construction details are reviewed where strength and finish meet.', image: '/images/white-pulse-game-jersey-04-seam-detail.webp' },
+        { title: 'Inspection', copy: 'Every approved detail is checked before the piece moves forward.', image: '/images/white-pulse-game-jersey-05-on-model.webp' },
+      ],
     },
     promises: {
       enabled: true,
-      title: 'Four promises. No fine print.',
+      title: 'Built around the whole journey.',
       items: [
         { title: 'Original design', copy: 'Every piece begins with an original from WE.' },
         { title: 'Personalized production', copy: 'Your approved details are built into a production-ready proof.' },
@@ -269,15 +297,23 @@ export const defaultSiteConfig: SiteConfig = {
         { title: 'Tracked delivery', copy: 'Verified production and carrier events will connect here.' },
       ],
     },
-    stories: { enabled: true, eyebrow: 'Stories', title: 'The meaning behind the material.', ctaLabel: 'Read all stories' },
+    stories: { enabled: true, eyebrow: 'Stories', title: 'Three worlds. Three kinds of meaning.', ctaLabel: 'Explore the stories' },
     community: {
       enabled: true,
       eyebrow: 'Worn your way',
-      title: 'The piece is finished when you live in it.',
-      copy: 'See how individuals and teams make every WE original their own.',
+      title: 'One original. Worn your way.',
+      copy: 'A growing view of how people make WE originals part of their own story.',
       image: '/images/hero-stadium.webp',
-      ctaLabel: 'Enter the community',
+      ctaLabel: 'See more styles',
       ctaHref: '/community',
+      images: [
+        '/images/white-pulse-game-jersey-05-on-model.webp',
+        '/images/hero-stadium.webp',
+        '/images/product-water.webp',
+        '/images/product-crack.webp',
+        '/images/world-honor.webp',
+        '/images/world-belong.webp',
+      ],
     },
   },
   catalog: {
@@ -425,7 +461,7 @@ export function normalizeSiteConfig(input: unknown): SiteConfig {
   const seo = isRecord(input.seo) ? input.seo : {}
   const system = isRecord(input.system) ? input.system : {}
 
-  const homeKeys = ['hero', 'worlds', 'featured', 'custom', 'craftsmanship', 'promises', 'stories', 'community'] as const
+  const homeKeys = ['hero', 'worlds', 'featured', 'products', 'custom', 'craftsmanship', 'promises', 'stories', 'community'] as const
   const normalizedHome = structuredClone(defaultSiteConfig.home)
   for (const key of homeKeys) {
     if (isRecord(home[key])) Object.assign(normalizedHome[key], home[key])
@@ -440,6 +476,46 @@ export function normalizeSiteConfig(input: unknown): SiteConfig {
   } else {
     normalizedHome.promises.items = structuredClone(defaultSiteConfig.home.promises.items)
   }
+  if (isRecord(home.craftsmanship) && Array.isArray(home.craftsmanship.items) && home.craftsmanship.items.length === 4) {
+    normalizedHome.craftsmanship.items = home.craftsmanship.items as SiteConfig['home']['craftsmanship']['items']
+  } else {
+    normalizedHome.craftsmanship.items = structuredClone(defaultSiteConfig.home.craftsmanship.items)
+  }
+  if (isRecord(home.community) && Array.isArray(home.community.images) && home.community.images.length === 6) {
+    normalizedHome.community.images = home.community.images as SiteConfig['home']['community']['images']
+  } else {
+    normalizedHome.community.images = structuredClone(defaultSiteConfig.home.community.images)
+  }
+
+  const needsHomepageMigration = !isRecord(home.products) && Array.isArray(catalog.products)
+  if (needsHomepageMigration) {
+    const legacyHeroImage = typeof normalizedHome.hero.image === 'string' ? normalizedHome.hero.image : ''
+    const legacyFeaturedImage = typeof normalizedHome.featured.image === 'string' ? normalizedHome.featured.image : ''
+    const legacyCustomImage = typeof normalizedHome.custom.image === 'string' ? normalizedHome.custom.image : ''
+    const legacyCraftImage = typeof normalizedHome.craftsmanship.image === 'string' ? normalizedHome.craftsmanship.image : ''
+    const legacyCommunityImage = typeof normalizedHome.community.image === 'string' ? normalizedHome.community.image : ''
+
+    Object.assign(normalizedHome.hero, defaultSiteConfig.home.hero, {
+      image: legacyHeroImage === '/images/hero-stadium.webp' ? '' : legacyHeroImage,
+    })
+    Object.assign(normalizedHome.worlds, defaultSiteConfig.home.worlds)
+    Object.assign(normalizedHome.featured, defaultSiteConfig.home.featured, { image: legacyFeaturedImage || defaultSiteConfig.home.featured.image })
+    Object.assign(normalizedHome.products, defaultSiteConfig.home.products)
+    Object.assign(normalizedHome.custom, defaultSiteConfig.home.custom, { image: legacyCustomImage || defaultSiteConfig.home.custom.image })
+    Object.assign(normalizedHome.craftsmanship, defaultSiteConfig.home.craftsmanship, { image: legacyCraftImage || defaultSiteConfig.home.craftsmanship.image })
+    normalizedHome.craftsmanship.items = structuredClone(defaultSiteConfig.home.craftsmanship.items)
+    if (legacyCraftImage && legacyCraftImage !== '/images/craft-embroidery.webp') {
+      normalizedHome.craftsmanship.items[0]!.image = legacyCraftImage
+    }
+    Object.assign(normalizedHome.promises, defaultSiteConfig.home.promises)
+    normalizedHome.promises.items = structuredClone(defaultSiteConfig.home.promises.items)
+    Object.assign(normalizedHome.stories, defaultSiteConfig.home.stories)
+    Object.assign(normalizedHome.community, defaultSiteConfig.home.community, { image: legacyCommunityImage || defaultSiteConfig.home.community.image })
+    normalizedHome.community.images = structuredClone(defaultSiteConfig.home.community.images)
+    if (legacyCommunityImage && legacyCommunityImage !== '/images/hero-stadium.webp') {
+      normalizedHome.community.images[0] = legacyCommunityImage
+    }
+  }
 
   const incomingPolicies = Array.isArray(input.policies) ? input.policies.filter(isRecord) : []
   const policyBySlug = new Map(incomingPolicies.filter((item) => typeof item.slug === 'string').map((item) => [item.slug as string, item]))
@@ -449,18 +525,36 @@ export function normalizeSiteConfig(input: unknown): SiteConfig {
     ? requestedLogoUrl
     : defaultSiteConfig.global.logoUrl
 
+  const normalizedGlobal = {
+    ...defaultSiteConfig.global,
+    ...global,
+    logoUrl: normalizedLogoUrl,
+    navigation: Array.isArray(global.navigation) ? global.navigation as SiteConfig['global']['navigation'] : defaultSiteConfig.global.navigation,
+  }
+  if (needsHomepageMigration) {
+    normalizedGlobal.utilityText = defaultSiteConfig.global.utilityText
+    normalizedGlobal.utilityLinkLabel = defaultSiteConfig.global.utilityLinkLabel
+    normalizedGlobal.utilityLinkHref = defaultSiteConfig.global.utilityLinkHref
+    normalizedGlobal.footerEyebrow = defaultSiteConfig.global.footerEyebrow
+    normalizedGlobal.footerTitle = defaultSiteConfig.global.footerTitle
+    normalizedGlobal.footerTagline = defaultSiteConfig.global.footerTagline
+  }
+
+  const normalizedCatalogWorlds = mergeBySlug(defaultSiteConfig.catalog.worlds, catalog.worlds)
+  if (needsHomepageMigration) {
+    const createWorld = normalizedCatalogWorlds.find((item) => item.slug === 'create')
+    const belongWorld = normalizedCatalogWorlds.find((item) => item.slug === 'belong')
+    if (createWorld?.image === '/images/water-ripple.webp') createWorld.image = '/images/crack-series.webp'
+    if (belongWorld?.image === '/images/world-belong.webp') belongWorld.image = '/images/hero-stadium.webp'
+  }
+
   return {
     version: 1,
     updatedAt: typeof input.updatedAt === 'string' ? input.updatedAt : null,
-    global: {
-      ...defaultSiteConfig.global,
-      ...global,
-      logoUrl: normalizedLogoUrl,
-      navigation: Array.isArray(global.navigation) ? global.navigation as SiteConfig['global']['navigation'] : defaultSiteConfig.global.navigation,
-    },
+    global: normalizedGlobal,
     home: normalizedHome,
     catalog: {
-      worlds: mergeBySlug(defaultSiteConfig.catalog.worlds, catalog.worlds),
+      worlds: normalizedCatalogWorlds,
       series: mergeBySlug(defaultSiteConfig.catalog.series, catalog.series),
       products: mergeBySlug(defaultSiteConfig.catalog.products, catalog.products),
       stories: mergeBySlug(defaultSiteConfig.catalog.stories, catalog.stories),
