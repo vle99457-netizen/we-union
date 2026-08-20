@@ -428,6 +428,17 @@ export function catalogValidationIssues(config: Pick<SiteConfig, 'catalog'>): st
   return issues
 }
 
+export function siteConfigValidationIssues(config: Pick<SiteConfig, 'catalog' | 'customizer'>): string[] {
+  const issues = catalogValidationIssues(config)
+  if (
+    config.customizer.enabled
+    && !config.catalog.products.some((product) => product.visible && product.personalizable)
+  ) {
+    issues.push('The enabled customizer needs at least one visible personalizable product.')
+  }
+  return issues
+}
+
 function mergeBySlug<T extends { slug: string }>(defaults: T[], incoming: unknown): T[] {
   if (!Array.isArray(incoming)) return defaults
   const incomingItems = incoming.filter(isRecord) as Array<Record<string, unknown> & { slug?: unknown }>

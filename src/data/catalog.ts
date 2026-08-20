@@ -98,6 +98,42 @@ export type Product = {
   connection: string
 }
 
+const genericPersonalizationRegions: readonly PersonalizationRegion[] = [
+  { id: 'front-city', kind: 'city', side: 'front', x: 32, y: 31, width: 36, height: 7 },
+  { id: 'front-number', kind: 'number', side: 'front', x: 35, y: 38, width: 30, height: 34 },
+  { id: 'back-number', kind: 'number', side: 'back', x: 32, y: 39, width: 36, height: 40 },
+  { id: 'back-name', kind: 'name', side: 'back', x: 35, y: 31, width: 30, height: 8 },
+  { id: 'front-logo', kind: 'logo', logoSlot: 'front', side: 'front', x: 30, y: 27, width: 12, height: 10 },
+  { id: 'left-sleeve-logo', kind: 'logo', logoSlot: 'leftSleeve', side: 'left', x: 42, y: 40, width: 16, height: 16 },
+  { id: 'right-sleeve-logo', kind: 'logo', logoSlot: 'rightSleeve', side: 'right', x: 42, y: 40, width: 16, height: 16 },
+]
+
+export function resolveProductPersonalization(product: Product): ProductPersonalization {
+  if (product.personalization) return product.personalization
+  const viewImage = (view: CustomizerView) => ({
+    src: product.image,
+    alt: `${product.name} ${view === 'left' ? 'left sleeve' : view === 'right' ? 'right sleeve' : view} preview`,
+  })
+  return {
+    cleanImage: product.image,
+    viewImages: {
+      front: viewImage('front'),
+      back: viewImage('back'),
+      left: viewImage('left'),
+      right: viewImage('right'),
+    },
+    sourceInk: '#111111',
+    sourceOutline: '#f4f1e8',
+    detectedSourceElements: [
+      'Standard city placement',
+      'Standard player-name placement',
+      'Front and back number placement',
+      'Front and sleeve logo placement',
+    ],
+    regions: genericPersonalizationRegions,
+  }
+}
+
 export type HonorConcept = {
   slug: string
   name: string

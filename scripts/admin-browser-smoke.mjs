@@ -208,6 +208,22 @@ try {
   assert(await page.$eval('.admin-publish-bar', (bar) => bar.dataset.dirty === 'true'), 'Creating catalog records must mark the configuration as unpublished.')
   await page.screenshot({ path: '/tmp/we-admin-catalog-create.png', type: 'png', fullPage: true })
 
+  await page.click('.admin-sidebar nav button:nth-child(7)')
+  await page.waitForFunction(() => document.querySelector('.admin-topbar h1')?.textContent === 'Customizer')
+  const expectedCustomizerProducts = defaultSiteConfig.catalog.products
+    .filter((product) => product.personalizable)
+    .map((product) => product.slug)
+  assert(
+    await page.$$eval(
+      'select[name="preview-product"] option',
+      (options, expected) => JSON.stringify(options.map((option) => option.value)) === JSON.stringify(expected),
+      expectedCustomizerProducts,
+    ),
+    'Customizer preview management must derive its product list from the editable site configuration.',
+  )
+  await page.click('.admin-sidebar nav button:nth-child(5)')
+  await page.waitForFunction(() => document.querySelector('.admin-topbar h1')?.textContent === 'Catalog')
+
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 })
   await page.waitForFunction(() => window.innerWidth === 390)
   await page.waitForSelector('.admin-app')

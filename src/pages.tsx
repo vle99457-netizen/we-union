@@ -36,9 +36,11 @@ import {
   formatPrice,
   honorConcepts,
   prototypeNotice,
+  resolveProductPersonalization,
   searchCatalog,
   type PersonalizationRegion,
   type ProductPersonalization,
+  type WorldAvailability,
   type WorldSlug,
 } from './data/catalog'
 import { useSiteConfig } from './context/SiteConfigContext'
@@ -61,6 +63,11 @@ import {
 import { useCart, type CartItem } from './store/CartContext'
 
 const promiseIcons = [Sparkle, CirclesThreePlus, ShieldCheck, Package] as const
+const worldAvailabilityLabels: Record<WorldAvailability, string> = {
+  live: 'Available now',
+  'rights-review': 'Rights review',
+  'coming-soon': 'Coming soon',
+}
 
 export function HomePage() {
   const { config, worlds, products } = useSiteConfig()
@@ -170,7 +177,8 @@ export function HomePage() {
         <div className="world-grid">
           {worlds.map((world) => (
             <div
-              className={`world-card world-card--${world.slug}`}
+              className={`world-card world-card--${world.slug} world-card--availability-${world.availability}`}
+              data-availability={world.availability}
               key={world.slug}
             >
               <Link to={`/${world.slug}`}>
@@ -179,6 +187,7 @@ export function HomePage() {
                 <span className="world-card__index">{world.index}</span>
                 <span className="world-card__content">
                   <span className="world-card__status">{world.statusLabel}</span>
+                  <span className="world-card__availability">{worldAvailabilityLabels[world.availability]}</span>
                   <strong>{world.title}</strong>
                   <span>{world.copy}</span>
                 </span>
@@ -512,6 +521,16 @@ export function SeriesPage() {
           <p>{current.statement}</p>
         </div>
       </section>
+      <section className="series-direction shell" aria-label={`${current.name} design and craft direction`}>
+        <article>
+          <p className="eyebrow">Design language</p>
+          <p>{current.designLanguage || 'Direction not yet published.'}</p>
+        </article>
+        <article>
+          <p className="eyebrow">Craft direction</p>
+          <p>{current.craftDirection || 'Direction not yet published.'}</p>
+        </article>
+      </section>
       <section className="listing-section section-pad shell">
         <div className="listing-toolbar">
           <div>
@@ -573,11 +592,11 @@ export function WorldPage({ world }: { world: WorldSlug }) {
 
   return (
     <>
-      <section className={`world-hero world-hero--${world}`}>
+      <section className={`world-hero world-hero--${world}`} data-availability={current.availability}>
         <img src={page.image || current.image} alt="" fetchPriority="high" width="1672" height="941" />
         <div className="world-hero__shade" />
         <div className="world-hero__content shell">
-          <p className="eyebrow eyebrow--gold">{page.eyebrow} / {current.statusLabel}</p>
+          <p className="eyebrow eyebrow--gold">{page.eyebrow} / {current.statusLabel} / {worldAvailabilityLabels[current.availability]}</p>
           <h1>{page.title}</h1>
           <p>{page.description}</p>
           {world === 'create' ? (
@@ -1437,9 +1456,9 @@ function StudioBaseImage({
 }
 
 export function CustomPage() {
-  const { config, products, series } = useSiteConfig()
+  const { config, loading, products, series } = useSiteConfig()
   const personalizableProducts = useMemo(() => products.filter((product) => product.personalizable), [products])
-  const fallbackProduct = personalizableProducts[0] ?? config.catalog.products.find((product) => product.personalizable)!
+  const fallbackProduct = personalizableProducts[0] ?? products[0] ?? config.catalog.products[0]!
   const findProduct = (slug?: string | null) => slug ? products.find((product) => product.slug === slug) : undefined
   const findSeries = (slug?: string | null) => slug ? series.find((item) => item.slug === slug) : undefined
   const [searchParams, setSearchParams] = useSearchParams()
@@ -1449,14 +1468,13 @@ export function CustomPage() {
   const legacyDraftProduct = personalizableProducts.find(
     (product) => findSeries(product.series)?.name === draft?.template,
   )
-  const initialProduct = requestedProduct?.personalizable
+  const selectedProduct = requestedProduct?.personalizable
     ? requestedProduct
     : draftProduct?.personalizable
       ? draftProduct
       : legacyDraftProduct ?? fallbackProduct
   const draftColorName = draft?.colorName ?? draft?.color?.name
   const [step, setStep] = useState(0)
-  const [selectedProductSlug, setSelectedProductSlug] = useState(initialProduct.slug)
   const [city, setCity] = useState(draft?.city ?? 'SACRAMENTO')
   const [name, setName] = useState(draft?.name ?? 'MORGAN')
   const [number, setNumber] = useState(draft?.number ?? '17')
@@ -1501,27 +1519,27 @@ export function CustomPage() {
   const navigate = useNavigate()
 
   const steps = ['CHOOSE', 'PERSONALIZE', 'REVIEW', 'ORDER & TRACK']
-  const selectedProduct = findProduct(selectedProductSlug) ?? fallbackProduct
   const templateSeries = findSeries(selectedProduct.series) ?? series[0] ?? config.catalog.series[0]!
-  const personalization = selectedProduct.personalization
-  const enabledRegions = personalization?.regions.filter((region) => {
+  const hasMappedPersonalization = Boolean(selectedProduct.personalization)
+  const personalization = useMemo(() => resolveProductPersonalization(selectedProduct), [selectedProduct])
+  const enabledRegions = personalization.regions.filter((region) => {
     if (region.kind === 'city') return config.customizer.cityEnabled
     if (region.kind === 'name') return config.customizer.playerNameEnabled
     if (region.kind === 'number') return config.customizer.numberEnabled
     if (region.logoSlot === 'front') return config.customizer.frontLogoEnabled
     return config.customizer.sleeveLogosEnabled
-  }) ?? []
+  })
   const managedPreviewImage = managedPreviewImages[view]
-  const catalogPreviewImage = personalization?.viewImages[view]
+  const catalogPreviewImage = personalization.viewImages[view]
   const previewImage: CustomizerViewImage = managedPreviewImage
     ? {
         src: withUploadVersion(managedPreviewImage),
         alt: `${selectedProduct.name} ${studioViewLabels[view]} view uploaded through the preview admin`,
       }
-    : catalogPreviewImage ?? { src: selectedProduct.image, alt: `${selectedProduct.name} preview` }
+    : catalogPreviewImage
   const templateImage = managedPreviewImages.front
     ? withUploadVersion(managedPreviewImages.front)
-    : personalization?.viewImages.front.src ?? personalization?.cleanImage ?? selectedProduct.image
+    : personalization.viewImages.front.src || personalization.cleanImage || selectedProduct.image
   const proofVersion = `P${String(proofRevision).padStart(2, '0')}`
   const next = () => setStep((current) => Math.min(steps.length - 1, current + 1))
   const previous = () => setStep((current) => Math.max(0, current - 1))
@@ -1534,14 +1552,15 @@ export function CustomPage() {
   }
 
   useEffect(() => {
-    if (searchParams.get('style') === selectedProductSlug && searchParams.get('size') === size) return
-    syncQuery(selectedProductSlug, size)
-  }, [searchParams, selectedProductSlug, size])
+    if (loading) return
+    if (searchParams.get('style') === selectedProduct.slug && searchParams.get('size') === size) return
+    syncQuery(selectedProduct.slug, size)
+  }, [loading, searchParams, selectedProduct.slug, size])
 
   useEffect(() => {
     const controller = new AbortController()
     setManagedPreviewImages({})
-    if (!personalization) return () => controller.abort()
+    if (!selectedProduct.personalizable) return () => controller.abort()
 
     fetch(`/api/customizer-images?product=${encodeURIComponent(selectedProduct.slug)}`, {
       signal: controller.signal,
@@ -1559,7 +1578,7 @@ export function CustomPage() {
       })
 
     return () => controller.abort()
-  }, [personalization, selectedProduct.slug])
+  }, [selectedProduct.personalizable, selectedProduct.slug])
 
   useEffect(() => {
     const saveTimer = window.setTimeout(() => {
@@ -1682,7 +1701,7 @@ export function CustomPage() {
     setOrdered(true)
   }
 
-  if (!config.customizer.enabled) return <NotFoundPage />
+  if (!config.customizer.enabled || !personalizableProducts.length) return <NotFoundPage />
 
   return (
     <section className="studio-page">
@@ -1705,15 +1724,13 @@ export function CustomPage() {
         <div className="studio-preview">
           <p className="studio-preview__label">
             Interactive sample / {studioViewLabels[view]}
-            {personalization ? <span><CheckCircle size={14} weight="fill" /> Original artwork matched</span> : null}
+            <span><CheckCircle size={14} weight="fill" /> {hasMappedPersonalization ? 'Original artwork matched' : 'Standard placement map'}</span>
             {managedPreviewImage ? <span data-managed-preview="true"><CheckCircle size={14} weight="fill" /> Admin image</span> : null}
           </p>
-          {personalization ? (
-            <div className="studio-preview__position-help">
-              <p>Drag each city, name, number, or logo to move it. Use its corner handle to resize it; arrow keys provide precise adjustments.</p>
-              <button type="button" disabled={!Object.keys(artworkPositions).length} onClick={() => setArtworkPositions({})}>Reset layout</button>
-            </div>
-          ) : null}
+          <div className="studio-preview__position-help">
+            <p>Drag each city, name, number, or logo to move it. Use its corner handle to resize it; arrow keys provide precise adjustments.</p>
+            <button type="button" disabled={!Object.keys(artworkPositions).length} onClick={() => setArtworkPositions({})}>Reset layout</button>
+          </div>
           <div
             className={`studio-preview__canvas studio-preview__canvas--${view}`}
             style={{ '--studio-color': color.value } as CSSProperties}
@@ -1723,20 +1740,18 @@ export function CustomPage() {
               managed={Boolean(managedPreviewImage)}
               alt={`${previewImage.alt}${view === 'front' ? ` with city ${city} and number ${number}` : view === 'back' ? ` with player name ${name} and number ${number}` : ''}`}
             />
-            {personalization ? (
-              <PersonalizationArtwork
-                regions={enabledRegions}
-                view={view}
-                city={city}
-                name={name}
-                number={number}
-                logos={logos}
-                positions={artworkPositions}
-                onPositionChange={updateArtworkPosition}
-                ink={color.value}
-                outline={personalization.sourceOutline}
-              />
-            ) : null}
+            <PersonalizationArtwork
+              regions={enabledRegions}
+              view={view}
+              city={city}
+              name={name}
+              number={number}
+              logos={logos}
+              positions={artworkPositions}
+              onPositionChange={updateArtworkPosition}
+              ink={color.value}
+              outline={personalization.sourceOutline}
+            />
           </div>
           <div className="view-switcher" aria-label="Jersey view">
             {(['front', 'back', 'left', 'right'] as const).map((option) => (
@@ -1767,7 +1782,6 @@ export function CustomPage() {
                     aria-pressed={selectedProduct.slug === item.slug}
                     key={item.slug}
                     onClick={() => {
-                      setSelectedProductSlug(item.slug)
                       setOrdered(false)
                       syncQuery(item.slug, size)
                     }}
@@ -1803,16 +1817,14 @@ export function CustomPage() {
                   </select>
                 </label>
               </div>
-              {personalization ? (
-                <div className="artwork-match" role="status">
-                  <CheckCircle size={22} weight="fill" />
-                  <div>
-                    <strong>Original artwork mapped</strong>
-                    <p>{personalization.detectedSourceElements.join(' · ')}</p>
-                    <small>The source marks are removed first; each replacement starts in the mapped area and can then be moved in the preview.</small>
-                  </div>
+              <div className="artwork-match" role="status">
+                <CheckCircle size={22} weight="fill" />
+                <div>
+                  <strong>{hasMappedPersonalization ? 'Original artwork mapped' : 'Standard placement map applied'}</strong>
+                  <p>{personalization.detectedSourceElements.join(' · ')}</p>
+                  <small>Each replacement starts in the mapped area and can then be moved and resized in the preview.</small>
                 </div>
-              ) : null}
+              </div>
               <fieldset className="logo-placements">
                 <legend>Logo placements</legend>
                 <p>Upload each location independently. A sleeve upload opens that sleeve preview automatically.</p>

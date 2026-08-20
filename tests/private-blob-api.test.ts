@@ -95,6 +95,30 @@ describe('private Blob API integration', () => {
     )
   })
 
+  it('rejects an enabled customizer without a visible personalizable product', async () => {
+    const errorLog = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const [{ fetch: siteConfigFetch }, { defaultSiteConfig }] = await Promise.all([
+      import('../api/site-config'),
+      import('../src/data/siteConfig'),
+    ])
+    const invalidConfig = structuredClone(defaultSiteConfig)
+    invalidConfig.catalog.products.forEach((product) => {
+      product.personalizable = false
+    })
+    const response = await siteConfigFetch(new Request('https://example.test/api/site-config', {
+      method: 'PUT',
+      headers: authorizedHeaders('application/json'),
+      body: JSON.stringify(invalidConfig),
+    }))
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toMatchObject({
+      error: expect.stringContaining('visible personalizable product'),
+    })
+    expect(blobMocks.put).not.toHaveBeenCalled()
+    errorLog.mockRestore()
+  })
+
   it('uploads customizer views privately and returns a same-origin display URL', async () => {
     blobMocks.put.mockResolvedValue({
       pathname: 'customizer/white-pulse-game-jersey/front.webp',

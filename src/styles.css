@@ -784,6 +784,30 @@ summary:focus-visible {
   text-transform: uppercase;
 }
 
+.world-card__content .world-card__availability {
+  margin: 0 0 14px;
+  padding: 5px 8px;
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.44);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.world-card--availability-live .world-card__availability {
+  color: #102012;
+  border-color: #d8efb1;
+  background: #d8efb1;
+}
+
+.world-card--availability-rights-review .world-card__availability {
+  color: #1f1709;
+  border-color: var(--gold-light);
+  background: var(--gold-light);
+}
+
 .world-card__arrow {
   top: 24px;
   right: 24px;
@@ -2087,6 +2111,32 @@ summary:focus-visible {
   color: #e1e1dc;
   font-size: 1.1rem;
   line-height: 1.6;
+}
+
+.series-direction {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line);
+}
+
+.series-direction article {
+  min-width: 0;
+  padding: 38px 0;
+}
+
+.series-direction article + article {
+  padding-left: 38px;
+  border-left: 1px solid var(--line);
+}
+
+.series-direction article:first-child {
+  padding-right: 38px;
+}
+
+.series-direction article > p:last-child {
+  max-width: 680px;
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
 .world-hero__content .button {
@@ -5438,6 +5488,21 @@ summary:focus-visible {
   .series-hero h1,
   .world-hero h1 {
     font-size: clamp(5rem, 24vw, 7.2rem);
+  }
+
+  .series-direction {
+    grid-template-columns: 1fr;
+  }
+
+  .series-direction article,
+  .series-direction article:first-child,
+  .series-direction article + article {
+    padding: 28px 0;
+    border-left: 0;
+  }
+
+  .series-direction article + article {
+    border-top: 1px solid var(--line);
   }
 
   .listing-toolbar {

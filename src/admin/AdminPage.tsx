@@ -31,10 +31,11 @@ import { CustomizerAdminPage } from './CustomizerAdminPage'
 import { uploadAdminImage } from './adminMedia'
 import {
   catalogSlugFromName,
-  catalogValidationIssues,
   normalizeSiteConfig,
+  siteConfigValidationIssues,
   type SiteConfig,
 } from '../data/siteConfig'
+import { announceSiteConfigUpdate } from '../data/siteConfigSync'
 
 export type AdminLanguage = 'zh' | 'en'
 
@@ -1127,7 +1128,7 @@ function CustomizerSection({ config, language, mutate }: { config: SiteConfig; l
           <Field label={label(language, '免责声明内容', 'Disclaimer copy')} multiline value={config.customizer.disclaimer} onChange={(value) => mutate((next) => { next.customizer.disclaimer = value })} />
         </div>
       </Panel>
-      <CustomizerAdminPage language={language} embedded />
+      <CustomizerAdminPage language={language} products={config.catalog.products} embedded />
     </div>
   )
 }
@@ -1365,9 +1366,9 @@ export function AdminPage() {
       setError(label(language, '网站名称和 SEO 默认标题不能为空。', 'Site name and the default SEO title are required.'))
       return
     }
-    const catalogIssues = catalogValidationIssues(draft)
-    if (catalogIssues.length) {
-      setError(`${label(language, '目录无法发布，请检查名称、网址别名及商品所属系列。', 'The catalog cannot be published. Check names, URL slugs, and product series assignments.')} ${catalogIssues[0]}`)
+    const validationIssues = siteConfigValidationIssues(draft)
+    if (validationIssues.length) {
+      setError(`${label(language, '配置无法发布，请检查目录及定制商品设置。', 'The configuration cannot be published. Check the catalog and customizer product settings.')} ${validationIssues[0]}`)
       return
     }
     setPublishBusy(true)
@@ -1385,7 +1386,8 @@ export function AdminPage() {
       const config = normalizeSiteConfig(payload.config)
       setPublished(config)
       setDraft(structuredClone(config))
-      setStatus(label(language, '已发布。网站刷新后将读取新配置。', 'Published. The website will use the new configuration on refresh.'))
+      announceSiteConfigUpdate(config.updatedAt)
+      setStatus(label(language, '已发布。已打开的前台标签页将自动读取新配置。', 'Published. Open storefront tabs will refresh their configuration automatically.'))
     } catch (publishError) {
       setError(publishError instanceof Error ? publishError.message : label(language, '发布失败。', 'Publishing failed.'))
     } finally {

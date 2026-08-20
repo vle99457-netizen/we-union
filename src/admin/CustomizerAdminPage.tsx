@@ -1,6 +1,6 @@
 import { CheckCircle, ImageSquare, UploadSimple, WarningCircle } from '@phosphor-icons/react'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { products } from '../data/catalog'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import type { ManagedProduct } from '../data/siteConfig'
 import {
   customizerViewLabels,
   customizerViews,
@@ -68,10 +68,20 @@ async function apiError(response: Response): Promise<string> {
   return `The server returned ${response.status}.`
 }
 
-const previewProducts = products.filter((product) => product.personalization)
-
-export function CustomizerAdminPage({ language = 'en', embedded = false }: { language?: 'zh' | 'en'; embedded?: boolean }) {
-  const [productSlug, setProductSlug] = useState(previewProducts[0]?.slug ?? '')
+export function CustomizerAdminPage({
+  products,
+  language = 'en',
+  embedded = false,
+}: {
+  products: readonly ManagedProduct[]
+  language?: 'zh' | 'en'
+  embedded?: boolean
+}) {
+  const previewProducts = useMemo(() => products.filter((product) => product.personalizable), [products])
+  const [requestedProductSlug, setRequestedProductSlug] = useState('')
+  const productSlug = previewProducts.some((product) => product.slug === requestedProductSlug)
+    ? requestedProductSlug
+    : previewProducts[0]?.slug ?? ''
   const [existingImages, setExistingImages] = useState<ManagedCustomizerImages>({})
   const [preparedUploads, setPreparedUploads] = useState<PreparedUploads>({})
   const [preparingView, setPreparingView] = useState<CustomizerView | null>(null)
@@ -92,42 +102,63 @@ export function CustomizerAdminPage({ language = 'en', embedded = false }: { lan
   })[view]
 
   const releasePreparedUploads = () => {
-    for (const upload of Object.values(preparedUploads)) {
-      if (!upload) continue
-      URL.revokeObjectURL(upload.previewUrl)
-      previewUrls.current.delete(upload.previewUrl)
-    }
-    setPreparedUploads({})
+    setPreparedUploads((current) => {
+      for (const upload of Object.values(current)) {
+        if (!upload) continue
+        URL.revokeObjectURL(upload.previewUrl)
+        previewUrls.current.delete(upload.previewUrl)
+      }
+      return {}
+    })
   }
 
-  const loadExistingImages = async (slug: string) => {
+  const loadExistingImages = async (slug: string, signal?: AbortSignal) => {
     setLoading(true)
     setError('')
     try {
       const response = await fetch(`/api/customizer-images?product=${encodeURIComponent(slug)}`, {
         headers: { Accept: 'application/json' },
+        signal,
       })
       if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
         throw new Error(t('定制预览接口仅在 Vercel 部署中可用。', 'The preview-image backend is available on the Vercel deployment.'))
       }
       const payload = await response.json() as CustomizerImagesResponse
+      if (signal?.aborted) return
       setExistingImages(payload.images)
       setStorageConfigured(payload.storageConfigured)
       setStorageAvailable(payload.storageAvailable)
       setAdminConfigured(payload.adminConfigured)
     } catch (loadError) {
+      if (signal?.aborted) return
       setExistingImages({})
       setStorageConfigured(false)
       setStorageAvailable(false)
       setAdminConfigured(false)
       setError(loadError instanceof Error ? loadError.message : t('无法载入预览图片。', 'Preview images could not be loaded.'))
     } finally {
-      setLoading(false)
+      if (!signal?.aborted) setLoading(false)
     }
   }
 
   useEffect(() => {
-    void loadExistingImages(productSlug)
+    const controller = new AbortController()
+    setExistingImages({})
+    setPreparedUploads((current) => {
+      for (const upload of Object.values(current)) {
+        if (!upload) continue
+        URL.revokeObjectURL(upload.previewUrl)
+        previewUrls.current.delete(upload.previewUrl)
+      }
+      return {}
+    })
+    if (!productSlug) {
+      setLoading(false)
+      setError('')
+      return () => controller.abort()
+    }
+    void loadExistingImages(productSlug, controller.signal)
+    return () => controller.abort()
   }, [productSlug])
 
   useEffect(() => () => {
@@ -173,6 +204,10 @@ export function CustomizerAdminPage({ language = 'en', embedded = false }: { lan
     event.preventDefault()
     setError('')
     setStatus('')
+    if (!productSlug) {
+      setError(t('请先在商品目录中启用至少一个可定制商品。', 'Enable at least one personalizable catalog product first.'))
+      return
+    }
     if (!adminConfigured) {
       setError(t('发布前请在 Vercel Production 环境设置 CUSTOMIZER_ADMIN_PASSWORD。', 'Set CUSTOMIZER_ADMIN_PASSWORD in the Vercel production environment before publishing.'))
       return
@@ -236,9 +271,10 @@ export function CustomizerAdminPage({ language = 'en', embedded = false }: { lan
             <select
               name="preview-product"
               value={productSlug}
+              disabled={!previewProducts.length}
               onChange={(event) => {
                 releasePreparedUploads()
-                setProductSlug(event.target.value)
+                setRequestedProductSlug(event.target.value)
                 setStatus('')
               }}
             >
@@ -246,6 +282,10 @@ export function CustomizerAdminPage({ language = 'en', embedded = false }: { lan
             </select>
           </label>
         </div>
+
+        {!previewProducts.length ? (
+          <p className="customizer-admin__storage-note"><WarningCircle size={18} /> {t('请先在“目录与商品”中开启至少一个商品的“允许定制”。', 'Enable “Personalizable” for at least one catalog product first.')}</p>
+        ) : null}
 
         <div className="customizer-admin__notice">
           <ImageSquare size={25} />
@@ -282,7 +322,7 @@ export function CustomizerAdminPage({ language = 'en', embedded = false }: { lan
                   name={`${view}-preview-image`}
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
-                  disabled={Boolean(preparingView || uploadingView)}
+                  disabled={!productSlug || Boolean(preparingView || uploadingView)}
                   onChange={(event) => void prepareUpload(view, event.target.files?.[0])}
                 />
                 {preparingView === view ? <small role="status">{t('正在生成方形预览…', 'Preparing square preview…')}</small> : null}
@@ -305,7 +345,7 @@ export function CustomizerAdminPage({ language = 'en', embedded = false }: { lan
         {status ? <p className="customizer-admin__success" role="status"><CheckCircle size={18} weight="fill" /> {status}</p> : null}
         <div className="customizer-admin__actions">
           <p>{hasCompleteSet ? t('四视图已就绪。', 'Four-view set ready.') : t('首次发布需要四张视图。', 'All four views are required for the first publish.')}</p>
-          <button className="button button--dark" type="submit" disabled={loading || adminConfigured === false || storageConfigured === false || storageAvailable === false || Boolean(preparingView || uploadingView) || !hasCompleteSet}>
+          <button className="button button--dark" type="submit" disabled={!productSlug || loading || adminConfigured === false || storageConfigured === false || storageAvailable === false || Boolean(preparingView || uploadingView) || !hasCompleteSet}>
             {uploadingView ? `${t('正在发布', 'Publishing')} ${viewLabel(uploadingView)}…` : t('发布预览图组', 'Publish preview set')}
           </button>
         </div>

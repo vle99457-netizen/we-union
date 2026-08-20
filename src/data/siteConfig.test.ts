@@ -5,6 +5,7 @@ import {
   defaultSiteConfig,
   normalizeSiteConfig,
   pageSetting,
+  siteConfigValidationIssues,
   visibleProducts,
   visibleSeries,
 } from './siteConfig'
@@ -177,5 +178,18 @@ describe('site configuration', () => {
       expect.stringContaining('duplicated'),
       expect.stringContaining('missing series'),
     ]))
+  })
+
+  it('requires a visible personalizable product while the customizer is enabled', () => {
+    const config = structuredClone(defaultSiteConfig)
+    config.catalog.products.forEach((product) => {
+      product.personalizable = false
+    })
+    expect(siteConfigValidationIssues(config)).toContain(
+      'The enabled customizer needs at least one visible personalizable product.',
+    )
+
+    config.customizer.enabled = false
+    expect(siteConfigValidationIssues(config)).toEqual([])
   })
 })
