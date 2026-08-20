@@ -4,6 +4,7 @@ import {
   getProduct,
   getSeries,
   products,
+  resolveProductPersonalization,
   searchCatalog,
   series,
 } from './catalog'
@@ -60,6 +61,25 @@ describe('catalog helpers', () => {
       'front',
       'leftSleeve',
       'rightSleeve',
+    ])
+  })
+
+  it('provides a complete generic personalization map for any personalizable catalog product', () => {
+    const product = getProduct('black-rift-game-jersey')!
+    expect(product.personalizable).toBe(true)
+    expect(product.personalization).toBeUndefined()
+
+    const personalization = resolveProductPersonalization(product)
+    expect(Object.keys(personalization.viewImages)).toEqual(['front', 'back', 'left', 'right'])
+    expect(personalization.viewImages.front.src).toBe(product.image)
+    expect(personalization.regions.map((region) => region.id)).toEqual([
+      'front-city',
+      'front-number',
+      'back-number',
+      'back-name',
+      'front-logo',
+      'left-sleeve-logo',
+      'right-sleeve-logo',
     ])
   })
 

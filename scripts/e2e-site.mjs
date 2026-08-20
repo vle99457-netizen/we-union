@@ -60,6 +60,7 @@ managedCatalogConfig.catalog.products.push({
   image: '/images/water-ripple.webp',
   gallery: [],
   featured: true,
+  personalization: undefined,
 })
 let servedSiteConfig = defaultSiteConfig
 const browser = await puppeteer.launch({
@@ -133,6 +134,25 @@ try {
   })
 
   await page.goto(baseUrl, { waitUntil: 'networkidle0' })
+  const refreshedSiteConfig = structuredClone(defaultSiteConfig)
+  refreshedSiteConfig.home.hero.titleLine1 = 'Automatic storefront'
+  refreshedSiteConfig.home.hero.titleLine2 = 'refresh verified.'
+  servedSiteConfig = refreshedSiteConfig
+  await page.evaluate(() => {
+    const update = JSON.stringify({
+      revision: `browser-refresh:${Date.now()}`,
+      updatedAt: new Date().toISOString(),
+    })
+    const storageEvent = new Event('storage')
+    Object.defineProperties(storageEvent, {
+      key: { value: 'we-site-config-published' },
+      newValue: { value: update },
+    })
+    window.dispatchEvent(storageEvent)
+  })
+  await page.waitForFunction(() => /automatic storefront\s+refresh verified\./.test((document.querySelector('.home-hero h1')?.innerText ?? '').toLowerCase()))
+  servedSiteConfig = defaultSiteConfig
+
   const createNavigationPath = await page.$eval(
     'nav[aria-label="Primary navigation"] a',
     (link) => new URL(link.href).pathname,
@@ -167,6 +187,17 @@ try {
 
   await page.goto(`${baseUrl}/products/summer-motion-game-jersey`, { waitUntil: 'networkidle0' })
   assert(await page.$eval('.product-info h1', (heading) => heading.textContent === 'Summer Motion Game Jersey'), 'A product added in the admin data must have a working product-detail route.')
+  await page.goto(`${baseUrl}/custom?style=summer-motion-game-jersey&size=M`, { waitUntil: 'networkidle0' })
+  const activeDynamicProduct = await page.$eval('.template-list .is-active strong', (name) => name.textContent)
+  assert(
+    activeDynamicProduct === 'Summer Motion Game Jersey',
+    `A dynamically added personalizable product must be selectable in the customizer; received ${activeDynamicProduct}.`,
+  )
+  assert(
+    await page.$eval('[data-custom-base="true"]', (image) => image.getAttribute('data-preview-source') === 'backend'),
+    'A dynamically added personalizable product must load its backend-managed four-view images.',
+  )
+  assert(await page.$('[data-personalization-region="front-city"]'), 'A dynamic product without a bespoke map must receive the standard movable placement map.')
   servedSiteConfig = defaultSiteConfig
 
   await expectClientRedirect(page, baseUrl, '/shop', '/collections')
@@ -365,6 +396,14 @@ try {
     }))
     assert(renderedBase.objectFit === 'contain' && renderedBase.transform === 'none', `${studioView} preview must not be cropped, flipped, or stretched.`)
   }
+  await page.click('[data-studio-view="front"]')
+  await page.waitForFunction(() => {
+    try {
+      return JSON.parse(localStorage.getItem('we-saved-design') ?? '{}').view === 'front'
+    } catch {
+      return false
+    }
+  })
   serveManagedPreviewImages = false
   await page.reload({ waitUntil: 'networkidle0' })
   await page.waitForFunction(() => document.querySelector('[data-preview-source="catalog-crop"]'))
@@ -483,7 +522,7 @@ try {
   await page.goto(`${baseUrl}/track`, { waitUntil: 'networkidle0' })
   assert(await page.$eval('.track-page__background', (image) => new URL(image.src).pathname === '/images/crack-series.webp'), 'Order tracking must render its managed page background when one is selected.')
   assert(errors.length === 0, `Browser errors: ${errors.join('; ')}`)
-  console.log('E2E site passed: CREATE navigation, approved series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, four-slot preview admin, backend-managed untransformed view images, movable city/name/number/logo artwork, independent sleeve uploads, source-artwork replacement, exact CREATE notice, managed section-image rendering across all page patterns, and browser health.')
+  console.log('E2E site passed: automatic storefront config refresh, CREATE navigation, approved and dynamic series, compatibility redirects, HONOR/BELONG gates, five-view PDP gallery, PRICE TBD, city discovery, dynamic four-slot preview binding, backend-managed untransformed view images, movable city/name/number/logo artwork, independent sleeve uploads, source-artwork replacement, exact CREATE notice, managed section-image rendering across all page patterns, and browser health.')
   console.log('/tmp/we-managed-series-storefront.png')
 } finally {
   await browser.close()

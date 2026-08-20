@@ -9,10 +9,10 @@ import {
   verifyAdminPassword,
 } from '../src/server/adminAuth.js'
 import {
-  catalogValidationIssues,
   defaultSiteConfig,
   isPublishableSiteConfig,
   normalizeSiteConfig,
+  siteConfigValidationIssues,
   type SiteConfig,
 } from '../src/data/siteConfig.js'
 import { BLOB_ACCESS } from '../src/server/blobMedia.js'
@@ -66,8 +66,8 @@ async function readStoredConfig(): Promise<SiteConfig> {
 async function saveConfig(input: unknown): Promise<SiteConfig> {
   if (!isPublishableSiteConfig(input)) throw new Error('The site configuration is incomplete.')
   const config = normalizeSiteConfig(input)
-  const catalogIssues = catalogValidationIssues(config)
-  if (catalogIssues.length) throw new Error(`Catalog validation failed: ${catalogIssues[0]}`)
+  const validationIssues = siteConfigValidationIssues(config)
+  if (validationIssues.length) throw new Error(`Configuration validation failed: ${validationIssues[0]}`)
   config.updatedAt = new Date().toISOString()
   const payload = JSON.stringify(config)
   if (new TextEncoder().encode(payload).byteLength > MAX_CONFIG_BYTES) {
