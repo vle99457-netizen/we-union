@@ -26,6 +26,24 @@ function assert(condition, message) {
   if (!condition) throw new Error(message)
 }
 
+async function loadLazyImages(page) {
+  await page.evaluate(async () => {
+    const sleep = (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds))
+    for (let y = 0; y < document.documentElement.scrollHeight; y += Math.max(500, window.innerHeight * 0.72)) {
+      window.scrollTo(0, y)
+      await sleep(35)
+    }
+    await Promise.all([...document.images].map((image) => image.complete
+      ? Promise.resolve()
+      : new Promise((resolve) => {
+          image.addEventListener('load', resolve, { once: true })
+          image.addEventListener('error', resolve, { once: true })
+        })))
+    window.scrollTo(0, 0)
+    await sleep(80)
+  })
+}
+
 const server = await createServer({ logLevel: 'error', server: { host: '127.0.0.1', port: 4173, strictPort: false } })
 await server.listen()
 const address = server.httpServer?.address()
@@ -51,7 +69,11 @@ try {
   const consoleErrors = []
   const pageErrors = []
   let mediaUploadFilenameHeader = ''
-  page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()) })
+  page.on('console', (message) => {
+    if (message.type() !== 'error') return
+    const source = message.location().url
+    consoleErrors.push(source ? `${message.text()} (${source})` : message.text())
+  })
   page.on('pageerror', (error) => pageErrors.push(error.message))
   await page.setRequestInterception(true)
   page.on('request', async (request) => {
@@ -90,6 +112,19 @@ try {
 
   await page.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 })
   await page.goto(baseUrl, { waitUntil: 'networkidle0' })
+  assert(await page.$$eval('.home-city-search', (forms) => forms.length === 1), 'Homepage hero must expose exactly one city search.')
+  assert(await page.$$eval('.home-product-grid > .product-card', (cards) => cards.length === 4), 'New & Featured must show four product or concept cards.')
+  assert(await page.$$eval('.home-craft__grid > article', (cards) => cards.length === 4), 'Craftsmanship must show four image-led cards.')
+  assert(await page.$$eval('.home-community__grid > div', (cards) => cards.length === 6), 'Worn Your Way must show six images.')
+  await page.screenshot({ path: '/tmp/we-home-desktop-viewport.png', type: 'png', fullPage: false })
+  await loadLazyImages(page)
+  await page.screenshot({ path: '/tmp/we-home-desktop.png', type: 'png', fullPage: true })
+  await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 })
+  assert(await page.$eval('body', (body) => body.scrollWidth <= window.innerWidth), 'Mobile homepage must not overflow horizontally.')
+  assert(await page.$$eval('.home-city-search', (forms) => forms.length === 1), 'Mobile homepage must retain exactly one city search.')
+  await loadLazyImages(page)
+  await page.screenshot({ path: '/tmp/we-home-mobile.png', type: 'png', fullPage: true })
+  await page.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 })
   await page.evaluate(() => localStorage.setItem('we-admin-language', 'zh'))
   await page.goto(`${baseUrl}/admin`, { waitUntil: 'networkidle0' })
   await page.waitForSelector('.admin-app')
@@ -102,13 +137,14 @@ try {
   await page.waitForFunction(() => document.querySelector('.admin-topbar h1')?.textContent === 'Dashboard')
   await page.click('.admin-sidebar nav button:nth-child(3)')
   await page.waitForFunction(() => document.querySelector('.admin-topbar h1')?.textContent === 'Homepage')
-  assert(await page.$$eval('.admin-editor-group', (groups) => groups.length === 8), 'Homepage editor must expose all eight sections.')
+  assert(await page.$$eval('.admin-editor-group', (groups) => groups.length === 9), 'Homepage editor must expose all nine sections.')
   assert(await page.$$eval('.admin-image-field', (fields) => fields.length >= 5), 'Homepage image settings must expose direct local-image controls.')
   assert(await page.$$eval('.admin-image-field__preview img', (images) => images.length >= 5), 'Homepage image settings must show previews.')
   assert(await page.$eval('[data-admin-section="worlds"]', (group) => group.hasAttribute('open')), 'World card background controls must be open by default.')
   assert(await page.$$eval('[data-admin-world-background]', (cards) => cards.length === 3), 'Homepage editing must expose three dedicated world background cards.')
   assert(await page.$$eval('[data-admin-world-background]', (cards) => cards.map((card) => card.getAttribute('data-admin-world-background')).join(',') === 'create,honor,belong'), 'World background controls must map to Create, Honor, and Belong in homepage order.')
-  assert(await page.$$eval('[data-admin-world-background] .admin-image-field__preview img', (images) => images.length === 3), 'Each world background control must show its current image preview.')
+  await loadLazyImages(page)
+  assert(await page.$$eval('[data-admin-world-background] .admin-image-field__preview img', (images) => images.length === 3 && images.every((image) => image.complete && image.naturalWidth > 0)), 'Each world background control must show a loaded current-image preview.')
   assert(await page.$$eval('[data-admin-world-background] input[type="file"]', (inputs) => inputs.length === 3), 'Each world background control must accept a local image file.')
 
   const homepageUpload = await page.$('[data-admin-world-background="create"] input[type="file"]')
@@ -117,15 +153,17 @@ try {
   await page.waitForFunction(() => document.querySelector('[data-admin-world-background="create"] .admin-image-field__message.is-success')?.textContent?.includes('Image uploaded'))
   assert(mediaUploadFilenameHeader === encodeURIComponent(path.basename(unicodeUploadPath)), 'Unicode upload filenames must be percent-encoded in request headers.')
   assert(await page.$eval('.admin-publish-bar', (bar) => bar.dataset.dirty === 'true'), 'A completed image upload must mark the configuration as unpublished.')
+  await loadLazyImages(page)
   await page.screenshot({ path: '/tmp/we-admin-homepage-en.png', type: 'png', fullPage: true })
 
   await page.click('.admin-sidebar nav button:nth-child(4)')
   await page.waitForFunction(() => document.querySelector('.admin-topbar h1')?.textContent === 'Section images')
   assert(await page.$$eval('[data-admin-image-group]', (groups) => groups.length === 4), 'Section image management must group homepage, card, page hero, and supporting images.')
-  assert(await page.$$eval('[data-admin-section-image]', (cards) => cards.length === 32), 'Section image management must expose all 32 default image slots.')
-  assert(await page.$$eval('[data-admin-section-image] input[type="file"]', (inputs) => inputs.length === 32), 'Every section image slot must accept a local image file.')
-  assert(await page.$$eval('[data-admin-section-image] .admin-image-field__preview', (previews) => previews.length === 32), 'Every section image slot must include a preview area.')
-  assert(await page.$$eval('[data-admin-section-image] .admin-image-field__preview img', (images) => images.length === 30), 'Every configured section image must render its current preview.')
+  assert(await page.$$eval('[data-admin-section-image]', (cards) => cards.length === 40), 'Section image management must expose all 40 default image slots.')
+  assert(await page.$$eval('[data-admin-section-image] input[type="file"]', (inputs) => inputs.length === 40), 'Every section image slot must accept a local image file.')
+  assert(await page.$$eval('[data-admin-section-image] .admin-image-field__preview', (previews) => previews.length === 40), 'Every section image slot must include a preview area.')
+  assert(await page.$$eval('[data-admin-section-image] .admin-image-field__preview img', (images) => images.length === 37), 'Every configured section image must render its current preview.')
+  await loadLazyImages(page)
   const supportingUpload = await page.$('[data-admin-section-image="supporting-communityGalleryPrimary"] input[type="file"]')
   if (!supportingUpload) throw new Error('Community section background upload input was not found.')
   await supportingUpload.uploadFile(unicodeUploadPath)
@@ -188,8 +226,11 @@ try {
 
   assert(consoleErrors.length === 0, `Console errors: ${consoleErrors.join('; ')}`)
   assert(pageErrors.length === 0, `Page errors: ${pageErrors.join('; ')}`)
-  console.log('Admin browser smoke passed: bilingual editing, 32 section-image slots, catalog creation, local image uploads with previews, product gallery management, mobile layout, and browser health.')
+  console.log('Admin browser smoke passed: redesigned homepage, bilingual editing, 40 section-image slots, catalog creation, local image uploads with previews, product gallery management, mobile layout, and browser health.')
   console.log('/tmp/we-admin-desktop.png')
+  console.log('/tmp/we-home-desktop-viewport.png')
+  console.log('/tmp/we-home-desktop.png')
+  console.log('/tmp/we-home-mobile.png')
   console.log('/tmp/we-admin-homepage-en.png')
   console.log('/tmp/we-admin-section-images-en.png')
   console.log('/tmp/we-admin-catalog-create-form.png')

@@ -300,7 +300,7 @@ function DashboardSection({ config, language, storageConfigured, onNavigate }: {
       >
         <div className="admin-metric-grid">
           <article><span>{label(language, '可见商品', 'Visible products')}</span><strong>{visibleProducts}</strong><small>{config.catalog.products.length} {label(language, '个商品', 'total')}</small></article>
-          <article><span>{label(language, '首页区块', 'Homepage sections')}</span><strong>{enabledSections}</strong><small>8 {label(language, '个区块', 'total')}</small></article>
+          <article><span>{label(language, '首页区块', 'Homepage sections')}</span><strong>{enabledSections}</strong><small>9 {label(language, '个区块', 'total')}</small></article>
           <article><span>{label(language, '启用页面', 'Enabled pages')}</span><strong>{enabledPages}</strong><small>{config.pages.length} {label(language, '个页面', 'total')}</small></article>
           <article><span>{label(language, '存储状态', 'Storage')}</span><strong className={storageConfigured ? 'is-good' : 'is-warning'}>{storageConfigured ? label(language, '已连接', 'Ready') : label(language, '未连接', 'Missing')}</strong><small>Vercel Blob</small></article>
         </div>
@@ -384,10 +384,8 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
           <Field label={label(language, '标题第二行', 'Title line 2')} value={home.hero.titleLine2} onChange={(value) => mutate((next) => { next.home.hero.titleLine2 = value })} />
           <Field label={label(language, '说明', 'Description')} multiline value={home.hero.copy} onChange={(value) => mutate((next) => { next.home.hero.copy = value })} />
           <AdminImageField language={language} label={label(language, '栏目背景图片', 'Section background image')} value={home.hero.image} previewAlt="" onChange={(value) => mutate((next) => { next.home.hero.image = value })} />
-          <Field label={label(language, '主按钮文案', 'Primary button')} value={home.hero.primaryLabel} onChange={(value) => mutate((next) => { next.home.hero.primaryLabel = value })} />
-          <Field label={label(language, '主按钮链接', 'Primary destination')} value={home.hero.primaryHref} onChange={(value) => mutate((next) => { next.home.hero.primaryHref = value })} />
-          <Field label={label(language, '次按钮文案', 'Secondary button')} value={home.hero.secondaryLabel} onChange={(value) => mutate((next) => { next.home.hero.secondaryLabel = value })} />
-          <Field label={label(language, '次按钮链接', 'Secondary destination')} value={home.hero.secondaryHref} onChange={(value) => mutate((next) => { next.home.hero.secondaryHref = value })} />
+          <Field label={label(language, '城市搜索标题', 'City search label')} value={home.hero.searchLabel} onChange={(value) => mutate((next) => { next.home.hero.searchLabel = value })} />
+          <Field label={label(language, '城市搜索提示', 'City search placeholder')} value={home.hero.searchPlaceholder} onChange={(value) => mutate((next) => { next.home.hero.searchPlaceholder = value })} />
           <Field label={label(language, '向下引导文案', 'Scroll label')} value={home.hero.scrollLabel} onChange={(value) => mutate((next) => { next.home.hero.scrollLabel = value })} />
         </div>
       </details>
@@ -453,7 +451,18 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
       </details>
 
       <details className="admin-editor-group">
-        <summary><span>04</span>{label(language, '四步定制动效', 'Four-step custom motion')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.custom.enabled} onChange={(value) => mutate((next) => { next.home.custom.enabled = value })} /></summary>
+        <summary><span>04</span>{label(language, '新品与精选', 'New & Featured')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.products.enabled} onChange={(value) => mutate((next) => { next.home.products.enabled = value })} /></summary>
+        <div className="admin-field-grid">
+          <Field label={label(language, '眉题', 'Eyebrow')} value={home.products.eyebrow} onChange={(value) => mutate((next) => { next.home.products.eyebrow = value })} />
+          <Field label={label(language, '标题', 'Title')} value={home.products.title} onChange={(value) => mutate((next) => { next.home.products.title = value })} />
+          <Field label={label(language, '说明', 'Description')} multiline value={home.products.copy} onChange={(value) => mutate((next) => { next.home.products.copy = value })} />
+          <Field label={label(language, '按钮文案', 'Button label')} value={home.products.ctaLabel} onChange={(value) => mutate((next) => { next.home.products.ctaLabel = value })} />
+          <Field label={label(language, '按钮链接', 'Button destination')} value={home.products.ctaHref} onChange={(value) => mutate((next) => { next.home.products.ctaHref = value })} />
+        </div>
+      </details>
+
+      <details className="admin-editor-group">
+        <summary><span>05</span>{label(language, '四步定制动效', 'Four-step custom motion')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.custom.enabled} onChange={(value) => mutate((next) => { next.home.custom.enabled = value })} /></summary>
         <div className="admin-field-grid">
           <Field label={label(language, '眉题', 'Eyebrow')} value={home.custom.eyebrow} onChange={(value) => mutate((next) => { next.home.custom.eyebrow = value })} />
           <Field label={label(language, '标题第一行', 'Title line 1')} value={home.custom.titleLine1} onChange={(value) => mutate((next) => { next.home.custom.titleLine1 = value })} />
@@ -477,19 +486,28 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
       </details>
 
       <details className="admin-editor-group">
-        <summary><span>05</span>{label(language, '工艺故事', 'Craftsmanship story')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.craftsmanship.enabled} onChange={(value) => mutate((next) => { next.home.craftsmanship.enabled = value })} /></summary>
+        <summary><span>06</span>{label(language, '工艺故事', 'Craftsmanship story')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.craftsmanship.enabled} onChange={(value) => mutate((next) => { next.home.craftsmanship.enabled = value })} /></summary>
         <div className="admin-field-grid">
           <Field label={label(language, '眉题', 'Eyebrow')} value={home.craftsmanship.eyebrow} onChange={(value) => mutate((next) => { next.home.craftsmanship.eyebrow = value })} />
           <Field label={label(language, '标题', 'Title')} value={home.craftsmanship.title} onChange={(value) => mutate((next) => { next.home.craftsmanship.title = value })} />
           <Field label={label(language, '说明', 'Description')} multiline value={home.craftsmanship.copy} onChange={(value) => mutate((next) => { next.home.craftsmanship.copy = value })} />
-          <AdminImageField language={language} label={label(language, '栏目背景图片', 'Section background image')} value={home.craftsmanship.image} previewAlt="" onChange={(value) => mutate((next) => { next.home.craftsmanship.image = value })} />
           <Field label={label(language, '按钮文案', 'Button label')} value={home.craftsmanship.ctaLabel} onChange={(value) => mutate((next) => { next.home.craftsmanship.ctaLabel = value })} />
           <Field label={label(language, '按钮链接', 'Button destination')} value={home.craftsmanship.ctaHref} onChange={(value) => mutate((next) => { next.home.craftsmanship.ctaHref = value })} />
+        </div>
+        <div className="admin-repeater admin-repeater--steps">
+          {home.craftsmanship.items.map((item, index) => (
+            <article key={index}>
+              <span className="admin-repeater__index">0{index + 1}</span>
+              <Field label={label(language, '工艺名称', 'Craft label')} value={item.title} onChange={(value) => mutate((next) => { next.home.craftsmanship.items[index]!.title = value })} />
+              <Field label={label(language, '工艺说明', 'Craft description')} multiline value={item.copy} onChange={(value) => mutate((next) => { next.home.craftsmanship.items[index]!.copy = value })} />
+              <AdminImageField compact language={language} label={label(language, '工艺图片', 'Craft image')} value={item.image} previewAlt="" onChange={(value) => mutate((next) => { next.home.craftsmanship.items[index]!.image = value })} />
+            </article>
+          ))}
         </div>
       </details>
 
       <details className="admin-editor-group">
-        <summary><span>06</span>{label(language, '品牌承诺', 'Brand promises')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.promises.enabled} onChange={(value) => mutate((next) => { next.home.promises.enabled = value })} /></summary>
+        <summary><span>07</span>{label(language, '品牌承诺', 'Brand promises')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.promises.enabled} onChange={(value) => mutate((next) => { next.home.promises.enabled = value })} /></summary>
         <Field label={label(language, '区块标题', 'Section title')} value={home.promises.title} onChange={(value) => mutate((next) => { next.home.promises.title = value })} />
         <div className="admin-repeater admin-repeater--steps">
           {home.promises.items.map((item, index) => (
@@ -503,37 +521,29 @@ function HomepageSection({ config, language, mutate }: { config: SiteConfig; lan
       </details>
 
       <details className="admin-editor-group">
-        <summary><span>07</span>{label(language, '故事列表', 'Stories section')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.stories.enabled} onChange={(value) => mutate((next) => { next.home.stories.enabled = value })} /></summary>
+        <summary><span>08</span>{label(language, '三大母系故事', 'Three-world stories')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.stories.enabled} onChange={(value) => mutate((next) => { next.home.stories.enabled = value })} /></summary>
         <div className="admin-field-grid">
           <Field label={label(language, '眉题', 'Eyebrow')} value={home.stories.eyebrow} onChange={(value) => mutate((next) => { next.home.stories.eyebrow = value })} />
           <Field label={label(language, '标题', 'Title')} value={home.stories.title} onChange={(value) => mutate((next) => { next.home.stories.title = value })} />
           <Field label={label(language, '链接文案', 'Link label')} value={home.stories.ctaLabel} onChange={(value) => mutate((next) => { next.home.stories.ctaLabel = value })} />
         </div>
-        <div className="admin-section-image-list">
-          <h3>{label(language, '故事图片', 'Story images')}</h3>
-          {config.catalog.stories.map((story, storyIndex) => (
-            <AdminImageField
-              key={story.slug}
-              compact
-              language={language}
-              label={story.title}
-              value={story.image}
-              previewAlt=""
-              onChange={(value) => mutate((next) => { next.catalog.stories[storyIndex]!.image = value })}
-            />
-          ))}
-        </div>
+        <p className="admin-inline-note">{label(language, '该栏目直接使用 CREATE、HONOR、BELONG 三张世界图片，可在“栏目图片”中统一更换。', 'This section uses the CREATE, HONOR, and BELONG world images managed under Section images.')}</p>
       </details>
 
       <details className="admin-editor-group">
-        <summary><span>08</span>{label(language, '社区横幅', 'Community banner')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.community.enabled} onChange={(value) => mutate((next) => { next.home.community.enabled = value })} /></summary>
+        <summary><span>09</span>{label(language, '真实穿着与社群', 'Worn Your Way')}<ToggleField label={label(language, '启用', 'Enabled')} checked={home.community.enabled} onChange={(value) => mutate((next) => { next.home.community.enabled = value })} /></summary>
         <div className="admin-field-grid">
           <Field label={label(language, '眉题', 'Eyebrow')} value={home.community.eyebrow} onChange={(value) => mutate((next) => { next.home.community.eyebrow = value })} />
           <Field label={label(language, '标题', 'Title')} value={home.community.title} onChange={(value) => mutate((next) => { next.home.community.title = value })} />
           <Field label={label(language, '说明', 'Description')} multiline value={home.community.copy} onChange={(value) => mutate((next) => { next.home.community.copy = value })} />
-          <AdminImageField language={language} label={label(language, '栏目背景图片', 'Section background image')} value={home.community.image} previewAlt="" onChange={(value) => mutate((next) => { next.home.community.image = value })} />
           <Field label={label(language, '按钮文案', 'Button label')} value={home.community.ctaLabel} onChange={(value) => mutate((next) => { next.home.community.ctaLabel = value })} />
           <Field label={label(language, '按钮链接', 'Button destination')} value={home.community.ctaHref} onChange={(value) => mutate((next) => { next.home.community.ctaHref = value })} />
+        </div>
+        <div className="admin-section-image-list">
+          <h3>{label(language, '社群图片（6张）', 'Community images (6)')}</h3>
+          {home.community.images.map((image, index) => (
+            <AdminImageField key={index} compact language={language} label={label(language, `社群图片 ${index + 1}`, `Community image ${index + 1}`)} value={image} previewAlt="" onChange={(value) => mutate((next) => { next.home.community.images[index] = value })} />
+          ))}
         </div>
       </details>
     </div>
@@ -990,10 +1000,26 @@ const supportingSectionImages: Array<{
 function SectionImagesSection({ config, language, mutate }: { config: SiteConfig; language: AdminLanguage; mutate: MutateDraft }) {
   const homepageImages: SectionImageEditor[] = [
     { id: 'home-hero', labelZh: '首页首屏', labelEn: 'Homepage hero', contextZh: '/ · 首屏背景', contextEn: '/ · hero background', value: config.home.hero.image, update: (next, value) => { next.home.hero.image = value } },
-    { id: 'home-featured', labelZh: '首页精选栏目', labelEn: 'Homepage featured section', contextZh: '/ · New & Featured', contextEn: '/ · New & Featured', value: config.home.featured.image, update: (next, value) => { next.home.featured.image = value } },
+    { id: 'home-featured', labelZh: '首页发布栏目', labelEn: 'Homepage featured release', contextZh: '/ · Featured Release', contextEn: '/ · Featured Release', value: config.home.featured.image, update: (next, value) => { next.home.featured.image = value } },
     { id: 'home-custom', labelZh: '首页定制栏目', labelEn: 'Homepage custom section', contextZh: '/ · Create Yours', contextEn: '/ · Create Yours', value: config.home.custom.image, update: (next, value) => { next.home.custom.image = value } },
-    { id: 'home-craftsmanship', labelZh: '首页工艺栏目', labelEn: 'Homepage craftsmanship section', contextZh: '/ · Craftsmanship', contextEn: '/ · Craftsmanship', value: config.home.craftsmanship.image, update: (next, value) => { next.home.craftsmanship.image = value } },
-    { id: 'home-community', labelZh: '首页社区栏目', labelEn: 'Homepage community section', contextZh: '/ · Community', contextEn: '/ · Community', value: config.home.community.image, update: (next, value) => { next.home.community.image = value } },
+    ...config.home.craftsmanship.items.map((item, index) => ({
+      id: `home-craftsmanship-${index + 1}`,
+      labelZh: `首页工艺图片 ${index + 1}`,
+      labelEn: `Homepage craftsmanship ${index + 1}`,
+      contextZh: `/ · Craftsmanship · ${item.title}`,
+      contextEn: `/ · Craftsmanship · ${item.title}`,
+      value: item.image,
+      update: (next: SiteConfig, value: string) => { next.home.craftsmanship.items[index]!.image = value },
+    })),
+    ...config.home.community.images.map((image, index) => ({
+      id: `home-community-${index + 1}`,
+      labelZh: `首页社群图片 ${index + 1}`,
+      labelEn: `Homepage community ${index + 1}`,
+      contextZh: '/ · Worn Your Way',
+      contextEn: '/ · Worn Your Way',
+      value: image,
+      update: (next: SiteConfig, value: string) => { next.home.community.images[index] = value },
+    })),
   ]
   const catalogImages: SectionImageEditor[] = [
     ...config.catalog.worlds.map((item, index) => ({

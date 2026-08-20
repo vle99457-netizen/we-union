@@ -247,7 +247,8 @@ function Footer() {
             <Link to="/about">About</Link>
             <Link to="/craftsmanship">Craftsmanship</Link>
             <Link to="/team">Team orders</Link>
-            <Link to="/support">Support</Link>
+            <a href={`mailto:${config.global.supportEmail}`}>Email support</a>
+            <Link to="/support">Support center</Link>
           </div>
           <div>
             <h3>Legal</h3>

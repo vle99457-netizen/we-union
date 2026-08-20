@@ -77,6 +77,59 @@ describe('site configuration', () => {
     expect(pageSetting(config, 'support').route).toBe('/support')
   })
 
+  it('restores complete homepage image collections for older or incomplete drafts', () => {
+    const config = normalizeSiteConfig({
+      ...defaultSiteConfig,
+      home: {
+        ...defaultSiteConfig.home,
+        craftsmanship: { ...defaultSiteConfig.home.craftsmanship, items: [] },
+        community: { ...defaultSiteConfig.home.community, images: ['/images/only-one.webp'] },
+      },
+    })
+
+    expect(config.home.craftsmanship.items).toHaveLength(4)
+    expect(config.home.community.images).toHaveLength(6)
+    expect(config.home.products.title).toBe('New & Featured')
+  })
+
+  it('migrates the previous homepage system while preserving configured release imagery', () => {
+    const legacy = structuredClone(defaultSiteConfig) as unknown as Record<string, any>
+    delete legacy.home.products
+    delete legacy.home.craftsmanship.items
+    delete legacy.home.community.images
+    legacy.home.hero.image = '/images/hero-stadium.webp'
+    legacy.home.featured.image = '/images/custom-release.webp'
+    legacy.home.craftsmanship.image = '/images/custom-craft.webp'
+    legacy.catalog.worlds.find((item: { slug: string }) => item.slug === 'create').image = '/images/water-ripple.webp'
+    legacy.catalog.worlds.find((item: { slug: string }) => item.slug === 'belong').image = '/images/world-belong.webp'
+
+    const config = normalizeSiteConfig(legacy)
+
+    expect(config.home.hero.image).toBe('')
+    expect(config.home.featured.image).toBe('/images/custom-release.webp')
+    expect(config.home.products.enabled).toBe(true)
+    expect(config.home.craftsmanship.items).toHaveLength(4)
+    expect(config.home.craftsmanship.items[0]?.image).toBe('/images/custom-craft.webp')
+    expect(config.home.community.images).toHaveLength(6)
+    expect(config.catalog.worlds.find((item) => item.slug === 'create')?.image).toBe('/images/crack-series.webp')
+    expect(config.catalog.worlds.find((item) => item.slug === 'belong')?.image).toBe('/images/hero-stadium.webp')
+    expect(config.global.utilityText).toBe('Shipping calculated at checkout.')
+  })
+
+  it('preserves disabled legacy homepage sections during the redesign migration', () => {
+    const legacy = structuredClone(defaultSiteConfig) as unknown as Record<string, any>
+    delete legacy.home.products
+    const legacySectionKeys = ['hero', 'worlds', 'featured', 'custom', 'craftsmanship', 'promises', 'stories', 'community']
+    for (const key of legacySectionKeys) legacy.home[key].enabled = false
+
+    const config = normalizeSiteConfig(legacy)
+
+    for (const key of legacySectionKeys) {
+      expect(config.home[key as keyof typeof config.home].enabled).toBe(false)
+    }
+    expect(config.home.products.enabled).toBe(true)
+  })
+
   it('creates URL-safe catalog slugs from editor names', () => {
     expect(catalogSlugFromName('  Summer Motion 2026  ')).toBe('summer-motion-2026')
     expect(catalogSlugFromName('Crème / Blue')).toBe('creme-blue')
