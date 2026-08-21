@@ -92,7 +92,10 @@ export function SiteChrome({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <div ref={appShell} className="app-shell">
+      <div
+        ref={appShell}
+        className={location.pathname === '/' ? 'app-shell app-shell--home' : 'app-shell'}
+      >
         <a className="skip-link" href="#main-content">
           Skip to content
         </a>
